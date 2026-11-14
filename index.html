@@ -125,6 +125,20 @@ h1,h2,h3,p{margin-top:0}
 .shot-row{display:flex;gap:5px;flex-wrap:wrap;margin:6px 0 13px}
 .shot-dot{width:17px;height:17px;border-radius:50%;border:1px solid #896e9a;color:#fdd59c;text-align:center;font-size:11px;line-height:15px}
 .shot-dot.miss{color:#db9aa9}.shot-dot.hit{background:#4e3550}
+.hide-scene{background:radial-gradient(ellipse at 45% 0,#3d2954,#251c37 70%)}
+.hide-reveal{display:grid;place-items:center;width:83px;height:83px;margin:0 0 15px;border-radius:21px;border:1px solid #8d72a3;background:#4a365e;font-size:49px;animation:pop .28s ease both}
+.hide-shots{display:flex;flex-wrap:wrap;gap:8px 14px;align-items:center;color:#ead6ee;font-size:13px;margin-bottom:11px}
+.hide-shots strong{color:var(--gold)}
+.hide-shots .shot-row{margin:0}
+.hide-board{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:7px}
+.hide-prop{position:relative;display:flex;flex-direction:column;justify-content:center;align-items:center;gap:4px;min-width:0;min-height:65px;padding:7px 2px;text-align:center;color:#faedf7;background:#352747;border:1px solid #624b72;border-radius:11px;font-size:12px;line-height:1.2}
+.hide-prop .option-icon{font-size:25px}
+button.hide-prop:hover:not(:disabled){border-color:var(--gold)}
+.hide-prop.shot-prop{background:#292138;opacity:.58}
+.hide-prop small{position:absolute;top:4px;right:5px;color:#ffcca4;font-size:10px}
+.hide-prop.my-prop{border-color:var(--gold);background:#583d50}
+.hide-prop.my-prop small{position:static}
+@media(max-width:560px){.hide-board{grid-template-columns:repeat(4,minmax(0,1fr))}.hide-prop{min-height:58px}}
 .memory{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin:16px 0}
 .memory .option{font-size:25px;min-height:62px}
 .memory .matched{background:#2e453e;border-color:#597f70;opacity:1}
@@ -197,8 +211,8 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 window.arcadeStatic=true;
 window.arcadeArt={"hero":"./assets/hero.webp","map":"./assets/map.webp","avatars":["./assets/role-0.webp","./assets/role-1.webp","./assets/role-2.webp","./assets/role-3.webp"]};
 const internetRooms = (() => {
-  const roomPrefix = 'starlight-arcade-v1-';
-  const channelLabel = 'starlight-arcade-v1';
+  const roomPrefix = 'starlight-arcade-v2-';
+  const channelLabel = 'starlight-arcade-v2';
   const codeAlphabet = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
   const roomTimeout = 15_000;
 
@@ -411,13 +425,26 @@ const internetRooms = (() => {
 })();
 
 const miniGameData = {
-  hideLocations: [
-    { icon: '🧸', label: '玩具箱' },
-    { icon: '🛋️', label: '沙发后' },
-    { icon: '🪴', label: '花盆旁' },
-    { icon: '🪟', label: '窗帘后' },
-    { icon: '📚', label: '书架边' },
-    { icon: '📦', label: '纸箱里' }
+  hideShotLimit: 10,
+  hideProps: [
+    { icon: '🧸', label: '小熊玩偶' },
+    { icon: '🦖', label: '塑料恐龙' },
+    { icon: '🦆', label: '橡皮小鸭' },
+    { icon: '🚂', label: '玩具火车' },
+    { icon: '🚗', label: '小赛车' },
+    { icon: '🚀', label: '模型火箭' },
+    { icon: '🤖', label: '铁皮机器人' },
+    { icon: '🪀', label: '悠悠球' },
+    { icon: '🪁', label: '彩色风筝' },
+    { icon: '🎲', label: '泡棉骰子' },
+    { icon: '🧩', label: '拼图块' },
+    { icon: '🎈', label: '圆气球' },
+    { icon: '🎨', label: '调色盘' },
+    { icon: '🥁', label: '玩具鼓' },
+    { icon: '🎺', label: '小喇叭' },
+    { icon: '🏀', label: '迷你篮球' },
+    { icon: '♟️', label: '小棋子' },
+    { icon: '🎠', label: '旋转木马' }
   ],
   shootTargets: [
     { icon: '✦', label: '左侧星点' },
@@ -530,7 +557,9 @@ function randomMiniGameOrder(items) {
 }
 
 function startHideRound(round, results = []) {
-  return { turn: round, done: false, round, phase: 'hide', hider: round, spot: null, guesses: [], results };
+  const props = miniGameData.hideProps.map((_, index) => index);
+  const board = randomMiniGameOrder(props);
+  return { turn: round, done: false, round, phase: 'hide', hider: round, board, spot: null, guesses: [], results };
 }
 
 function shootTargetsFor(target) {
@@ -548,16 +577,22 @@ const miniGames = {
         if (action?.type !== 'continue') return state;
         return state.round === 0 ? startHideRound(1, state.results) : { ...state, done: true };
       }
-      if (!isMiniGameChoice(action, 'pick', miniGameData.hideLocations.length)) return state;
-      const { index } = action;
       if (state.phase === 'hide') {
-        return { ...state, spot: index, phase: 'guess', turn: 1 - state.hider };
+        if (action?.type !== 'transform') return state;
+        const spot = Math.floor(Math.random() * state.board.length);
+        return { ...state, spot, phase: 'reveal' };
       }
+      if (state.phase === 'reveal') {
+        if (action?.type !== 'ready') return state;
+        return { ...state, phase: 'guess', turn: 1 - state.hider };
+      }
+      if (state.phase !== 'guess' || !isMiniGameChoice(action, 'shoot', state.board.length)) return state;
+      const { index } = action;
       if (state.guesses.includes(index)) return state;
       const guesses = [...state.guesses, index];
       const found = index === state.spot;
-      if (!found && guesses.length < 3) return { ...state, guesses };
-      const result = { hider: state.hider, spot: state.spot, guesses, found };
+      if (!found && guesses.length < miniGameData.hideShotLimit) return { ...state, guesses };
+      const result = { hider: state.hider, board: state.board, spot: state.spot, guesses, found };
       return { ...state, phase: 'result', guesses, results: [...state.results, result] };
     }
   },
@@ -638,7 +673,7 @@ const roles = [
   {name:'糖豆熊',detail:'围小领巾的熊',icon:'🐻',color:'#715650'}
 ];
 const games = {
-  hide:{name:'星光捉迷藏',icon:'☾',accent:'#c5adff',brief:'六处藏身点 · 三次机会',rules:'一人从六个地点里选一个躲起来，另一人在三个不同的地点里寻找。找到了或用完机会，就交换角色。',x:22,y:25},
+  hide:{name:'星光捉迷藏',icon:'☾',accent:'#c5adff',brief:'随机变玩具 · 十次点射',rules:'一人随机变成玩具架上的一件小玩具，另一人有十次机会点射，猜哪个是搭档。猜中过关，猜错的玩具会标记出来。命中或用完十次后，交换角色。',x:22,y:25},
   shoot:{name:'十发打星星',icon:'✸',accent:'#ffcf8e',brief:'每人五发 · 合计十发',rules:'看清闪亮的星星在哪一格。两人轮流点击，每人五次，加起来十次。每次点中亮星就得一分。',x:74,y:24},
   toy:{name:'玩具搬运',icon:'♟',accent:'#ffa6a7',brief:'一人变玩具 · 搭档护送',rules:'一人变成小玩具，先选怎么移动。搭档从三种方法里选怎么帮忙。一起过三道障碍后交换角色，选错可以重试。',x:79,y:62},
   memory:{name:'记忆翻牌',icon:'▦',accent:'#b3dbc8',brief:'八张牌 · 四对图案',rules:'每回合翻两张牌，找出相同的图案。配对成功的牌留在桌上，确认后由搭档继续。',x:52,y:79},
@@ -788,7 +823,7 @@ function resultGame(){
 }
 function summary(st){
   const a=st.play;
-  if(st.game==='hide')return `你们找到了 ${a.results.filter(x=>x.found).length} / 2 次藏起来的搭档。`;
+  if(st.game==='hide')return `你们猜中了 ${a.results.filter(x=>x.found).length} / 2 次变成玩具的搭档。`;
   if(st.game==='shoot')return `一共点亮 ${a.scores[0]+a.scores[1]} / 10 颗星。`;
   if(st.game==='toy')return `两位小玩具都已经通过障碍。`;
   if(st.game==='memory')return `找齐了四对图案。两人分别找到 ${a.scores[0]} 对和 ${a.scores[1]} 对。`;
@@ -808,12 +843,29 @@ function renderPuzzle(s,can){
 }
 function renderHide(s,can){
   if(handoff)return handoffPanel();
-  const result=s.results.at(-1);
+  const limit=miniGameData.hideShotLimit;
+  const remaining=limit-s.guesses.length;
+  const isHider=mode==='solo'||seat===s.hider;
+  const findToy=(board,index)=>miniGameData.hideProps[board[index]];
   if(s.phase==='result'){
-    return `<section class="panel play"><h2>${result.found?'找到啦！':'这次躲成功了！'}</h2><p>${player(s.hider)}躲在${miniGameData.hideLocations[result.spot].label}。</p>${can?continued(s.round===0?'交换角色':'查看结果'):`<p>${waitText()}</p>`}</section>`;
+    const result=s.results.at(-1), toy=findToy(result.board,result.spot);
+    return `<section class="panel play hide-scene"><div class="hide-reveal" aria-hidden="true">${toy.icon}</div><h2>${result.found?'猜中了！':'十次机会用完了'}</h2><p>${player(s.hider)}变成了<strong>${toy.label}</strong>。${result.found?`第 ${result.guesses.length} 发找到搭档。`:''}</p>${can?continued(s.round===0?'交换角色':'查看结果'):`<p>${waitText()}</p>`}</section>`;
   }
-  const hiding=s.phase==='hide';
-  return `<section class="panel play"><h2>${hiding?'选一个藏身处':'搭档躲在哪里？'}</h2><p>${can?hiding?'找一个你觉得搭档猜不到的地方。':`还可以寻找 ${3-s.guesses.length} 次。`:waitText()}</p>${can?`<div class="options">${miniGameData.hideLocations.map((x,i)=>option(i,s.guesses.includes(i)?{icon:'×',label:x.label}:x,pending||s.guesses.includes(i))).join('')}</div>`:''}</section>`;
+  if(s.phase==='hide'||s.phase==='reveal'){
+    if(!isHider)return `<section class="panel play hide-scene"><div class="hide-reveal" aria-hidden="true">✨</div><h2>搭档正在变身</h2><p>准备好后，你会看到一整架小玩具。</p></section>`;
+    if(s.phase==='hide')return `<section class="panel play hide-scene"><div class="hide-reveal" aria-hidden="true">🎁</div><h2>变成一件小玩具</h2><p>随机抽取玩具架上的一件物品作为伪装。</p>${btn('transform-hide','随机变身',true,pending)}</section>`;
+    const toy=findToy(s.board,s.spot);
+    return `<section class="panel play hide-scene"><div class="hide-reveal" aria-hidden="true">${toy.icon}</div><h2>你变成了${toy.label}</h2><p>记住你的伪装。准备好后，就让搭档开始找你。</p>${btn('start-hide','我藏好了',true,pending)}</section>`;
+  }
+  const shots=Array.from({length:limit},(_,i)=>`<span class="shot-dot ${i<s.guesses.length?'miss':''}" aria-hidden="true">${i<s.guesses.length?'×':''}</span>`).join('');
+  const props=s.board.map((prop,i)=>{
+    const toy=miniGameData.hideProps[prop];
+    const miss=s.guesses.includes(i);
+    const mine=mode!=='solo'&&isHider&&i===s.spot;
+    if(!can)return `<div class="hide-prop ${mine?'my-prop':''} ${miss?'shot-prop':''}"><span class="option-icon" aria-hidden="true">${toy.icon}</span><span>${toy.label}</span>${mine?'<small>你的伪装</small>':miss?'<small>已猜过</small>':''}</div>`;
+    return `<button class="hide-prop ${miss?'shot-prop':''}" data-choice="${i}" aria-label="${toy.label}${miss?'，已猜过':''}" ${miss||pending?'disabled':''}><span class="option-icon" aria-hidden="true">${toy.icon}</span><span>${toy.label}</span>${miss?'<small>×</small>':''}</button>`;
+  }).join('');
+  return `<section class="panel play hide-scene"><h2>${can?'哪件玩具是搭档？':'看看搭档能不能找到你'}</h2><p>${can?'点一件玩具来猜。每次猜测用掉一发。':'搭档正在玩具架上找你。'}</p><div class="hide-shots"><span>剩余 <strong>${remaining} / ${limit}</strong> 发</span><div class="shot-row">${shots}</div></div><div class="hide-board" aria-label="玩具架">${props}</div></section>`;
 }
 function renderShoot(s,can){
   const key=`${state.session}-${s.shot}`;
@@ -900,7 +952,7 @@ function applyState(next){
   state=next;
   if(next.stage==='hub'&&previous.stage==='hub')walkOrigin=previous.positions;
   if(mode==='solo'&&next.stage==='game'&&previous.stage==='game'&&previous.session===next.session){
-    if(next.game==='hide'&&next.play.phase==='guess'&&previous.play.phase==='hide')handoff=true;
+    if(next.game==='hide'&&next.play.phase==='guess'&&previous.play.phase==='reveal')handoff=true;
     if(next.game==='hide'&&next.play.phase==='hide'&&previous.play.round!==next.play.round)handoff=true;
     if(next.game==='puzzle'&&next.play.turn!==previous.play.turn&&!next.play.result)handoff=true;
   }
@@ -946,7 +998,11 @@ async function pollLan(){
   finally{polling=false;}
 }
 function publishInternet(){
-  if(joined&&room&&!room.send({kind:'snapshot',version,state}))notify('同步暂时中断。');
+  let shared=state;
+  if(state.game==='hide'&&state.play.hider===0&&['reveal','guess'].includes(state.play.phase)){
+    shared={...state,play:{...state.play,spot:null}};
+  }
+  if(joined&&room&&!room.send({kind:'snapshot',version,state:shared}))notify('同步暂时中断。');
 }
 function peerEvent(event,connectionEpoch){
   if(epoch!==connectionEpoch||mode!=='internet')return;
@@ -1117,7 +1173,7 @@ document.addEventListener('click',e=>{
   }
   if(b.dataset.enter){dispatch({type:'enter',game:b.dataset.enter});return;}
   if(b.dataset.choice!==undefined){
-    const type=state.game==='shoot'?'shoot':state.game==='memory'?'flip':'pick';
+    const type=state.game==='shoot'||state.game==='hide'?'shoot':state.game==='memory'?'flip':'pick';
     dispatch({type:'game-action',input:{type,index:Number(b.dataset.choice)}});return;
   }
   if(b.id==='join-room')return;
@@ -1136,6 +1192,8 @@ document.addEventListener('click',e=>{
   if(b.id==='to-hub'||b.id==='result-map')dispatch({type:'map'});
   if(b.id==='rematch')dispatch({type:'rematch'});
   if(b.id==='reveal-turn'){handoff=false;render();}
+  if(b.id==='transform-hide')dispatch({type:'game-action',input:{type:'transform'}});
+  if(b.id==='start-hide')dispatch({type:'game-action',input:{type:'ready'}});
   if(b.id==='continue-game')dispatch({type:'game-action',input:{type:'continue'}});
   if(b.id==='records')showRecords();
 });
