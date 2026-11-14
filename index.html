@@ -968,7 +968,7 @@ function randomMiniGameOrder(items) {
 function startHideRound(round, results = []) {
   const props = miniGameData.hideProps.map((_, index) => index);
   const board = randomMiniGameOrder(props);
-  return {turn:round,done:false,round,phase:'hide',hider:round,board,spot:null,position:null,shape:null,moving:false,changedAt:0,revealUntil:0,feedback:null,shots:0,scans:0,clue:null,decoy:null,decoyUsed:false,results};
+  return {turn:round,done:false,round,phase:'hide',hider:round,board,spot:null,position:null,shape:null,moving:false,changedAt:0,revealUntil:0,feedback:null,shots:0,guesses:[],scans:0,clue:null,decoy:null,decoyUsed:false,results};
 }
 
 function hideZone(index, dimension) {
