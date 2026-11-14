@@ -499,6 +499,32 @@ button.duel-cell:hover:not(:disabled){outline:2px solid #ffdd9c;outline-offset:-
 .wardrobe-avatar{position:relative;border:2px solid var(--role-color)}
 .wardrobe-avatar small{position:absolute!important;right:0;top:0;margin:0!important;padding:0 2px!important;background:#24192c!important;border:0!important;border-radius:6px!important;color:var(--role-color)!important;font-size:11px!important}
 
+.live-panel{max-width:760px;margin:auto;background:#211833;padding:14px}
+.live-top{display:flex;justify-content:center;min-height:31px;color:var(--gold);font-size:14px}
+.live-top [data-live-connection]{color:var(--muted);padding-left:9px}
+.live-panel canvas{display:block;max-width:100%;width:auto;height:min(59svh,620px);margin:auto;border-radius:13px;touch-action:none;user-select:none;background:#161226}
+.live-panel[data-live-kind=tanks] canvas,.live-panel[data-live-kind=bubbles] canvas{height:auto;width:100%;max-height:57svh;object-fit:contain}
+.live-controls{display:flex;justify-content:space-evenly;gap:10px;margin:10px 0}
+.live-pilot{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;align-items:center;color:#adf0db;min-width:0}
+.live-pilot.live-seat-1{color:#ffb1c5}
+.live-pilot small{font-size:11px}
+.live-stick,.live-action{touch-action:none;user-select:none;border:1px solid #907e9d}
+.live-stick{width:76px;height:76px;padding:0;border-radius:50%;position:relative;background:radial-gradient(circle,#514365,#322940 66%);box-shadow:inset 0 0 0 6px #afa0c025;flex:none}
+.live-stick i{display:block;position:absolute;width:37px;height:37px;border-radius:50%;left:calc(50% - 18.5px);top:calc(50% - 18.5px);transform:translate(var(--dx,0),var(--dy,0));background:currentColor;opacity:.85;pointer-events:none}
+.live-action{min-height:50px;padding:8px 17px;border-radius:55px;color:#381f37;background:#ffc590;font-weight:800}
+.live-help{font-size:12px!important;line-height:1.4!important;margin:8px 0 0!important;text-align:center}
+.live-pending{position:relative}
+.stall[data-live-stall] .game-icon{color:#fff9e5;border-color:#e1bc92;background:#36284b}
+@media(max-width:460px){
+  .hub-board.expanded-night-map{min-height:443px}
+  .expanded-night-map .stall .game-icon{width:42px;height:42px;font-size:22px}
+  .expanded-night-map .stall b{font-size:10px;padding:3px 6px}
+  .live-panel{padding:8px}
+  .live-stick{width:68px;height:68px}
+  .live-pilot{gap:6px}
+  .live-action{padding:7px 12px;font-size:13px}
+}
+
 </style>
 </head>
 <body>
@@ -548,8 +574,8 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 window.arcadeStatic=true;
 window.arcadeArt={"hero":"./assets/hero.webp","map":"./assets/map.webp","avatars":["./assets/role-0.webp","./assets/role-1.webp","./assets/role-2.webp","./assets/role-3.webp"]};
 const internetRooms = (() => {
-  const roomPrefix = 'starlight-arcade-v5-';
-  const channelLabel = 'starlight-arcade-v5';
+  const roomPrefix = 'starlight-arcade-v6-';
+  const channelLabel = 'starlight-arcade-v6';
   const codeAlphabet = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
   const roomTimeout = 15_000;
 
@@ -1351,7 +1377,7 @@ const wardrobe = (() => {
     Object.freeze({ id: 'gold', name: '金色流星', color: '#ffcf76', cost: 18, icon: '★' }),
   ]);
   const initialSkin = catalog[0].id;
-  const rewardGames = new Set(['hide', 'shoot', 'toy', 'memory', 'signal', 'puzzle', 'duel']);
+  const rewardGames = new Set(['hide', 'shoot', 'toy', 'memory', 'signal', 'puzzle', 'duel', 'flight', 'tanks', 'bubbles', 'hockey']);
   const coinReward = 3;
 
   function normalize(value) {
@@ -3641,6 +3667,1320 @@ const hideMovement = (() => {
   };
 })();
 
+const spaceWave = (() => {
+  const width = 360;
+  const height = 520;
+  const ink = ['#79e9ed', '#fca5ce'];
+  const enemyTypes = {
+    scout: { hp: 2, radius: 12, color: '#ffb68d', speed: 43, interval: 2.65, spread: [0] },
+    wing: { hp: 3, radius: 15, color: '#b9a0ff', speed: 35, interval: 2.35, spread: [-.17, .17] },
+    tank: { hp: 6, radius: 19, color: '#ffce88', speed: 29, interval: 2.1, spread: [-.28, 0, .28] },
+    boss: { hp: 62, radius: 41, color: '#ff96b7', speed: 41, interval: 1.16, spread: [-.45, -.22, 0, .22, .45] },
+  };
+  const formations = [
+    ['scout','scout','scout','scout','scout','wing','scout','wing'],
+    ['wing','scout','wing','scout','tank','wing','wing','scout','tank','wing'],
+    ['wing','tank','wing','tank','wing','scout','wing','boss'],
+  ];
+  const lanes = [53, 114, 180, 246, 307];
+  const stars = Array.from({length: 70}, (_, i) => ({
+    x: (i * 149.31 + 17) % width,
+    y: (i * 138.73 + 23) % height,
+    large: i % 4 === 0,
+    speed: (i % 5 + 1) * 8,
+  }));
+  const clamp = (value, min, max) => Math.max(min, Math.min(max, value));
+  const near = (a, b, radius) => (a.x - b.x) ** 2 + (a.y - b.y) ** 2 < radius ** 2;
+
+  function random(s) {
+    s.seed = (Math.imul(s.seed, 1664525) + 1013904223) >>> 0;
+    return s.seed / 4294967296;
+  }
+
+  function create() {
+    return {
+      elapsed: 0, seed: (Date.now() + Math.floor(Math.random() * 100000)) >>> 0,
+      wave: 1, phase: 'brief', pause: 1.65, spawned: 0, spawnIn: .35, cleared: 0,
+      score: 0, kills: 0, revived: 0, pulse: .45, glow: 0, done: false, won: false,
+      ships: [112, 248].map(x => ({x, y: 439, hp: 3, safe: 1.4, fireIn: 0, held: false, rescue: 0})),
+      enemies: [], shots: [], threats: [], drops: [], sparks: [],
+    };
+  }
+
+  function spark(s, point, color) {
+    if (s.sparks.length < 15) s.sparks.push({x: point.x, y: point.y, color, time: .42});
+  }
+
+  function damage(s, ship, seat) {
+    if (!ship.hp || ship.safe > 0) return;
+    ship.hp--;
+    ship.safe = 1.15;
+    if (!ship.hp) ship.y = clamp(ship.y, 244, height - 42);
+    spark(s, ship, ink[seat]);
+  }
+
+  function updatePilot(s, ship, seat, input, dt) {
+    ship.safe = Math.max(0, ship.safe - dt);
+    if (!ship.hp) {
+      const partner = s.ships[1 - seat];
+      ship.rescue = clamp(ship.rescue + dt * (partner.hp && near(ship, partner, 43) ? 1 : -.85), 0, 1.25);
+      if (ship.rescue >= 1.25) {
+        ship.hp = 1;
+        ship.safe = 2.1;
+        ship.rescue = 0;
+        s.revived++;
+        spark(s, ship, '#a9ffe6');
+      }
+      return;
+    }
+
+    if (input?.active && Number.isFinite(input.x) && Number.isFinite(input.y)) {
+      const x = clamp(input.x * width, 17, width - 17);
+      const y = clamp(input.y * height, 171, height - 23);
+      const dx = x - ship.x, dy = y - ship.y;
+      const distance = Math.hypot(dx, dy);
+      const factor = distance > 0 ? Math.min(1, 355 * dt / distance) : 0;
+      ship.x += dx * factor;
+      ship.y += dy * factor;
+    }
+    if (s.phase === 'active') {
+      ship.fireIn -= dt;
+      if (ship.fireIn <= 0 && s.shots.length < 34) {
+        s.shots.push({x: ship.x, y: ship.y - 14, seat});
+        ship.fireIn = .19;
+      }
+      if (input?.fire && !ship.held && s.pulse >= 1) {
+        s.pulse = 0;
+        s.glow = .65;
+        s.threats = [];
+        for (const target of s.enemies) target.hp -= target.kind === 'boss' ? 8 : 3;
+        for (const pilot of s.ships) pilot.safe = Math.max(pilot.safe, .85);
+      }
+    }
+    ship.held = Boolean(input?.fire);
+  }
+
+  function launch(s) {
+    const kind = formations[s.wave - 1][s.spawned];
+    const type = enemyTypes[kind];
+    const x = kind === 'boss' ? 180 : lanes[(s.spawned + 2 * s.wave + Math.floor(random(s) * 2)) % lanes.length];
+    s.enemies.push({kind, x, y: -type.radius - 5, origin: x, hp: type.hp, age: 0, fireIn: .85 + random(s) * 1.3});
+    s.spawned++;
+    s.spawnIn = [1.05, .87, .79][s.wave - 1];
+  }
+
+  function updateEnemy(s, enemy, dt) {
+    const type = enemyTypes[enemy.kind];
+    const boss = enemy.kind === 'boss';
+    enemy.age += dt;
+    if (boss) {
+      enemy.x = width * .5 + Math.sin(enemy.age * .85) * 106;
+      enemy.y = Math.min(106 + Math.sin(enemy.age * 1.1) * 8, enemy.y + type.speed * dt);
+    } else {
+      const wing = enemy.kind === 'wing';
+      enemy.x = clamp(enemy.origin + Math.sin(enemy.age * (wing ? 2.4 : 1.5) + enemy.origin) * (wing ? 35 : 20), 17, width - 17);
+      enemy.y += (type.speed + (s.wave - 1) * 3) * dt;
+    }
+    enemy.fireIn -= dt;
+    const targets = s.ships.filter(ship => ship.hp && ship.y > enemy.y + 12);
+    if (enemy.fireIn > 0 || enemy.y < 27 || !targets.length) return;
+    const target = targets.reduce((a, b) => Math.abs(a.x-enemy.x) < Math.abs(b.x-enemy.x) ? a : b);
+    const angle = Math.atan2(target.y-enemy.y, target.x-enemy.x);
+    const velocity = (boss ? 119 : 90) + s.wave * 13;
+    for (const offset of type.spread) {
+      if (s.threats.length >= 32) break;
+      s.threats.push({x: enemy.x, y: enemy.y + type.radius * .55, vx: Math.cos(angle + offset) * velocity, vy: Math.sin(angle + offset) * velocity});
+    }
+    enemy.fireIn = type.interval * (.86 + random(s) * .24) - (s.wave - 1) * .10;
+  }
+
+  function checkWave(s) {
+    if (s.ships.every(ship => ship.hp === 0)) {
+      s.done = true;
+      return;
+    }
+    if (s.spawned < formations[s.wave - 1].length || s.enemies.length) return;
+    s.cleared = s.wave;
+    if (s.wave === formations.length) {
+      s.done = true;
+      s.won = true;
+      return;
+    }
+    s.wave++;
+    s.phase = 'brief';
+    s.pause = 1.7;
+    s.spawned = 0;
+    s.spawnIn = .32;
+    s.shots = [];
+    s.threats = [];
+    for (const ship of s.ships) if (ship.hp) ship.hp = Math.min(3, ship.hp + 1);
+  }
+
+  function tick(s, inputs, dtSeconds) {
+    if (s.done || !Number.isFinite(dtSeconds) || dtSeconds <= 0) return s;
+    const dt = Math.min(.05, dtSeconds);
+    s.elapsed += dt;
+    s.pulse = clamp(s.pulse + dt * .034, 0, 1);
+    s.glow = Math.max(0, s.glow - dt);
+    s.sparks = s.sparks.filter(item => (item.time -= dt) > 0);
+    s.ships.forEach((ship, seat) => updatePilot(s, ship, seat, inputs?.[seat], dt));
+    if (s.phase === 'brief') {
+      if ((s.pause -= dt) <= 0) s.phase = 'active';
+      return s;
+    }
+
+    s.spawnIn -= dt;
+    if (s.spawnIn <= 0 && s.spawned < formations[s.wave - 1].length) launch(s);
+    for (const enemy of s.enemies) {
+      if (enemy.hp > 0) updateEnemy(s, enemy, dt);
+      s.ships.forEach((ship, seat) => {
+        if (enemy.hp <= 0 || !ship.hp || !near(enemy, ship, enemyTypes[enemy.kind].radius + 9)) return;
+        damage(s, ship, seat);
+        if (enemy.kind !== 'boss') enemy.hp -= 2;
+      });
+    }
+
+    s.shots = s.shots.filter(shot => {
+      shot.y -= 340 * dt;
+      if (shot.y < -15) return false;
+      const enemy = s.enemies.find(target => target.hp > 0 && near(shot, target, enemyTypes[target.kind].radius + 4));
+      if (!enemy) return true;
+      enemy.hp--;
+      return false;
+    });
+    s.threats = s.threats.filter(shot => {
+      shot.x += shot.vx * dt;
+      shot.y += shot.vy * dt;
+      if (shot.x < -15 || shot.x > width + 15 || shot.y < -15 || shot.y > height + 15) return false;
+      const seat = s.ships.findIndex(ship => ship.hp && near(ship, shot, 13));
+      if (seat < 0) return true;
+      damage(s, s.ships[seat], seat);
+      return false;
+    });
+    s.enemies = s.enemies.filter(enemy => {
+      if (enemy.hp > 0) return enemy.y < height + 45;
+      s.kills++;
+      s.score += {scout: 80, wing: 115, tank: 175, boss: 900}[enemy.kind];
+      s.pulse = Math.min(1, s.pulse + .12);
+      spark(s, enemy, enemyTypes[enemy.kind].color);
+      if (s.kills % 5 === 0 && s.drops.length < 4) s.drops.push({x: enemy.x, y: enemy.y});
+      return false;
+    });
+    s.drops = s.drops.filter(drop => {
+      drop.y += 63 * dt;
+      if (s.ships.some(ship => ship.hp && near(ship, drop, 22))) {
+        for (const ship of s.ships) if (ship.hp) ship.hp = Math.min(3, ship.hp + 1);
+        s.pulse = Math.min(1, s.pulse + .28);
+        spark(s, drop, '#9af5c2');
+        return false;
+      }
+      return drop.y < height + 15;
+    });
+    checkWave(s);
+    return s;
+  }
+
+  function polygon(ctx, points, color) {
+    ctx.beginPath();
+    ctx.moveTo(...points[0]);
+    for (const point of points.slice(1)) ctx.lineTo(...point);
+    ctx.closePath();
+    ctx.fillStyle = color;
+    ctx.fill();
+  }
+
+  function disk(ctx, x, y, radius, color) {
+    ctx.fillStyle = color;
+    ctx.beginPath();
+    ctx.arc(x, y, radius, 0, Math.PI * 2);
+    ctx.fill();
+  }
+
+  function ring(ctx, x, y, radius, color, weight = 1.5) {
+    ctx.lineWidth = weight;
+    ctx.strokeStyle = color;
+    ctx.beginPath();
+    ctx.arc(x, y, radius, 0, Math.PI * 2);
+    ctx.stroke();
+  }
+
+  function backdrop(ctx, s) {
+    const gradient = ctx.createLinearGradient(0, 0, width, height);
+    gradient.addColorStop(0, '#0f1939');
+    gradient.addColorStop(.56, '#202044');
+    gradient.addColorStop(1, '#291944');
+    ctx.fillStyle = gradient;
+    ctx.fillRect(0, 0, width, height);
+    const haze = ctx.createRadialGradient(239, 134, 5, 239, 134, 205);
+    haze.addColorStop(0, '#60529385');
+    haze.addColorStop(.60, '#462c6736');
+    haze.addColorStop(1, '#15183700');
+    ctx.fillStyle = haze;
+    ctx.fillRect(0, 0, width, height);
+    for (const star of stars) {
+      ctx.fillStyle = star.large ? '#d8d4fdb9' : '#9dabd16a';
+      ctx.fillRect(star.x, (star.y + s.elapsed * star.speed) % height, star.large ? 1.7 : 1, star.large ? 4.7 : 1.6);
+    }
+    ctx.strokeStyle = '#ada0e31e';
+    for (const x of [26,75,116,244,285,334]) {
+      ctx.beginPath();
+      ctx.moveTo((x - width / 2) * .53 + width / 2, 59);
+      ctx.lineTo(x, height);
+      ctx.stroke();
+    }
+  }
+
+  function drawEnemy(ctx, enemy) {
+    const type = enemyTypes[enemy.kind];
+    ctx.save();
+    ctx.translate(enemy.x, enemy.y);
+    if (enemy.kind === 'boss') {
+      polygon(ctx, [[-53,-7],[-43,-23],[-19,-17],[0,-31],[19,-17],[43,-23],[53,-7],[45,13],[20,18],[0,31],[-20,18],[-45,13]], '#c27ec8');
+      polygon(ctx, [[-48,-5],[-28,-10],[-20,9],[-5,14],[0,26],[5,14],[20,9],[28,-10],[48,-5],[39,9],[24,15],[0,27],[-24,15],[-39,9]], '#f795bc');
+      polygon(ctx, [[-14,-16],[0,-25],[14,-16],[20,4],[0,23],[-20,4]], '#5b497e');
+      disk(ctx, 0, -1, 7.5, '#ffe2c5');
+      disk(ctx, 0, -1, 4, '#fa85bc');
+    } else if (enemy.kind === 'wing') {
+      polygon(ctx, [[-19,-7],[-6,-5],[0,-14],[6,-5],[19,-7],[16,7],[0,13],[-16,7]], type.color);
+      polygon(ctx, [[0,-6],[6,3],[0,9],[-6,3]], '#534270');
+    } else if (enemy.kind === 'tank') {
+      polygon(ctx, [[-20,-10],[-10,-16],[10,-16],[20,-10],[20,8],[9,14],[-9,14],[-20,8]], '#9c647f');
+      polygon(ctx, [[-15,-9],[-8,-13],[8,-13],[15,-9],[12,9],[0,14],[-12,9]], type.color);
+      ctx.fillStyle = '#794572';
+      ctx.fillRect(-6,-3,12,6);
+    } else {
+      polygon(ctx, [[0,-11],[13,-6],[10,3],[0,12],[-10,3],[-13,-6]], type.color);
+      polygon(ctx, [[0,-5],[5,0],[0,5],[-5,0]], '#9a5a79');
+    }
+    if (enemy.kind === 'boss' || enemy.hp < type.hp) {
+      const wide = enemy.kind === 'boss' ? 100 : 27;
+      const y = -type.radius - 8;
+      ctx.fillStyle = '#3d2d57';
+      ctx.fillRect(-wide / 2,y,wide,4);
+      ctx.fillStyle = type.color;
+      ctx.fillRect(-wide / 2,y,wide * enemy.hp / type.hp,4);
+    }
+    ctx.restore();
+  }
+
+  function drawShip(ctx, s, ship, seat, mySeat) {
+    ctx.save();
+    ctx.translate(ship.x, ship.y);
+    const color = ink[seat];
+    if (!ship.hp) {
+      ring(ctx, 0, 0, 21, color + '88', 1.4);
+      ctx.strokeStyle = '#b0fae0';
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.arc(0, 0, 24, -Math.PI / 2, (ship.rescue / 1.25 * 2 - .5) * Math.PI);
+      ctx.stroke();
+      ctx.fillStyle = color;
+      ctx.textAlign = 'center';
+      ctx.font = '700 11px system-ui, sans-serif';
+      ctx.fillText('SOS', 0, 4);
+      ctx.restore();
+      return;
+    }
+    const flame = 10 + Math.sin(s.elapsed * 44 + seat) * 4;
+    polygon(ctx, [[-6,10],[6,10],[0,14+flame]], color + '8f');
+    polygon(ctx, [[-3,11],[3,11],[0,15+flame*.46]], '#fff8d9');
+    if (ship.safe > 0) ring(ctx, 0, 0, 21, color + '82');
+    polygon(ctx, [[0,-19],[6,-8],[15,2],[16,12],[6,8],[0,12],[-6,8],[-16,12],[-15,2],[-6,-8]], color);
+    polygon(ctx, [[0,-11],[6,2],[0,8],[-6,2]], '#414675');
+    polygon(ctx, [[0,-9],[2,-2],[0,2],[-2,-2]], '#eaffff');
+    if (seat === mySeat) {
+      ctx.strokeStyle = color;
+      ctx.lineWidth = 1;
+      ctx.strokeRect(-11, 24, 22, 3);
+      ctx.fillStyle = color;
+      ctx.fillRect(-11, 24, 22 * ship.hp / 3, 3);
+    }
+    ctx.restore();
+  }
+
+  function draw(ctx, s, seat) {
+    ctx.save();
+    backdrop(ctx, s);
+    for (const shot of s.shots) {
+      ctx.fillStyle = ink[shot.seat];
+      ctx.fillRect(shot.x - 1.65, shot.y, 3.3, 10);
+      ctx.fillStyle = '#fff7db';
+      ctx.fillRect(shot.x - .6, shot.y, 1.2, 4.5);
+    }
+    for (const shot of s.threats) {
+      disk(ctx, shot.x, shot.y, 5.5, '#e980b475');
+      disk(ctx, shot.x, shot.y, 3, '#ffb2c9');
+      disk(ctx, shot.x, shot.y, 1.3, '#ffe5de');
+    }
+    for (const enemy of s.enemies) drawEnemy(ctx, enemy);
+    for (const gem of s.drops) {
+      disk(ctx, gem.x, gem.y, 12, '#83f4ce49');
+      polygon(ctx, [[gem.x,gem.y-8],[gem.x+6,gem.y],[gem.x,gem.y+8],[gem.x-6,gem.y]], '#b1f8d5');
+    }
+    for (const item of s.sparks) {
+      ctx.globalAlpha = item.time / .42;
+      ring(ctx, item.x, item.y, 5 + (1 - ctx.globalAlpha) * 19, item.color);
+    }
+    ctx.globalAlpha = 1;
+    s.ships.forEach((ship, index) => drawShip(ctx, s, ship, index, seat));
+    if (s.glow > 0) {
+      ctx.globalAlpha = .75 * s.glow;
+      ring(ctx, width / 2, 438, 12 + (1 - s.glow / .65) * 490, '#acffec', 4);
+      ctx.globalAlpha = 1;
+    }
+    ctx.fillStyle = '#151733e0';
+    ctx.fillRect(0, 0, width, 52);
+    ctx.fillStyle = '#d4d7ee';
+    ctx.font = '700 11px system-ui, sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText('第 ' + s.wave + ' 波 · ' + s.score + ' 分', width / 2, 19);
+    ctx.fillStyle = '#443859';
+    ctx.fillRect(117, 30, 126, 4);
+    ctx.fillStyle = s.pulse >= 1 ? '#fff1b9' : '#bca5f8';
+    ctx.fillRect(117, 30, 126 * s.pulse, 4);
+    ctx.font = '500 10px system-ui, sans-serif';
+    ctx.fillText(s.pulse >= 1 ? '脉冲就绪' : '双人脉冲', width / 2, 46);
+    for (const [index, ship] of s.ships.entries()) {
+      const x = index === 0 ? 15 : width - 63;
+      for (let i = 0; i < 3; i++) {
+        ctx.fillStyle = ship.hp > i ? ink[index] : '#494263';
+        ctx.fillRect(x + i * 15, 14, 10, 7);
+      }
+      ctx.fillStyle = ink[index];
+      ctx.textAlign = 'left';
+      ctx.fillText((index + 1) + 'P', x, 36);
+    }
+    if (s.phase === 'brief' || s.done) {
+      ctx.fillStyle = '#251c3be8';
+      ctx.fillRect(38, 188, width - 76, 89);
+      ctx.strokeStyle = '#ae91c4';
+      ctx.strokeRect(38.5, 188.5, width - 77, 88);
+      ctx.fillStyle = '#fff1d4';
+      ctx.textAlign = 'center';
+      ctx.font = '700 22px system-ui, sans-serif';
+      const title = s.done ? (s.won ? '星航守住了' : '双舰失去动力') : ['穿越星尘','穿过拦截线','最后防线'][s.wave - 1];
+      ctx.fillText(title, width / 2, 226);
+      ctx.font = '500 12px system-ui, sans-serif';
+      ctx.fillStyle = '#d7c4ec';
+      ctx.fillText(s.done ? s.score + ' 分 · 援救 ' + s.revived + ' 次' : '拖动战机 · 自动发射', width / 2, 253);
+    }
+    ctx.restore();
+  }
+
+  return {
+    size: [width, height],
+    control: 'drag',
+    actionLabel: '脉冲',
+    how: '拖动战机，自动发射。靠近失去动力的搭档可以援救，充满能量后按「脉冲」清除弹幕。',
+    create,
+    tick,
+    draw,
+    status(s) {
+      if (s.done) return s.won ? '航线已守住' : '双舰失去动力';
+      return '第 ' + s.wave + ' / ' + formations.length + ' 波 · ' + s.score + ' 分' +
+        (s.ships.some(ship => !ship.hp) ? ' · 靠近 SOS 援救' : '');
+    },
+    summary(s) {
+      return (s.won ? '守住航线' : '抵达第 ' + s.wave + ' 波') + ' · ' + s.score + ' 分 · 援救 ' + s.revived + ' 次';
+    },
+  };
+})();
+
+const toyTanks = (() => {
+  const size = [720, 480];
+  const [width, height] = size;
+  const radius = 16;
+  const colors = ['#ffadb4', '#9ae1c6'];
+  const trim = ['#9f567c', '#407d7c'];
+  const positions = [[67,240],[653,240]];
+  const pickups = [[360,240],[360,63],[360,417],[196,240],[524,240]];
+  const walls = [
+    [128,82,100,22], [492,376,100,22], [128,376,100,22], [492,82,100,22],
+    [148,150,23,76], [549,254,23,76], [148,254,23,76], [549,150,23,76],
+    [298,133,124,22], [298,325,124,22], [252,205,23,70], [445,205,23,70],
+  ];
+  const foam = [
+    [241,100,29,29], [450,351,29,29], [241,351,29,29], [450,100,29,29],
+    [297,49,30,30], [393,401,30,30], [393,49,30,30], [297,401,30,30],
+    [314,190,30,30], [376,260,30,30], [376,190,30,30], [314,260,30,30],
+  ];
+  const clamp = (value, min, max) => Math.max(min, Math.min(max, value));
+
+  function newPlayers() {
+    return positions.map(([x,y], seat) => ({ x,y,angle:seat ? Math.PI : 0,cool:0,boost:0 }));
+  }
+
+  function newBlocks() {
+    const toBlock = (coords, soft) => coords.map(([x,y,w,h])=>({ x,y,w,h,soft }));
+    return [...toBlock(walls,false),...toBlock(foam,true)];
+  }
+
+  function create() {
+    return { players:newPlayers(), blocks:newBlocks(), bubbles:[], scores:[0,0], round:0, phase:'play', resetIn:0,
+      pickup:{x:360,y:240,cooldown:0,index:0}, spark:null, clock:0, done:false, winner:null };
+  }
+
+  function meets(block, x, y, padding) {
+    const nearestX = clamp(x,block.x,block.x+block.w);
+    const nearestY = clamp(y,block.y,block.y+block.h);
+    return (x-nearestX)**2+(y-nearestY)**2 < padding**2;
+  }
+
+  function moveTank(state, seat, input, dt) {
+    const player = state.players[seat];
+    const other = state.players[1-seat];
+    const rawX = Number.isFinite(input?.x) ? clamp(input.x,-1,1) : 0;
+    const rawY = Number.isFinite(input?.y) ? clamp(input.y,-1,1) : 0;
+    const x = input?.active === false ? 0 : rawX;
+    const y = input?.active === false ? 0 : rawY;
+    const distance = Math.hypot(x,y);
+    player.cool = Math.max(0,player.cool-dt);
+    player.boost = Math.max(0,player.boost-dt);
+    if (distance > .12) {
+      player.angle = Math.atan2(y,x);
+      const stride = (player.boost ? 226 : 174) * dt / Math.max(1,distance);
+      const isOpen = (nextX,nextY) => Math.hypot(nextX-other.x,nextY-other.y) >= radius*1.85 &&
+        !state.blocks.some(block=>meets(block,nextX,nextY,radius));
+      const nextX = clamp(player.x+x*stride,radius+4,width-radius-4);
+      const nextY = clamp(player.y+y*stride,radius+4,height-radius-4);
+      if (isOpen(nextX,player.y)) player.x = nextX;
+      if (isOpen(player.x,nextY)) player.y = nextY;
+    }
+    if (!input?.fire || player.cool > 0) return;
+    player.cool = player.boost ? .25 : .46;
+    const dx = Math.cos(player.angle), dy = Math.sin(player.angle);
+    state.bubbles.push({ x:player.x+dx*13,y:player.y+dy*13,dx,dy,seat,life:1.12 });
+  }
+
+  function tag(state, projectile) {
+    const { seat } = projectile;
+    state.scores[seat]++;
+    state.spark = { x:projectile.x,y:projectile.y,seat,life:.52 };
+    state.bubbles = [];
+    if (state.scores[seat] >= 3) {
+      state.done = true;
+      state.winner = seat;
+    } else {
+      state.phase = 'reset';
+      state.resetIn = .95;
+    }
+  }
+
+  function moveBubbles(state, dt) {
+    const surviving = [];
+    for (const projectile of state.bubbles) {
+      projectile.life -= dt;
+      projectile.x += projectile.dx*350*dt;
+      projectile.y += projectile.dy*350*dt;
+      if (projectile.life <= 0 || projectile.x < 4 || projectile.x > width-4 || projectile.y < 4 || projectile.y > height-4) continue;
+      const obstacle = state.blocks.findIndex(block=>meets(block,projectile.x,projectile.y,6));
+      if (obstacle >= 0) {
+        if (state.blocks[obstacle].soft) {
+          state.blocks.splice(obstacle,1);
+          state.spark = { x:projectile.x,y:projectile.y,seat:projectile.seat,life:.26 };
+        }
+        continue;
+      }
+      const other = state.players[1-projectile.seat];
+      if (Math.hypot(projectile.x-other.x,projectile.y-other.y) < radius+5) {
+        tag(state,projectile);
+        return;
+      }
+      surviving.push(projectile);
+    }
+    state.bubbles = surviving;
+  }
+
+  function tick(state, inputs, delta) {
+    if (state.done) return state;
+    const dt = Number.isFinite(delta) ? clamp(delta,0,.028) : 0;
+    if (!dt) return state;
+    state.clock += dt;
+    if (state.spark) {
+      state.spark.life -= dt;
+      if (state.spark.life <= 0) state.spark = null;
+    }
+    if (state.phase === 'reset') {
+      state.resetIn -= dt;
+      if (state.resetIn <= 0) {
+        state.phase = 'play';
+        state.round++;
+        state.resetIn = 0;
+        state.players = newPlayers();
+        state.blocks = newBlocks();
+        state.pickup = {x:360,y:240,cooldown:0,index:0};
+      }
+      return state;
+    }
+    for (let seat=0;seat<2;seat++) moveTank(state,seat,inputs?.[seat],dt);
+    moveBubbles(state,dt);
+    if (state.phase !== 'play' || state.done) return state;
+    const prize = state.pickup;
+    if (prize.cooldown > 0) {
+      prize.cooldown = Math.max(0,prize.cooldown-dt);
+    } else {
+      const collector = state.players.find(player=>Math.hypot(player.x-prize.x,player.y-prize.y)<radius+13);
+      if (collector) {
+        collector.boost = 3.8;
+        prize.cooldown = 6;
+        prize.index = (prize.index+1)%pickups.length;
+        [prize.x,prize.y] = pickups[prize.index];
+      }
+    }
+    return state;
+  }
+
+  function panel(ctx,x,y,w,h,r,fill) {
+    ctx.fillStyle = fill;
+    ctx.beginPath();
+    ctx.roundRect(x,y,w,h,r);
+    ctx.fill();
+  }
+
+  function disc(ctx,x,y,r,fill) {
+    ctx.fillStyle=fill;
+    ctx.beginPath();
+    ctx.arc(x,y,r,0,Math.PI*2);
+    ctx.fill();
+  }
+
+  function star(ctx,x,y,r) {
+    ctx.beginPath();
+    for(let index=0;index<10;index++) {
+      const angle=index*Math.PI/5-Math.PI/2;
+      const length=index%2 ? r*.47 : r;
+      const px=x+Math.cos(angle)*length, py=y+Math.sin(angle)*length;
+      if(index===0) ctx.moveTo(px,py); else ctx.lineTo(px,py);
+    }
+    ctx.closePath();ctx.fill();
+  }
+
+  function drawTank(ctx,player,seat,mine,time) {
+    ctx.save();
+    ctx.translate(player.x,player.y);
+    if (mine || player.boost>0) {
+      ctx.strokeStyle=player.boost>0?'#ffce84':colors[seat];
+      ctx.lineWidth=2;
+      ctx.setLineDash(player.boost>0 ? [5,5] : []);
+      ctx.lineDashOffset=-time*30;
+      ctx.beginPath();
+      ctx.arc(0,0,24,0,Math.PI*2);
+      ctx.stroke();
+      ctx.setLineDash([]);
+    }
+    ctx.rotate(player.angle);
+    panel(ctx,-17,-16,33,34,8,'#140f227f');
+    panel(ctx,-15,-15,28,9,4,trim[seat]);
+    panel(ctx,-15,6,28,9,4,trim[seat]);
+    for(let x=-10;x<=9;x+=6) {
+      panel(ctx,x,-14,2,5,1,'#f8e8eb69');
+      panel(ctx,x,8,2,5,1,'#f8e8eb69');
+    }
+    panel(ctx,-14,-10,28,20,7,colors[seat]);
+    panel(ctx,1,-4,23,8,4,'#fff1dc');
+    disc(ctx,1,0,7,trim[seat]);
+    disc(ctx,0,-1,4,colors[seat]);
+    disc(ctx,20,0,4,'#fff1dc');
+    ctx.restore();
+  }
+
+  function draw(ctx,state,seat) {
+    ctx.save();
+    const floor=ctx.createLinearGradient(0,0,width,height);
+    floor.addColorStop(0,'#302346');floor.addColorStop(1,'#242138');
+    ctx.fillStyle=floor;ctx.fillRect(0,0,width,height);
+    for(let y=20;y<height;y+=24) for(let x=20;x<width;x+=24) disc(ctx,x,y,1.15,'#a18cb82b');
+    ctx.strokeStyle='#d1aec161';ctx.lineWidth=3;
+    ctx.beginPath();ctx.roundRect(7,7,width-14,height-14,18);ctx.stroke();
+    for(const [index,[x,y]] of positions.entries()) {
+      disc(ctx,x,y,34,`${colors[index]}21`);disc(ctx,x,y,25,`${colors[index]}22`);
+    }
+    for(const block of state.blocks) {
+      const {x,y,w,h,soft}=block;
+      panel(ctx,x,y+3,w,h,5,'#130e24a3');
+      panel(ctx,x,y,w,h,5,soft?'#d9968e':'#5e547f');
+      panel(ctx,x+3,y+3,w-6,Math.min(5,h-6),2,soft?'#f1bcaa':'#887b9f');
+      if (soft) {
+        disc(ctx,x+w/2,y+h/2+3,4,'#935a78');
+        disc(ctx,x+w/2-1,y+h/2+2,2,'#f4bbad');
+      }
+    }
+    if(state.pickup.cooldown<=0) {
+      const {x,y}=state.pickup;
+      disc(ctx,x,y,16+Math.sin(state.clock*5)*2,'#ffce8240');
+      ctx.fillStyle='#ffcf75';star(ctx,x,y,12);
+    }
+    for(const ball of state.bubbles) {
+      disc(ctx,ball.x-ball.dx*8,ball.y-ball.dy*8,4,`${colors[ball.seat]}55`);
+      disc(ctx,ball.x,ball.y,6,colors[ball.seat]);
+      disc(ctx,ball.x-2,ball.y-2,2,'#fff4df');
+    }
+    state.players.forEach((player,index)=>drawTank(ctx,player,index,index===seat,state.clock));
+    if(state.spark) {
+      const flash=state.spark;
+      const stretch=30-flash.life*32;
+      for(let i=0;i<8;i++) {
+        const angle=i*Math.PI/4;
+        disc(ctx,flash.x+Math.cos(angle)*stretch,flash.y+Math.sin(angle)*stretch,2+flash.life*4,colors[flash.seat]);
+      }
+    }
+    if(state.phase==='reset' || state.done) {
+      panel(ctx,242,209,236,62,17,'#211a34e6');
+      ctx.fillStyle='#fff0e3';ctx.font='700 27px system-ui,sans-serif';ctx.textAlign='center';ctx.textBaseline='middle';
+      ctx.fillText(state.done ? `玩家 ${state.winner+1} 获胜` : `${state.scores[0]}  ·  ${state.scores[1]}`,width/2,241);
+    }
+    ctx.restore();
+  }
+
+  return {
+    size,create,tick,draw,control:'stick',actionLabel:'泡沫球',
+    how:'拖动方向杆驾驶，按住泡沫球按钮出手。软积木可打散，金星会短暂加速。先拿到 3 分获胜。',
+    status:state=>`${state.scores[0]} : ${state.scores[1]} · 先得 3 分`,
+    summary:state=>`玩家 ${state.winner+1}以 ${state.scores[0]} : ${state.scores[1]} 赢得了玩具坦克赛。`,
+  };
+})();
+
+const bubbleRivals=(()=>{
+  const cols=11,rows=11,cell=38,edge=16,W=cols*cell+edge*2,H=rows*cell+edge*2;
+  const colors=['#95edd1','#ff9eb4'];
+  const starts=[[1,1],[9,9]];
+  const around=[[1,0],[-1,0],[0,1],[0,-1]];
+  const index=(x,y)=>y*cols+x;
+  const pos=p=>[Math.floor(p.x),Math.floor(p.y)];
+  const inside=(x,y)=>x>0&&y>0&&x<cols-1&&y<rows-1;
+  const makePlayer=([x,y])=>({x:x+.5,y:y+.5,reach:2,capacity:1,speed:3.6,alive:true,pressed:false});
+  function board(round){
+    const grid=Array.from({length:cols*rows},(_,i)=>{
+      const x=i%cols,y=Math.floor(i/cols);
+      if(!inside(x,y)||x%2===0&&y%2===0)return 2;
+      return 0;
+    });
+    for(let y=1;y<rows-1;y++)for(let x=1;x<cols-1;x++){
+      if(y*cols+x>index(10-x,10-y)||grid[index(x,y)]||starts.some(([sx,sy])=>Math.abs(x-sx)+Math.abs(y-sy)<=2))continue;
+      if(Math.random()<.57){grid[index(x,y)]=1;grid[index(10-x,10-y)]=1;}
+    }
+    return {grid,players:starts.map(makePlayer),bubbles:[],waves:[],drops:[],clock:0,round,between:1.25};
+  }
+  function create(){return {...board(1),scores:[0,0],done:false,winner:null,last:null};}
+  function move(s,p,dx,dy,dt){
+    const magnitude=Math.hypot(dx,dy);
+    if(!magnitude)return;
+    dx/=Math.max(1,magnitude);dy/=Math.max(1,magnitude);
+    const r=.29;
+    function free(x,y){
+      for(const [a,b] of [[-r,-r],[r,-r],[-r,r],[r,r]]){
+        const gx=Math.floor(x+a),gy=Math.floor(y+b);
+        if(s.grid[index(gx,gy)]!==0)return false;
+        if(s.bubbles.some(q=>q.x===gx&&q.y===gy&&!q.pass.includes(p.id)))return false;
+      }
+      return true;
+    }
+    const newX=p.x+dx*p.speed*dt,newY=p.y+dy*p.speed*dt;
+    if(free(newX,p.y))p.x=newX;
+    if(free(p.x,newY))p.y=newY;
+  }
+  function blast(s,b){
+    const impact=[[b.x,b.y]];
+    for(const [dx,dy] of around)for(let step=1;step<=b.reach;step++){
+      const x=b.x+dx*step,y=b.y+dy*step,k=index(x,y);
+      if(s.grid[k]===2||!inside(x,y))break;
+      impact.push([x,y]);
+      const other=s.bubbles.find(q=>q.x===x&&q.y===y);
+      if(other)other.time=0;
+      if(s.grid[k]===1){
+        s.grid[k]=0;
+        if(s.drops.length<26&&Math.random()<.39)s.drops.push({x,y,kind:Math.floor(Math.random()*3)});
+        break;
+      }
+    }
+    s.waves.push({cells:impact,time:.43,seat:b.seat});
+  }
+  function resolve(s,winner){
+    if(winner!==null)s.scores[winner]++;
+    s.last=winner;s.between=1.45;
+    if(winner!==null&&s.scores[winner]>=3){s.done=true;s.winner=winner;}
+  }
+  function tick(s,inputs,dt){
+    if(s.done)return s;
+    if(s.between>0){
+      s.between=Math.max(0,s.between-dt);
+      if(s.between===0&&s.players.some(p=>!p.alive))return {...s,...board(s.round+1),between:.85};
+      return s;
+    }
+    s.clock+=dt;
+    for(const [i,p] of s.players.entries()){
+      p.id=i;
+      if(!p.alive)continue;
+      const data=inputs[i]||{};
+      move(s,p,Number(data.x)||0,Number(data.y)||0,dt);
+      const [x,y]=pos(p);
+      for(const q of s.bubbles){
+        if(q.pass.includes(i)&&(Math.abs(p.x-q.x-.5)>.79||Math.abs(p.y-q.y-.5)>.79))q.pass=q.pass.filter(v=>v!==i);
+      }
+      if(data.fire&&!p.pressed&&s.bubbles.filter(b=>b.seat===i).length<p.capacity&&!s.bubbles.some(b=>b.x===x&&b.y===y)){
+        const pass=s.players.reduce((seats,player,id)=>{const [px,py]=pos(player);if(px===x&&py===y)seats.push(id);return seats;},[]);
+        s.bubbles.push({x,y,seat:i,time:2.07,reach:p.reach,pass});
+      }
+      p.pressed=!!data.fire;
+      const found=s.drops.findIndex(d=>d.x===x&&d.y===y&&!s.waves.some(w=>w.cells.some(([a,b])=>a===x&&b===y)));
+      if(found>=0){
+        const [item]=s.drops.splice(found,1);
+        if(item.kind===0)p.reach=Math.min(5,p.reach+1);
+        if(item.kind===1)p.capacity=Math.min(4,p.capacity+1);
+        if(item.kind===2)p.speed=Math.min(5.4,p.speed+.6);
+      }
+    }
+    s.bubbles.forEach(b=>{b.time-=dt;});
+    let due=s.bubbles.findIndex(b=>b.time<=0);
+    while(due>=0){
+      const [bubble]=s.bubbles.splice(due,1);blast(s,bubble);
+      due=s.bubbles.findIndex(b=>b.time<=0);
+    }
+    s.waves=s.waves.filter(w=>(w.time-=dt)>0);
+    for(const p of s.players){
+      const [x,y]=pos(p);
+      if(s.waves.some(w=>w.cells.some(([a,b])=>a===x&&b===y)))p.alive=false;
+    }
+    if(s.clock>52){
+      const radius=Math.min(4,Math.floor((s.clock-52)/4));
+      for(const p of s.players){
+        const [x,y]=pos(p);
+        if(Math.min(x,y,cols-1-x,rows-1-y)<=radius)p.alive=false;
+      }
+    }
+    if(s.players.some(p=>!p.alive)){
+      const left=s.players.findIndex(p=>p.alive);resolve(s,left<0?null:left);
+    }
+    return s;
+  }
+  function rect(ctx,x,y,w,h,color,r=5){
+    ctx.fillStyle=color;ctx.beginPath();ctx.roundRect(x,y,w,h,r);ctx.fill();
+  }
+  function dot(ctx,x,y,r,color){
+    ctx.fillStyle=color;ctx.beginPath();ctx.arc(x,y,r,0,2*Math.PI);ctx.fill();
+  }
+  function draw(ctx,s,seat){
+    ctx.fillStyle='#151126';ctx.fillRect(0,0,W,H);
+    rect(ctx,8,8,W-16,H-16,'#48375d',15);
+    for(let y=0;y<rows;y++)for(let x=0;x<cols;x++){
+      const a=edge+x*cell,b=edge+y*cell,kind=s.grid[index(x,y)];
+      rect(ctx,a+1,b+1,cell-2,cell-2,(x+y)%2?'#2c2241':'#302649',4);
+      if(kind===2){
+        rect(ctx,a+2,b+2,cell-4,cell-4,'#413662',6);
+        rect(ctx,a+6,b+6,cell-12,cell-16,'#625382',5);
+        rect(ctx,a+11,b+9,16,2,'#8e7ca8',1);
+      }else if(kind===1){
+        rect(ctx,a+3,b+4,cell-6,cell-6,'#78466f',7);
+        rect(ctx,a+5,b+4,cell-10,cell-11,'#c3899c',6);
+        rect(ctx,a+9,b+12,20,2,'#ebafad',2);rect(ctx,a+9,b+21,20,2,'#a56883',2);
+      }
+      if(s.clock>56&&Math.min(x,y,cols-1-x,rows-1-y)<=Math.floor((s.clock-52)/4))rect(ctx,a+1,b+1,cell-2,cell-2,'#f56c7c70',4);
+    }
+    for(const item of s.drops){
+      const palette=['#ffca8e','#95e5cb','#d5a8fc'];
+      const x=edge+(item.x+.5)*cell,y=edge+(item.y+.5)*cell;
+      dot(ctx,x,y,11,palette[item.kind]);
+      ctx.fillStyle='#382d50';ctx.textAlign='center';ctx.font='700 13px sans-serif';ctx.fillText(['↔','+','»'][item.kind],x,y+4);
+    }
+    for(const b of s.bubbles){
+      const x=edge+(b.x+.5)*cell,y=edge+(b.y+.52)*cell;
+      dot(ctx,x,y,14,b.time<.55?'#ffa9ae':colors[b.seat]);dot(ctx,x-4,y-5,4,'#fff5ed');dot(ctx,x+9,y-10,3,'#ffe09c');
+    }
+    for(const w of s.waves){
+      ctx.globalAlpha=.32+Math.min(.62,w.time);
+      for(const [x,y] of w.cells){
+        rect(ctx,edge+x*cell+3,edge+y*cell+3,cell-6,cell-6,colors[w.seat],10);
+        dot(ctx,edge+(x+.5)*cell,edge+(y+.5)*cell,8,'#fff4c9');
+      }
+      ctx.globalAlpha=1;
+    }
+    for(const [i,p] of s.players.entries()){
+      if(!p.alive)continue;
+      const x=edge+p.x*cell,y=edge+p.y*cell;
+      if(seat===i)dot(ctx,x,y,16,'#fff4d6');
+      dot(ctx,x,y,13,colors[i]);dot(ctx,x-4,y-2,1.75,'#36263a');dot(ctx,x+4,y-2,1.75,'#36263a');
+      dot(ctx,x,y+4,2.3,'#5d3b55');
+    }
+    if(s.between>0||s.done){
+      rect(ctx,W*.18,H*.42,W*.64,H*.14,'#1e1734e8',13);
+      ctx.fillStyle='#fff2d7';ctx.textAlign='center';ctx.font='700 20px system-ui';
+      ctx.fillText(s.done?'对局结束':s.players.some(p=>!p.alive)?s.last===null?'同归于尽':`玩家 ${s.last+1} 得分`:`第 ${s.round} 轮`,W/2,H*.505);
+    }
+  }
+  return {size:[W,H],create,tick,draw,control:'stick',actionLabel:'放泡泡',how:'方向盘移动 · 放泡泡卡路线 · 先赢三轮',
+    status:s=>`${s.scores.join(' ︱ ')} · 第 ${s.round} 轮`,summary:s=>`玩家 ${s.winner+1} 赢下泡泡对战，比分 ${s.scores.join(' : ')}。`};
+})();
+
+const airHockey = (() => {
+  const width = 420;
+  const height = 650;
+  const edge = 16;
+  const puckRadius = 12;
+  const paddleRadius = 30;
+  const goalLeft = 133;
+  const goalRight = 287;
+  const colors = ['#71eafa', '#ff917f'];
+  const names = ['蓝方', '橙方'];
+  const reducedMotion = globalThis.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
+  let tableLayer;
+  const clamp = (value, lo, hi) => Math.max(lo, Math.min(hi, value));
+
+  function player(seat) {
+    const x = width / 2;
+    const y = seat === 0 ? height - 105 : 105;
+    return { x, y, vx: 0, vy: 0, tx: x, ty: y };
+  }
+
+  function newPuck(seat) {
+    return { x: width / 2, y: height / 2 + (seat === 0 ? 74 : -74), vx: 0, vy: 0 };
+  }
+
+  function create() {
+    return {
+      done: false, winner: null, scores: [0, 0], paddles: [player(0), player(1)],
+      puck: newPuck(0), serving: 0, pause: .55, rally: 0, elapsed: 0, impact: null, idle: 0,
+    };
+  }
+
+  function scored(state, seat) {
+    const scores = state.scores;
+    scores[seat]++;
+    state.impact = { x: state.puck.x, y: seat === 0 ? edge + 2 : height - edge - 2, seat, kind: 'goal', at: state.elapsed };
+    state.rally++;
+    if (scores[seat] >= 11 || scores[seat] >= 7 && scores[seat] - scores[1 - seat] >= 2) {
+      state.done = true;
+      state.winner = seat;
+      return;
+    }
+    state.serving = 1 - seat;
+    state.puck = newPuck(state.serving);
+    state.paddles = [player(0), player(1)];
+    state.pause = .85;
+    state.idle = 0;
+  }
+
+  function movePaddles(paddles, inputs, dt, paused) {
+    for (const [seat, paddle] of paddles.entries()) {
+      const input = inputs[seat];
+      const top = seat === 0 ? height / 2 + paddleRadius : edge + paddleRadius;
+      const bottom = seat === 0 ? height - edge - paddleRadius : height / 2 - paddleRadius;
+      if (input?.active && Number.isFinite(input.x) && Number.isFinite(input.y)) {
+        paddle.tx = clamp(input.x * width, edge + paddleRadius, width - edge - paddleRadius);
+        paddle.ty = clamp(input.y * height, top, bottom);
+      }
+      if (paused) continue;
+      const x = clamp(paddle.tx, edge + paddleRadius, width - edge - paddleRadius);
+      const y = clamp(paddle.ty, top, bottom);
+      const dx = x - paddle.x;
+      const dy = y - paddle.y;
+      const distance = Math.hypot(dx, dy);
+      const stride = distance ? Math.min(1, dt * 1160 / distance, dt * 23) : 0;
+      const mx = dx * stride;
+      const my = dy * stride;
+      paddle.x += mx;
+      paddle.y += my;
+      paddle.vx = mx / dt;
+      paddle.vy = my / dt;
+    }
+  }
+
+  function collidePaddle(state, paddle, seat) {
+    const puck = state.puck;
+    const dx = puck.x - paddle.x, dy = puck.y - paddle.y;
+    const minimum = puckRadius + paddleRadius;
+    const distance = Math.hypot(dx, dy);
+    if (distance >= minimum) return;
+    const nx = distance > .001 ? dx / distance : 0;
+    const ny = distance > .001 ? dy / distance : seat === 0 ? -1 : 1;
+    puck.x = paddle.x + nx * (minimum + .04);
+    puck.y = paddle.y + ny * (minimum + .04);
+    const separationSpeed = (puck.vx - paddle.vx) * nx + (puck.vy - paddle.vy) * ny;
+    if (separationSpeed < -8) {
+      const bounce = -1.76 * separationSpeed;
+      puck.vx += bounce * nx;
+      puck.vy += bounce * ny;
+      const speed = Math.hypot(puck.vx, puck.vy);
+      const cap = Math.min(1, 1320 / speed);
+      puck.vx *= cap;
+      puck.vy *= cap;
+      state.impact = { x: puck.x, y: puck.y, seat, kind: 'paddle', at: state.elapsed };
+    }
+  }
+
+  function collideCushion(state) {
+    const puck = state.puck;
+    const apertureLeft = goalLeft + puckRadius;
+    const apertureRight = goalRight - puckRadius;
+    const goalLane = puck.x >= apertureLeft && puck.x <= apertureRight;
+    const left = edge + puckRadius, right = width - left;
+    const near = edge + puckRadius, far = height - near;
+    if (puck.x < left || puck.x > right) {
+      puck.x = clamp(puck.x, left, right);
+      puck.vx = Math.abs(puck.vx) * (puck.x === left ? .88 : -.88);
+      if (Math.abs(puck.vx) > 170) state.impact = { x: puck.x, y: puck.y, seat: null, kind: 'wall', at: state.elapsed };
+    }
+    if (goalLane && (puck.y < edge - puckRadius || puck.y > height - edge + puckRadius)) {
+      scored(state, puck.y < height / 2 ? 0 : 1);
+      return true;
+    }
+    if (!goalLane && (puck.y < near || puck.y > far)) {
+      puck.y = clamp(puck.y, near, far);
+      puck.vy = Math.abs(puck.vy) * (puck.y === near ? .89 : -.89);
+      if (Math.abs(puck.vy) > 170) state.impact = { x: puck.x, y: puck.y, seat: null, kind: 'wall', at: state.elapsed };
+    }
+    return false;
+  }
+
+  function movePuck(state, dt) {
+    const puck = state.puck;
+    puck.x += puck.vx * dt;
+    puck.y += puck.vy * dt;
+    for (const [seat, paddle] of state.paddles.entries()) collidePaddle(state, paddle, seat);
+    if (collideCushion(state)) return;
+    const friction = Math.pow(.91, dt);
+    puck.vx *= friction;
+    puck.vy *= friction;
+    if (Math.hypot(puck.vx, puck.vy) > 13) state.idle = 0;
+    else if ((state.idle += dt) > 4.8) {
+      const target = puck.y < height / 2 ? 1 : 0;
+      puck.vx = state.rally % 2 ? 32 : -32;
+      puck.vy = target === 0 ? 165 : -165;
+      state.idle = 0;
+    }
+  }
+
+  function tick(state, inputs, dt) {
+    if (state.done || !Number.isFinite(dt) || dt <= 0) return state;
+    const elapsed = Math.min(.08, dt);
+    const steps = Math.ceil(elapsed * 160);
+    const step = elapsed / steps;
+    for (let i = 0; i < steps && !state.done; i++) {
+      state.elapsed += step;
+      movePaddles(state.paddles, inputs || [], step, state.pause > 0);
+      if (state.pause > 0) state.pause = Math.max(0, state.pause - step);
+      else movePuck(state, step);
+    }
+    return state;
+  }
+
+  function rounded(ctx, x, y, w, h, r) {
+    ctx.beginPath();
+    ctx.moveTo(x + r, y); ctx.arcTo(x + w, y, x + w, y + h, r);
+    ctx.arcTo(x + w, y + h, x, y + h, r); ctx.arcTo(x, y + h, x, y, r);
+    ctx.arcTo(x, y, x + w, y, r); ctx.closePath();
+  }
+
+  function disc(ctx, x, y, radius) {
+    ctx.beginPath();
+    ctx.arc(x, y, radius, 0, 2 * Math.PI);
+  }
+
+  function table(ctx) {
+    const fill = ctx.createLinearGradient(0, 0, 0, height);
+    fill.addColorStop(0, '#251d3b'); fill.addColorStop(.47, '#0c1931'); fill.addColorStop(1, '#153048');
+    ctx.fillStyle = '#080d1d'; ctx.fillRect(0, 0, width, height);
+    rounded(ctx, 7, 7, width - 14, height - 14, 26);
+    ctx.fillStyle = fill; ctx.fill();
+    ctx.save(); ctx.clip();
+    ctx.strokeStyle = '#a6b0eb1e'; ctx.lineWidth = 1;
+    for (let x = 26; x < width - 10; x += 22) {
+      ctx.beginPath(); ctx.moveTo(x, 19); ctx.lineTo(x, height - 19); ctx.stroke();
+    }
+    for (let y = 39; y < height - 12; y += 22) {
+      ctx.beginPath(); ctx.moveTo(16, y); ctx.lineTo(width - 16, y); ctx.stroke();
+    }
+    ctx.strokeStyle = '#b6c5e967'; ctx.lineWidth = 2;
+    ctx.beginPath(); ctx.moveTo(16, height / 2); ctx.lineTo(width - 16, height / 2); ctx.stroke();
+    disc(ctx, width / 2, height / 2, 58); ctx.stroke();
+    ctx.strokeStyle = '#c1d1ed34'; disc(ctx, width / 2, height / 2, 41); ctx.stroke();
+    ctx.restore();
+
+    rounded(ctx, 8, 8, width - 16, height - 16, 24);
+    ctx.strokeStyle = '#8ba4cf'; ctx.lineWidth = 4; ctx.stroke();
+    rounded(ctx, 15, 15, width - 30, height - 30, 19);
+    ctx.strokeStyle = '#bdc9f246'; ctx.lineWidth = 1.5; ctx.stroke();
+    for (let seat = 0; seat < 2; seat++) {
+      const y = seat === 0 ? height - 24 : 24;
+      const sign = seat === 0 ? -1 : 1;
+      ctx.fillStyle = '#090d1f'; ctx.fillRect(goalLeft, y - 20, goalRight - goalLeft, 40);
+      ctx.fillStyle = colors[seat]; ctx.shadowColor = colors[seat]; ctx.shadowBlur = 16;
+      ctx.fillRect(goalLeft, y - 15, goalRight - goalLeft, 4);
+      ctx.fillRect(goalLeft, y + 11, goalRight - goalLeft, 4);
+      ctx.shadowBlur = 0;
+      ctx.strokeStyle = colors[seat] + '67'; ctx.lineWidth = 2;
+      ctx.beginPath(); ctx.ellipse(width / 2, y + sign * 15, 108, 65, 0, sign > 0 ? 0 : Math.PI, sign > 0 ? Math.PI : 2 * Math.PI);
+      ctx.stroke();
+    }
+  }
+
+  function drawPaddle(ctx, paddle, seat) {
+    const { x, y } = paddle;
+    const accent = colors[seat];
+    const face = ctx.createRadialGradient(x - 10, y - 13, 2, x, y, paddleRadius);
+    face.addColorStop(0, '#dff5ff'); face.addColorStop(.40, accent); face.addColorStop(1, seat === 0 ? '#2b6f91' : '#8f435d');
+    ctx.shadowColor = accent; ctx.shadowBlur = 20;
+    disc(ctx, x, y, paddleRadius); ctx.fillStyle = face; ctx.fill();
+    ctx.shadowBlur = 0;
+    disc(ctx, x, y, paddleRadius - 4); ctx.strokeStyle = '#eaf6ffbc'; ctx.lineWidth = 2; ctx.stroke();
+    disc(ctx, x, y, 12); ctx.fillStyle = seat === 0 ? '#142b4b' : '#512b4d'; ctx.fill();
+    disc(ctx, x, y, 6); ctx.fillStyle = '#f6e8ed'; ctx.fill();
+  }
+
+  function drawPuck(ctx, puck) {
+    const speed = Math.hypot(puck.vx, puck.vy);
+    if (speed > 150 && !reducedMotion) {
+      ctx.strokeStyle = '#f8fcff91'; ctx.lineCap = 'round'; ctx.lineWidth = puckRadius;
+      const tail = Math.min(.052, 42 / speed);
+      ctx.beginPath(); ctx.moveTo(puck.x - puck.vx * tail, puck.y - puck.vy * tail); ctx.lineTo(puck.x, puck.y); ctx.stroke();
+      ctx.lineCap = 'butt';
+    }
+    ctx.shadowColor = '#ffffff'; ctx.shadowBlur = 18;
+    disc(ctx, puck.x, puck.y, puckRadius); ctx.fillStyle = '#fff9dc'; ctx.fill();
+    ctx.shadowBlur = 0;
+    disc(ctx, puck.x, puck.y, puckRadius - 4); ctx.fillStyle = '#f5bf84'; ctx.fill();
+  }
+
+  function drawImpact(ctx, state) {
+    const hit = state.impact;
+    if (!hit) return;
+    const goal = hit.kind === 'goal';
+    const t = clamp((state.elapsed - hit.at) / (goal ? .75 : .32), 0, 1);
+    if (t >= 1) return;
+    ctx.save();
+    ctx.globalAlpha = state.done ? .65 : (1 - t) * .85;
+    ctx.strokeStyle = hit.seat === null ? '#cfbeeb' : colors[hit.seat];
+    ctx.lineWidth = goal ? 4 : 2.5;
+    const animation = reducedMotion ? .12 : t;
+    disc(ctx, hit.x, hit.y, 15 + animation * (goal ? 100 : 44)); ctx.stroke();
+    for (let i = 0; i < (reducedMotion ? 0 : goal ? 12 : 7); i++) {
+      const angle = i * Math.PI * .72 + .32;
+      const x = Math.cos(angle), y = Math.sin(angle), spread = 11 + t * (goal ? 79 : 34);
+      ctx.beginPath(); ctx.moveTo(hit.x + x * spread, hit.y + y * spread);
+      ctx.lineTo(hit.x + x * (spread + 9), hit.y + y * (spread + 9)); ctx.stroke();
+    }
+    ctx.restore();
+  }
+
+  function draw(ctx, state, seat) {
+    ctx.save();
+    if (!tableLayer && typeof document !== 'undefined') {
+      tableLayer = document.createElement('canvas');
+      tableLayer.width = width; tableLayer.height = height;
+      table(tableLayer.getContext('2d'));
+    }
+    if (tableLayer) ctx.drawImage(tableLayer, 0, 0);
+    else table(ctx);
+    ctx.font = '700 48px system-ui'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    for (let i = 0; i < 2; i++) {
+      const y = i === 0 ? height / 2 + 86 : height / 2 - 86;
+      ctx.fillStyle = colors[i] + '8a'; ctx.fillText(state.scores[i], width / 2, y);
+    }
+    drawImpact(ctx, state);
+    drawPuck(ctx, state.puck);
+    state.paddles.forEach((paddle, index) => drawPaddle(ctx, paddle, index));
+    if (state.pause > 0 && !state.done) {
+      rounded(ctx, width / 2 - 62, height / 2 - 20, 124, 40, 13);
+      ctx.fillStyle = '#0b152cdc'; ctx.fill();
+      ctx.font = '600 20px system-ui'; ctx.fillStyle = colors[state.serving];
+      ctx.fillText(`${names[state.serving]}开球`, width / 2, height / 2);
+    }
+    if (seat === 0 || seat === 1) {
+      ctx.font = '600 13px system-ui'; ctx.fillStyle = colors[seat];
+      ctx.fillText('你在这一侧', width - 63, seat === 0 ? height - 34 : 35);
+    }
+    ctx.restore();
+  }
+
+  function status(state) {
+    const score = `${state.scores[0]} : ${state.scores[1]}`;
+    if (state.done) return `${names[state.winner]}获胜 · ${score}`;
+    if (state.pause > 0) return `${score} · ${names[state.serving]}开球`;
+    return `${score} · 蓝方在下，橙方在上`;
+  }
+
+  function summary(state) {
+    return state.winner === null ? status(state) : `${names[state.winner]}获胜，比分 ${state.scores.join(' : ')}。`;
+  }
+
+  return { size: [width, height], create, tick, draw, status, summary, control: 'drag', split: 'vertical',
+    how: '拖动球槌击球。先到 7 分且领先 2 分获胜，11 分封顶。' };
+})();
+
+const liveGames={flight:spaceWave,tanks:toyTanks,bubbles:bubbleRivals,hockey:airHockey};
+const liveArcade=(()=>{
+  const neutral=()=>({x:0,y:0,fire:false,active:false});
+  const clamp=(a,min,max)=>Math.max(min,Math.min(max,a));
+  let live=null;
+  const inputKeys=[{left:'a',right:'d',up:'w',down:'s',fire:'f'},{left:'arrowleft',right:'arrowright',up:'arrowup',down:'arrowdown',fire:'k'}];
+  function packet(input){
+    return {x:clamp(Number(input?.x)||0,-1,1),y:clamp(Number(input?.y)||0,-1,1),fire:input?.fire===true,active:input?.active===true};
+  }
+  function output(state){
+    if(!live)return;
+    const show=live.root.querySelector('[data-live-status]');
+    const text=live.game.status(state);
+    if(show&&show.textContent!==text)show.textContent=text;
+    const connection=live.root.querySelector('[data-live-connection]');
+    const connected=live.connected();
+    if(connection&&connection.hidden!==connected)connection.hidden=connected;
+    if(connection&&!connected&&connection.textContent!=='等搭档连接')connection.textContent='等搭档连接';
+  }
+  function setPad(pointer,event){
+    const local=live.inputs[pointer.seat];
+    if(pointer.kind==='canvas'){
+      const box=live.canvas.getBoundingClientRect();
+      local.x=clamp((event.clientX-box.left)/box.width,0,1);
+      local.y=clamp((event.clientY-box.top)/box.height,0,1);
+      local.active=true;
+      live.aimInitialized[pointer.seat]=true;
+    }
+    if(pointer.kind==='stick'){
+      const box=pointer.element.getBoundingClientRect(), radius=Math.min(box.width,box.height)*.36;
+      const x=(event.clientX-box.left-box.width/2)/radius,y=(event.clientY-box.top-box.height/2)/radius;
+      const length=Math.max(1,Math.hypot(x,y));
+      local.x=x/length;local.y=y/length;local.active=true;
+      pointer.element.style.setProperty('--dx',local.x*26+'px');
+      pointer.element.style.setProperty('--dy',local.y*26+'px');
+    }
+    if(pointer.kind==='fire'){
+      local.fire=true;live.fireUntil[pointer.seat]=performance.now()+125;
+    }
+  }
+  function pointerDown(event){
+    if(!live||event.button>0)return;
+    const control=event.target.closest('[data-live-control]'), onCanvas=event.target===live.canvas;
+    if(!control&&(!onCanvas||live.game.control!=='drag'))return;
+    const kind=control?control.dataset.liveControl:'canvas';
+    let which=control?Number(control.dataset.liveSeat):live.seat;
+    if(onCanvas&&live.local){
+      const rect=live.canvas.getBoundingClientRect();
+      which=live.game.split==='vertical'?(event.clientY-rect.top<rect.height/2?1:0):(event.clientX-rect.left<rect.width/2?0:1);
+    }
+    if([...live.pointers.values()].some(p=>p.kind===kind&&p.seat===which))return;
+    const element=control||live.canvas, track={seat:which,kind,element};
+    live.pointers.set(event.pointerId,track);
+    try{element.setPointerCapture(event.pointerId);}catch{}
+    event.preventDefault();setPad(track,event);
+  }
+  function pointerMove(event){
+    const track=live?.pointers.get(event.pointerId);
+    if(track)setPad(track,event);
+  }
+  function pointerUp(event){
+    const track=live?.pointers.get(event.pointerId);
+    if(!track)return;
+    live.pointers.delete(event.pointerId);
+    const now=live.inputs[track.seat];
+    if(track.kind==='fire')now.fire=false;
+    else if(track.kind==='stick'){
+      now.x=0;now.y=0;now.active=false;
+      track.element.style.setProperty('--dx','0px');track.element.style.setProperty('--dy','0px');
+    }else now.active=false;
+  }
+  function clearInputs(){
+    if(!live)return;
+    live.pointers.clear();live.keys.clear();
+    live.inputs=[neutral(),neutral()];live.fireUntil=[0,0];
+    live.keyMoving=[false,false];live.aimInitialized=[false,false];
+    for(const pad of live.root.querySelectorAll('[data-live-control=stick]')){
+      pad.style.setProperty('--dx','0px');pad.style.setProperty('--dy','0px');
+    }
+  }
+  function readInputs(dt,now){
+    return live.inputs.map((input,i)=>{
+      if(!live.local&&i!==live.seat)return live.remote;
+      const keys=inputKeys[live.local?i:0], arrows=inputKeys[1];
+      const down=key=>live.keys.has(keys[key])||(!live.local&&live.keys.has(arrows[key]));
+      const dx=Number(down('right'))-Number(down('left')),dy=Number(down('down'))-Number(down('up'));
+      if(dx||dy){
+        if(live.game.control==='stick'){input.x=dx;input.y=dy;}
+        else{
+          if(!live.aimInitialized[i]){
+            const start=live.game.split==='vertical'?[.5,i===0?.79:.21]:[i===0?.31:.69,.80];
+            input.x=start[0];input.y=start[1];live.aimInitialized[i]=true;
+          }
+          input.x=clamp(input.x+dx*1.0*dt,0,1);input.y=clamp(input.y+dy*1.0*dt,0,1);
+        }
+        input.active=true;live.keyMoving[i]=true;
+      }else if(live.keyMoving[i]){
+        live.keyMoving[i]=false;
+        if(![...live.pointers.values()].some(p=>p.seat===i&&p.kind!=='fire')){
+          if(live.game.control==='stick'){input.x=0;input.y=0;}
+          input.active=false;
+        }
+      }
+      return {...input,fire:input.fire||down('fire')||(!live.local&&live.keys.has(' '))||now<live.fireUntil[i]};
+    });
+  }
+  function frame(now){
+    if(!live)return;
+    const run=live;
+    const dt=clamp((now-run.last)/1000,0,.065);
+    run.last=now;
+    const inputs=readInputs(dt,now);
+    if((run.local||run.seat===0)&&!run.state.done&&run.connected()){
+      if(!run.local&&now-run.remoteAt>420){run.remote=neutral();inputs[1]=run.remote;}
+      run.accumulator+=dt;
+      while(run.accumulator>=1/60&&!run.state.done){
+        run.state=run.game.tick(run.state,inputs,1/60)||run.state;
+        run.accumulator-=1/60;
+      }
+      if(run.state.done){run.finish(run.state);return;}
+      if(!run.local&&now-run.sent>=53){
+        run.sent=now;run.send({kind:'live-frame',session:run.key,frame:++run.frame,state:run.state});
+      }
+    }else if(!run.local&&run.seat===1&&run.connected()&&now-run.sent>=42){
+      run.sent=now;run.send({kind:'live-input',session:run.key,input:inputs[1]});
+    }
+    run.game.draw(run.ctx,run.state,run.local?null:run.seat);
+    output(run.state);
+    run.raf=requestAnimationFrame(frame);
+  }
+  document.addEventListener('pointerdown',pointerDown,{passive:false});
+  document.addEventListener('pointermove',pointerMove);
+  document.addEventListener('pointerup',pointerUp);
+  document.addEventListener('pointercancel',pointerUp);
+  window.addEventListener('blur',clearInputs);
+  document.addEventListener('visibilitychange',()=>{if(document.hidden)clearInputs();});
+  document.addEventListener('keydown',event=>{
+    if(!live||event.altKey||event.ctrlKey||event.metaKey||event.target.closest?.('input, textarea, select, dialog'))return;
+    const key=event.key.toLowerCase();
+    if(key===' '||inputKeys.some(input=>Object.values(input).includes(key))){event.preventDefault();live.keys.add(key);}
+  });
+  document.addEventListener('keyup',event=>{live?.keys.delete(event.key.toLowerCase());});
+  function reset(){
+    if(!live)return;
+    cancelAnimationFrame(live.raf);clearInputs();live=null;
+  }
+  function sync(root,options){
+    if(!root){reset();return;}
+    if(live?.key===options.key&&live.root===root)return;
+    reset();
+    const canvas=root.querySelector('canvas'),ctx=canvas.getContext('2d');
+    if(!ctx)return;
+    live={...options,root,canvas,ctx,last:performance.now(),accumulator:0,sent:0,remoteAt:0,remote:neutral(),frame:0,
+      inputs:[neutral(),neutral()],keys:new Set(),keyMoving:[false,false],aimInitialized:[false,false],
+      pointers:new Map(),fireUntil:[0,0]};
+    live.raf=requestAnimationFrame(frame);
+  }
+  function receive(message){
+    if(!live||message.session!==live.key)return;
+    if(live.seat===0&&message.kind==='live-input'){live.remote=packet(message.input);live.remoteAt=performance.now();}
+    if(live.seat===1&&message.kind==='live-frame'&&Number.isInteger(message.frame)&&message.frame>live.frame&&message.state&&typeof message.state==='object'){
+      live.frame=message.frame;live.state=message.state;
+    }
+  }
+  return {sync,receive,state:()=>live?.state??null};
+})();
+
+function renderLiveGame(id,s){
+  const g=liveGames[id];
+  if(mode!=='solo'&&mode!=='internet')return `<section class="panel play"><p>实时游戏请使用互联网房间，或在同屏模式玩。</p></section>`;
+  const [width,height]=g.size;
+  const controls=(mode==='solo'?[0,1]:[seat]).map(i=>`<div class="live-pilot live-seat-${i}">${mode==='solo'?'<small>玩家 '+(i+1)+'</small>':''}${g.control==='stick'?`<button class="live-stick" data-live-control="stick" data-live-seat="${i}" aria-label="玩家 ${i+1} 移动"><i></i></button>`:''}${g.actionLabel?`<button class="live-action" data-live-control="fire" data-live-seat="${i}">${g.actionLabel}</button>`:''}</div>`).join('');
+  return `<section class="panel play live-panel" data-live-root data-live-kind="${id}"><div class="live-top"><strong data-live-status>${safe(g.status(s))}</strong><span data-live-connection hidden></span></div><canvas data-live-canvas width="${width}" height="${height}" aria-label="${games[id].name}游戏画面"></canvas>${g.control==='stick'||g.actionLabel?`<div class="live-controls">${controls}</div>`:''}<p class="live-help">${safe(g.how||games[id].rules)}</p></section>`;
+}
+
 const app = document.querySelector('#app');
 const dialog = document.querySelector('#rules-dialog');
 const ruleContent = document.querySelector('#rule-content');
@@ -3658,10 +4998,16 @@ const games = {
   memory:{name:'立体记忆翻牌',icon:'▦',accent:'#b3dbc8',brief:'3D 翻牌桌 · 十六张牌',rules:'每回合翻两张立体牌，配对后留在桌上，下一回合换人。找齐八对即胜利。最多失配十次。',x:52,y:79},
   puzzle:{name:'双星光路',icon:'✦',accent:'#ffc4ac',brief:'3D 管线台 · 三关限步',rules:'两人轮流转动接头，让亮起的光路从蓝色入口连到橙色出口。每关旋转次数有限，接通后进入下一关。',x:19,y:57},
   signal:{name:'双人信号接力',icon:'♫',accent:'#a8ddf2',brief:'3D 灯阵 · 六盏灯 · 三轮接力',rules:'一人观看灯阵依次闪亮，把顺序告诉搭档。搭档按顺序按灯。每关换角色，顺序从四盏增加到六盏，允许失误三次。',x:28,y:82},
-  duel:{name:'积木对决',icon:'▤',accent:'#f3ac80',brief:'3D 外星双墙 · 拆墙与闪躲',rules:'两只外星玩偶各有一面会留下缺口的积木墙。每次换边后有五秒准备。防守者可移动到左、中、右，或每秒换一次姿势。进攻方有三发，点或拖动准心，再按「点射」。命中躯干或四肢后立即换边。双方初始 100 点耐久，头部、躯干、四肢分别扣 100、30、10 点。',x:51,y:18}
+  duel:{name:'积木对决',icon:'▤',accent:'#f3ac80',brief:'3D 外星双墙 · 拆墙与闪躲',rules:'两只外星玩偶各有一面会留下缺口的积木墙。每次换边后有五秒准备。防守者可移动到左、中、右，或每秒换一次姿势。进攻方有三发，点或拖动准心，再按「点射」。命中躯干或四肢后立即换边。双方初始 100 点耐久，头部、躯干、四肢分别扣 100、30、10 点。',x:53,y:14},
+  flight:{name:'双机星战',icon:'✦',accent:'#9fd5fb',brief:'实时合作 · 双机闯关',rules:'拖动各自的飞船，飞船自动发射。两人一起躲开弹幕、冲过敌机编队，再击败首领。',x:19,y:13},
+  tanks:{name:'玩具坦克大战',icon:'▣',accent:'#a8e8ce',brief:'实时对抗 · 拆墙抢道具',rules:'用方向盘开坦克，按住泡沫球键发射。软墙可拆，金星能短暂加速，先拿三分赢。',x:82,y:14},
+  bubbles:{name:'泡泡擂台',icon:'◉',accent:'#ffafbe',brief:'实时对抗 · 连锁爆泡',rules:'放泡泡卡住路线，水花会沿十字方向冲开软块，也会连锁引爆其他泡泡。道具能扩大范围、增加携带量或加速。先赢三轮。',x:17,y:38},
+  hockey:{name:'霓虹气垫球',icon:'◈',accent:'#a4ebed',brief:'实时对抗 · 反弹与抢角度',rules:'拖动自己的球拍，利用边墙反弹把球打进对方球门。七分且领先两分获胜，最高打到十一分。',x:82,y:38}
 };
 const engines={hide:miniGames.hide,...arcadeGames,...challengeGames,duel:duelGame};
-const buttons=['hide','shoot','toy','memory','puzzle','signal','duel'];
+const buttons=['flight','tanks','bubbles','hockey','hide','duel','shoot','toy','memory','puzzle','signal'];
+const stallLocations={hide:[49,38],duel:[53,14],shoot:[82,59],toy:[82,80],memory:[52,80],puzzle:[19,59],signal:[20,80]};
+for(const [key,[x,y]] of Object.entries(stallLocations)){games[key].x=x;games[key].y=y;}
 const saveKey='twin-stars-arcade-v1';
 function loadSave(){
   try{
@@ -3750,9 +5096,9 @@ function renderLobby(){
 function renderHub(){
   const cur=mode==='solo'?mapCursor:seat;
   const selected=buttons.find(id=>nearStall(state.positions[cur],id));
-  return `<div class="screen">${title('夜市地图','点地图移动，走到摊位就能开局。','<button class="quiet" id="reselect">换角色</button>')}${roomTag()}<div class="hub-board" id="map-board" aria-label="夜市游乐园地图"><svg aria-hidden="true" class="map-trails" viewBox="0 0 100 100" preserveAspectRatio="none">${buttons.map(id=>`<line x1="50" y1="50" x2="${games[id].x}" y2="${games[id].y}"/>`).join('')}</svg>${buttons.map(id=>{
+  return `<div class="screen">${title('夜市地图','点地图移动，走到摊位就能开局。','<button class="quiet" id="reselect">换角色</button>')}${roomTag()}<div class="hub-board expanded-night-map" id="map-board" aria-label="夜市游乐园地图"><svg aria-hidden="true" class="map-trails" viewBox="0 0 100 100" preserveAspectRatio="none">${buttons.map(id=>`<line x1="50" y1="50" x2="${games[id].x}" y2="${games[id].y}"/>`).join('')}</svg>${buttons.map(id=>{
     const g=games[id];
-    return `<button class="stall ${selected===id?'active':''}" data-game="${id}" style="--accent:${g.accent};left:${g.x}%;top:${g.y}%" aria-label="前往${g.name}"><span class="game-icon" aria-hidden="true">${g.icon}</span><b>${g.name}</b></button>`;
+    return `<button class="stall ${selected===id?'active':''}" data-game="${id}" ${liveGames[id]?'data-live-stall':''} style="--accent:${g.accent};left:${g.x}%;top:${g.y}%" aria-label="前往${g.name}"><span class="game-icon" aria-hidden="true">${g.icon}</span><b>${g.name}</b></button>`;
   }).join('')}${state.positions.map(([x,y],i)=>{
     const start=walkOrigin?.[i], moving=start&&(start[0]!==x||start[1]!==y);
     const motion=moving?`--from-x:${start[0]}%;--from-y:${start[1]}%;`:'';
@@ -3770,7 +5116,7 @@ const waitText=()=>`请等待${player(state.play.turn)}完成操作。`;
 function continued(label='继续'){return btn('continue-game',label,true,pending);}
 function shellGame(body,metric){
   const g=games[state.game],s=state.play;
-  return `<div class="game-layout screen">${title(g.name,'','<button class="quiet" id="to-hub">回地图</button>')}<div class="game-meta"><div class="turn-pill">${avatar(state.roles[s.turn])}${s.done?'本局结束':`${player(s.turn)}的回合`}</div><div class="metric">${metric}</div></div>${body}</div>`;
+  return `<div class="game-layout screen">${title(g.name,'','<button class="quiet" id="to-hub">回地图</button>')}${liveGames[state.game]?'':`<div class="game-meta"><div class="turn-pill">${avatar(state.roles[s.turn])}${s.done?'本局结束':`${player(s.turn)}的回合`}</div><div class="metric">${metric}</div></div>`}${body}</div>`;
 }
 function handoffPanel(){
   const s=state.play;
@@ -3784,6 +5130,7 @@ function resultGame(){
 }
 function summary(st){
   const a=st.play;
+  if(liveGames[st.game])return liveGames[st.game].summary(a);
   if(st.game==='hide')return `你们猜中了 ${a.results.filter(x=>x.found).length} / 2 次变成玩具的搭档。`;
   if(st.game==='shoot')return `命中 ${a.scores[0]+a.scores[1]} / ${a.maxShots} 个星靶。两人得分 ${a.scores.join(' / ')}。`;
   if(st.game==='toy')return `一起通过了 ${a.completed} / ${a.stages.length} 段赛道。`;
@@ -3867,6 +5214,7 @@ function renderDuel(s,can){
 function renderGame(){
   const s=state.play;
   if(s.done)return resultGame();
+  if(liveGames[state.game])return shellGame(renderLiveGame(state.game,s),'');
   const can=mode==='solo'||seat===s.turn;
   const id=state.game;
   if(id==='hide')return shellGame(renderHide(s,s.phase!=='prepare'&&can&&!(mode==='solo'&&s.phase==='guess'&&localHideOwner)),`第 ${s.round+1} / 2 轮`);
@@ -3903,6 +5251,9 @@ function patchScenePanel(scene,markup,selector){
   }
 }
 function render(){
+  const liveRoot=app.querySelector('[data-live-root]');
+  const liveActive=view==='game'&&liveGames[state.game]&&!state.play.done;
+  if(liveActive&&liveRoot?.dataset.session===state.session)return;
   const screens={home:renderHome,rooms:renderRooms,lobby:renderLobby,hub:renderHub,game:renderGame};
   const listOpen=app.querySelector('.hide-list')?.open;
   const duelBackup=app.querySelector('.duel-fallback')?.open;
@@ -3953,6 +5304,18 @@ function render(){
   const arcadeFrame=app.querySelector('[data-arcade-scene]');
   if(arcadeFrame&&arcadeBackup)app.querySelector('.arcade-backup').open=true;
   syncArcade(arcadeFrame);
+  const gameRoot=app.querySelector('[data-live-root]');
+  if(gameRoot){
+    gameRoot.dataset.session=state.session;
+    liveArcade.sync(gameRoot,{key:state.session,game:liveGames[state.game],state:state.play,seat,local:mode==='solo',
+      connected:()=>mode==='solo'||joined,send:message=>room?.send(message),
+      finish(play){
+        if(mode==='internet')version++;
+        applyState({...state,play});
+        if(mode==='internet')publishInternet();
+      }
+    });
+  }else liveArcade.sync(null);
   walkOrigin=null;
 }
 function gameID(){
@@ -3978,9 +5341,10 @@ function reduce(current,action,actor){
   const rematch=stage==='game'&&current.play.done&&action.type==='rematch';
   if((stage==='hub'&&action.type==='enter'&&Object.hasOwn(games,action.game)&&nearStall(current.positions[actor],action.game))||rematch){
     const id=rematch?current.game:action.game;
-    return {...current,stage:'game',game:id,session:gameID(),play:engines[id].init()};
+    if(liveGames[id]&&mode!=='solo'&&mode!=='internet')return current;
+    return {...current,stage:'game',game:id,session:gameID(),play:liveGames[id]?liveGames[id].create():engines[id].init()};
   }
-  if(stage==='game'&&action.type==='game-action'&&action.input&&typeof action.input==='object'){
+  if(stage==='game'&&engines[current.game]&&action.type==='game-action'&&action.input&&typeof action.input==='object'){
     const play=engines[current.game].act(current.play,action.input,actor);
     if(play!==current.play)return {...current,play};
   }
@@ -4042,6 +5406,7 @@ async function pollLan(){
 }
 function publishInternet(){
   let shared=state;
+  if(liveGames[state.game]&&!state.play.done&&liveArcade.state())shared={...state,play:liveArcade.state()};
   if(state.game==='hide'&&state.play.hider===0&&['reveal','prepare','guess'].includes(state.play.phase)){
     const play=state.play;
     const visible=play.phase==='guess'&&play.moving;
@@ -4076,6 +5441,7 @@ function peerEvent(event,connectionEpoch){
   }
   if(event.type!=='message'||!event.message||typeof event.message!=='object')return;
   const incoming=event.message;
+  if(incoming.kind==='live-input'||incoming.kind==='live-frame'){liveArcade.receive(incoming);return;}
   if(seat===0&&incoming.kind==='action'&&incoming.action&&typeof incoming.action==='object'){
     const duelInput=incoming.action.type==='game-action'&&state.game==='duel'&&incoming.session===state.session&&
       incoming.round===state.play.round&&incoming.shots===state.play.shots;
@@ -4254,7 +5620,10 @@ document.addEventListener('click',e=>{
     const g=games[b.dataset.game];
     dispatch({type:'walk',x:g.x,y:g.y});return;
   }
-  if(b.dataset.enter){dispatch({type:'enter',game:b.dataset.enter});return;}
+  if(b.dataset.enter){
+    if(liveGames[b.dataset.enter]&&mode!=='solo'&&mode!=='internet'){notify('这个摊位请使用互联网房间或同屏模式。');return;}
+    dispatch({type:'enter',game:b.dataset.enter});return;
+  }
   if(b.dataset.choice!==undefined){
     const type=['shoot','hide','duel'].includes(state.game)?'shoot':state.game==='memory'?'flip':'pick';
     const index=Number(b.dataset.choice);
