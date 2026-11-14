@@ -150,11 +150,24 @@ button.hide-prop:hover:not(:disabled){border-color:var(--gold)}
 .hide-toolbar{display:flex;gap:9px;flex-wrap:wrap;align-items:center;justify-content:space-between;margin:10px 0}
 #hide-aim{font-size:13px;color:#ffe5c7}
 .hide-help{font-size:12px!important;margin:4px 0 9px!important}
+.hide-runner-controls{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;margin-top:9px}
+.hide-dpad{display:grid;grid-template-columns:repeat(3,44px);gap:3px}
+.hide-dpad [data-hide-move]{min-width:44px;min-height:42px;padding:3px;font-size:20px;touch-action:none;user-select:none}
+.hide-dpad [data-hide-move=up]{grid-column:2;grid-row:1}
+.hide-dpad [data-hide-move=left]{grid-column:1;grid-row:2}
+.hide-dpad [data-hide-move=down]{grid-column:2;grid-row:2}
+.hide-dpad [data-hide-move=right]{grid-column:3;grid-row:2}
+.hide-morph{display:grid;justify-items:end;gap:5px;color:var(--gold);font-size:13px}
+.hide-flat-map{display:none}
+.hide-stage[data-renderer=fallback]+.hide-flat-map{display:block}
+.hide-flat-map p{margin:6px 0!important;font-size:12px!important}
+.hide-flat-grid{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:3px}
+.hide-grid-cell{min-height:39px;border-radius:7px;font-size:17px}
 .hide-list{color:#e6d6ec;font-size:13px}
 .hide-list summary{padding:7px 0;cursor:pointer}
 .scan-clue{display:flex;align-items:center;gap:9px;margin:8px 0;padding:9px 11px;border-left:3px solid var(--mint);border-radius:7px;background:#38304b;color:#eff7ed;font-size:13px;animation:pop .28s ease both}
 .scan-clue b{color:var(--mint)}
-.hide-stage[data-renderer=fallback],.hide-stage[data-renderer=fallback]+.hide-toolbar #hide-fire,.hide-stage[data-renderer=fallback]+.hide-toolbar #hide-aim{display:none}
+.hide-stage[data-renderer=fallback],.hide-stage[data-renderer=fallback]~.hide-toolbar #hide-fire,.hide-stage[data-renderer=fallback]~.hide-toolbar #hide-aim{display:none}
 @media(max-width:480px){.hide-stage{min-height:290px;height:44svh}.hide-scene{padding:13px}.hide-camera .btn{font-size:12px}.hide-toolbar .actions>.btn{min-height:44px}}
 .memory{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin:16px 0}
 .memory .option{font-size:25px;min-height:62px}
@@ -476,8 +489,8 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 window.arcadeStatic=true;
 window.arcadeArt={"hero":"./assets/hero.webp","map":"./assets/map.webp","avatars":["./assets/role-0.webp","./assets/role-1.webp","./assets/role-2.webp","./assets/role-3.webp"]};
 const internetRooms = (() => {
-  const roomPrefix = 'starlight-arcade-v3-';
-  const channelLabel = 'starlight-arcade-v3';
+  const roomPrefix = 'starlight-arcade-v4-';
+  const channelLabel = 'starlight-arcade-v4';
   const codeAlphabet = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
   const roomTimeout = 15_000;
 
@@ -689,6 +702,137 @@ const internetRooms = (() => {
   };
 })();
 
+const hideMap = {
+  bounds: { minX: -10.5, maxX: 10.5, minZ: -8.6, maxZ: 7.7 },
+  zones: { left: -3.4, right: 3.4, front: 2.6, back: -2.2 },
+  palette: {
+    floor: 0x453454,
+    trim: 0xcc8d79,
+    wall: 0x392642,
+    wallLeft: 0x4c3150,
+    wallRight: 0x373651,
+    backTier: 0x6f536a,
+    midTier: 0x55597c,
+    grid: 0x615270,
+    fog: 0x30213c,
+    frontPad: 0xba849c,
+    middlePad: 0x9aadd1,
+    backPad: 0xc59b8c,
+  },
+  tiers: [
+    { x: 0, z: -0.67, w: 10.6, d: 3.24, y: 0.48, color: 0x55597c },
+    { x: 0, z: -6.28, w: 15.6, d: 4, y: 1.05, color: 0x6f536a },
+  ],
+  ramps: [
+    { x: 0, z: 2.2, w: 3.2, d: 2.5, yFrom: 0, yTo: 0.48, color: 0x737694 },
+    { x: -1.65, z: -3.285, w: 3.15, d: 1.99, yFrom: 0.48, yTo: 1.05, color: 0x826c82 },
+  ],
+  obstacles: [
+    { kind: 'crate', x: -5.66, z: 4.82, w: 1.1, d: 1.1, h: 0.93, color: 0xa9666d, accent: 0xf7b38c },
+    { kind: 'crate', x: 5.4, z: 4.9, w: 1.36, d: 1.05, h: 0.78, color: 0x6e829e, accent: 0xabc8db },
+    { kind: 'column', x: -9.38, z: 3.0, w: 0.95, d: 0.95, h: 2.75, color: 0x685173, accent: 0xffc899 },
+    { kind: 'column', x: 9.36, z: 3.0, w: 0.95, d: 0.95, h: 2.75, color: 0x665476, accent: 0xffc899 },
+    { kind: 'shelf', x: -9.43, z: -1.63, w: 0.94, d: 2.62, h: 2.42, color: 0x775579, accent: 0xbfa3c3 },
+    { kind: 'shelf', x: 9.38, z: -1.78, w: 0.94, d: 2.56, h: 2.48, color: 0x535478, accent: 0xb5b1d6 },
+    { kind: 'crate', x: 5.98, z: -2.5, w: 1.26, d: 1.08, h: 1.13, color: 0x9a6e81, accent: 0xe7aaa6 },
+    { kind: 'crate', x: -5.96, z: -2.85, w: 1.15, d: 1.2, h: 0.85, color: 0x638d88, accent: 0x9ec1a4 },
+    { kind: 'shelf', x: -5.15, z: -7.46, w: 2.25, d: 0.72, h: 1.7, color: 0x805c69, accent: 0xdd9b87 },
+    { kind: 'shelf', x: 4.88, z: -7.44, w: 2.27, d: 0.78, h: 1.7, color: 0x805c69, accent: 0xdd9b87 },
+    { kind: 'pot', x: -9.35, z: -7.29, w: 1.28, d: 1.22, h: 1.33, color: 0xad7780, accent: 0x83bfa0 },
+    { kind: 'pot', x: 9.32, z: -7.37, w: 1.28, d: 1.22, h: 1.34, color: 0xc28f80, accent: 0x9bbd8e },
+  ],
+  slots: [
+    { x: -8.12, z: 5.12, radius: 0.68, side: '左侧', depth: '前排' },
+    { x: -4.51, z: 3.78, radius: 0.68, side: '左侧', depth: '前排' },
+    { x: -1.87, z: 5.62, radius: 0.68, side: '中间', depth: '前排' },
+    { x: 1.84, z: 4.32, radius: 0.68, side: '中间', depth: '前排' },
+    { x: 4.4, z: 3.62, radius: 0.68, side: '右侧', depth: '前排' },
+    { x: 8.23, z: 5.28, radius: 0.68, side: '右侧', depth: '前排' },
+    { x: -8.21, z: 0.14, radius: 0.65, side: '左侧', depth: '中排' },
+    { x: -4.42, z: 0.02, radius: 0.65, side: '左侧', depth: '中排' },
+    { x: -1.5, z: -0.97, radius: 0.65, side: '中间', depth: '中排' },
+    { x: 1.53, z: -0.64, radius: 0.65, side: '中间', depth: '中排' },
+    { x: 4.26, z: 0.04, radius: 0.65, side: '右侧', depth: '中排' },
+    { x: 8.15, z: 0.13, radius: 0.65, side: '右侧', depth: '中排' },
+    { x: -8.14, z: -4.88, radius: 0.68, side: '左侧', depth: '后排' },
+    { x: -5.05, z: -5.75, radius: 0.68, side: '左侧', depth: '后排' },
+    { x: -1.63, z: -6.61, radius: 0.68, side: '中间', depth: '后排' },
+    { x: 1.65, z: -5.42, radius: 0.68, side: '中间', depth: '后排' },
+    { x: 5.28, z: -5.67, radius: 0.68, side: '右侧', depth: '后排' },
+    { x: 8.26, z: -4.96, radius: 0.68, side: '右侧', depth: '后排' },
+  ],
+};
+
+function hideContains(x, z, feature, padding = 0) {
+  return Math.abs(x - feature.x) <= feature.w / 2 + padding + 1e-7 &&
+    Math.abs(z - feature.z) <= feature.d / 2 + padding + 1e-7;
+}
+
+function hideFloorY(x, z) {
+  let floor = 0;
+  for (const tier of hideMap.tiers) {
+    if (hideContains(x, z, tier)) floor = Math.max(floor, tier.y);
+  }
+  for (const ramp of hideMap.ramps) {
+    if (!hideContains(x, z, ramp)) continue;
+    const ascent = Math.min(1, Math.max(0, (ramp.z + ramp.d / 2 - z) / ramp.d));
+    floor = Math.max(floor, ramp.yFrom + (ramp.yTo - ramp.yFrom) * ascent);
+  }
+  return floor;
+}
+
+function hideCanMove(x, z) {
+  const { minX, maxX, minZ, maxZ } = hideMap.bounds;
+  const padding = 0.27;
+  if (!Number.isFinite(x) || !Number.isFinite(z) || x < minX + padding || x > maxX - padding ||
+      z < minZ + padding || z > maxZ - padding) return false;
+  return !hideMap.obstacles.some(feature => hideContains(x, z, feature, padding));
+}
+
+function hideMapZone(x, z, dimension) {
+  const { left, right, front, back } = hideMap.zones;
+  if (dimension === 'side') return x < left ? '左侧' : x > right ? '右侧' : '中间';
+  return z > front ? '前排' : z < back ? '后排' : '中排';
+}
+
+function hideFallbackCell(x,z){
+  const b=hideMap.bounds;
+  const col=Math.min(6,Math.max(0,Math.floor((x-b.minX)/(b.maxX-b.minX)*7)));
+  const row=Math.min(5,Math.max(0,Math.floor((z-b.minZ)/(b.maxZ-b.minZ)*6)));
+  return row*7+col;
+}
+
+function hideFallbackPoint(index){
+  if(index<0||index>=42)return null;
+  const b=hideMap.bounds;
+  return {x:b.minX+(index%7+.5)/7*(b.maxX-b.minX),z:b.minZ+(Math.floor(index/7)+.5)/6*(b.maxZ-b.minZ)};
+}
+
+function hideNearestSlot(x, z, allowed = () => true) {
+  if (!Number.isFinite(x) || !Number.isFinite(z)) return -1;
+  let nearest = -1;
+  let distance = Infinity;
+  hideMap.slots.forEach((slot, index) => {
+    if (!allowed(index, slot) || !hideCanMove(slot.x, slot.z)) return;
+    const current = (x - slot.x) ** 2 + (z - slot.z) ** 2;
+    if (current < distance) {
+      nearest = index;
+      distance = current;
+    }
+  });
+  return nearest;
+}
+
+const hidePadColors = {
+  前排: hideMap.palette.frontPad,
+  中排: hideMap.palette.middlePad,
+  后排: hideMap.palette.backPad,
+};
+for (const slot of hideMap.slots) {
+  slot.y = hideFloorY(slot.x, slot.z);
+  slot.color = hidePadColors[slot.depth];
+}
+
 const miniGameData = {
   hideShotLimit: 10,
   hideProps: [
@@ -824,12 +968,11 @@ function randomMiniGameOrder(items) {
 function startHideRound(round, results = []) {
   const props = miniGameData.hideProps.map((_, index) => index);
   const board = randomMiniGameOrder(props);
-  return { turn: round, done: false, round, phase: 'hide', hider: round, board, spot: null, guesses: [], scans: 0, clue: null, decoy: null, decoyUsed:false, results };
+  return {turn:round,done:false,round,phase:'hide',hider:round,board,spot:null,position:null,shape:null,moving:false,changedAt:0,revealUntil:0,feedback:null,shots:0,scans:0,clue:null,decoy:null,decoyUsed:false,results};
 }
 
 function hideZone(index, dimension) {
-  if(dimension==='side')return ['左侧','中间','右侧'][Math.floor((index%6)/2)];
-  return ['前排','中排','后排'][Math.floor(index/6)];
+  return hideMap.slots[index]?.[dimension]??'附近';
 }
 
 function shootTargetsFor(target) {
@@ -842,8 +985,26 @@ const miniGames = {
       return startHideRound(0);
     },
     act(state, action, seat) {
+      if(state.phase==='guess'&&!state.done&&seat===state.hider&&action?.type==='move'){
+        const dx=action.dx,dz=action.dz;
+        if(![-1,0,1].includes(dx)||![-1,0,1].includes(dz)||(!dx&&!dz))return state;
+        const now=Date.now();
+        if(state.movedAt&&now-state.movedAt<90)return state;
+        const length=Math.hypot(dx,dz), stride=.49/length;
+        const x=Math.round((state.position.x+dx*stride)*100)/100;
+        const z=Math.round((state.position.z+dz*stride)*100)/100;
+        if(!hideCanMove(x,z)||Math.abs(hideFloorY(x,z)-hideFloorY(state.position.x,state.position.z))>.38)return state;
+        return {...state,position:{x,z},moving:true,movedAt:now,revealUntil:now+850};
+      }
+      if(state.phase==='guess'&&!state.done&&seat===state.hider&&action?.type==='morph'){
+        const now=Date.now();
+        if(now-state.changedAt<10_000)return state;
+        const shapes=miniGameData.hideProps.map((_,i)=>i).filter(i=>i!==state.shape);
+        return {...state,shape:shapes[Math.floor(Math.random()*shapes.length)],moving:true,changedAt:now,revealUntil:now+450};
+      }
       if(state.phase==='guess'&&!state.done&&seat===state.hider&&action?.type==='decoy'&&!state.decoyUsed){
-        const choices=state.board.map((_, i)=>i).filter(i=>hideZone(i,'depth')!==hideZone(state.spot,'depth')&&!state.guesses.includes(i));
+        const realZone=hideMapZone(state.position.x,state.position.z,'depth');
+        const choices=state.board.map((_,i)=>i).filter(i=>hideZone(i,'depth')!==realZone);
         if(choices.length)return {...state,decoy:choices[Math.floor(Math.random()*choices.length)],decoyUsed:true};
       }
       if (!canPlayMiniGame(state, seat)) return state;
@@ -853,27 +1014,36 @@ const miniGames = {
       }
       if (state.phase === 'hide') {
         if (action?.type !== 'transform') return state;
-        const spot = Math.floor(Math.random() * state.board.length);
-        return { ...state, spot, phase: 'reveal' };
+        const spot=Math.floor(Math.random()*state.board.length);
+        const {x,z}=hideMap.slots[spot];
+        return {...state,spot,position:{x,z},shape:state.board[spot],phase:'reveal'};
       }
       if (state.phase === 'reveal') {
         if (action?.type !== 'ready') return state;
-        return { ...state, phase: 'guess', turn: 1 - state.hider };
+        return {...state,phase:'guess',turn:1-state.hider,changedAt:Date.now()};
       }
       if(state.phase==='guess'&&action?.type==='scan'&&state.scans<2){
         const dimension=state.scans===0?'side':'depth';
-        let zone=hideZone(state.spot,dimension);
+        let zone=hideMapZone(state.position.x,state.position.z,dimension);
         if(state.scans===1&&state.decoy!==null)zone=hideZone(state.decoy,dimension);
         return {...state,scans:state.scans+1,clue:{zone,dimension,interference:state.scans===1&&state.decoy!==null},decoy:state.scans===0?state.decoy:null};
       }
-      if (state.phase !== 'guess' || !isMiniGameChoice(action, 'shoot', state.board.length)) return state;
-      const { index } = action;
-      if (state.guesses.includes(index)) return state;
-      const guesses = [...state.guesses, index];
-      const found = index === state.spot;
-      if (!found && guesses.length < miniGameData.hideShotLimit) return { ...state, guesses, decoy:state.decoy===index?null:state.decoy };
-      const result = { hider: state.hider, board: state.board, spot: state.spot, guesses, found };
-      return { ...state, phase: 'result', guesses, results: [...state.results, result] };
+      if(state.phase!=='guess'||action?.type!=='shoot')return state;
+      const {index}=action;
+      const aimedAtRunner=index===state.board.length;
+      if(!aimedAtRunner&&!isMiniGameChoice(action,'shoot',state.board.length))return state;
+      const grid=aimedAtRunner&&Number.isInteger(action.grid)?hideFallbackPoint(action.grid):null;
+      if(aimedAtRunner&&action.grid!==undefined&&!grid)return state;
+      const aim=grid||(aimedAtRunner?action.at:hideMap.slots[index]);
+      if(!aim||!Number.isFinite(aim.x)||!Number.isFinite(aim.z))return state;
+      const hitDistance=Math.hypot(aim.x-state.position.x,aim.z-state.position.z);
+      const found=grid?hideFallbackCell(state.position.x,state.position.z)===action.grid:hitDistance<.78;
+      const shots=state.shots+1;
+      const guesses=aimedAtRunner?state.guesses:[...state.guesses,index];
+      const feedback={index,found};
+      if(!found&&shots<miniGameData.hideShotLimit)return {...state,shots,guesses,feedback,decoy:state.decoy===index?null:state.decoy};
+      const result={hider:state.hider,board:state.board,spot:state.spot,shape:state.shape,guesses,shots,found};
+      return {...state,phase:'result',shots,guesses,feedback,results:[...state.results,result]};
     }
   },
   shoot: {
@@ -1522,10 +1692,10 @@ const toyRoom = (() => {
     };
     const block=(width,height,depth,color,x,y,z)=>mesh(new T.BoxGeometry(width,height,depth),color,[x,y,z]);
     const round=(radius,height,color,x,y,z)=>mesh(new T.CylinderGeometry(radius,radius,height,20),color,[x,y,z]);
-    block(34,.24,33,0x5b4979,0,-.15,0);
-    block(30,13,.25,0x4e3969,0,5,-9);
-    block(.25,13,19,0x3d325b,-13,5,-2);
-    block(.25,13,19,0x3d325b,13,5,-2);
+    block(34,.24,33,hideMap.palette.floor,0,-.15,0);
+    block(30,13,.25,hideMap.palette.wall,0,5,-9.4);
+    block(.25,13,19,hideMap.palette.wallLeft,-11.3,5,-2);
+    block(.25,13,19,hideMap.palette.wallRight,11.3,5,-2);
     for(let i=-6;i<=6;i++){
       block(.025,.008,24,0x7a659d,i*2,.004,-2);
       block(28,.008,.025,0x7a659d,0,.004,i*2);
@@ -1535,41 +1705,78 @@ const toyRoom = (() => {
       if(i%2===0)mesh(new T.OctahedronGeometry(.15),0xffd395,[i*2.1,4.95+(i%4)*.18,-8.64],{emissive:0xdc8762,emissiveIntensity:.4});
     }
     block(27,.12,.15,0xb894be,0,1.15,-8.72);
+    for(const tier of hideMap.tiers)block(tier.w,tier.y,tier.d,tier.color,tier.x,tier.y/2,tier.z);
+    for(const ramp of hideMap.ramps){
+      const diff=ramp.yTo-ramp.yFrom;
+      const plank=block(ramp.w,.16,Math.hypot(diff,ramp.d),ramp.color,ramp.x,(ramp.yFrom+ramp.yTo)/2-.08,ramp.z);
+      plank.rotation.x=Math.atan2(diff,ramp.d);
+    }
+    const occluders=[];
+    for(const o of hideMap.obstacles){
+      const floor=hideFloorY(o.x,o.z);
+      const base=block(o.w,o.h,o.d,o.color,o.x,floor+o.h/2,o.z);
+      occluders.push(base);
+      if(o.kind==='plant'||o.kind==='pot'){
+        for(let i=0;i<4;i++){
+          const leaf=mesh(new T.IcosahedronGeometry(o.w*.33,1),o.accent,[o.x+Math.sin(i*1.7)*o.w*.23,floor+o.h+.20+i*.06,o.z+Math.cos(i*1.7)*o.d*.22]);
+          leaf.scale.set(1,.72,1);
+        }
+      }else{
+        block(o.w*1.025,.10,o.d*1.025,o.accent,o.x,floor+o.h-.06,o.z);
+        if(o.kind==='shelf'){
+          for(let i=-1;i<=1;i++){
+            const deco=mesh(new T.BoxGeometry(.3,.36,.22),i===0?0xffc890:o.accent,[o.x+i*.38,floor+o.h+.20,o.z]);
+            deco.rotation.z=i*.13;
+          }
+        }
+      }
+    }
+    for(const [x,z,c] of [[-7,4,0xac6988],[6,-2,0x5a8c99],[1,6,0x9276bb],[-5,-6,0xa38864]]){
+      const rug=mesh(new T.CircleGeometry(1.65,34),c,[x,hideFloorY(x,z)+.014,z]);
+      rug.rotation.x=-Math.PI/2;rug.scale.set(1.32,.6,1);
+    }
     const ring=mesh(new T.TorusGeometry(.66,.028,8,44),0xffe4a6,[0,0,0],{emissive:0xfba454,emissiveIntensity:1.0});
     ring.rotation.x=Math.PI/2;ring.visible=false;
     const ray=new T.Raycaster(),pointer=new T.Vector2();
-    const s={yaw:0,look:0,zoom:1,options:null,selected:-1,props:[],top:null,raf:0,down:null,hadDrag:false,pulse:null,rendered:false};
+    const s={yaw:0,look:0,zoom:1,options:null,selected:-1,aimAt:null,props:[],top:null,raf:0,walkFrame:0,down:null,hadDrag:false,pulse:null,rendered:false,runner:null,runnerBox:null,runnerShape:null,runnerTarget:null};
     const target=new T.Vector3();
     const center=new T.Vector3();
     const cast=(x,y)=>{
       if(!s.options||!s.rendered)return -1;
       ray.setFromCamera(pointer.set(x,y),camera);
-      const hit=ray.intersectObjects(pickables,false).find(({object})=>!s.options.guesses.includes(object.userData.slot));
-      return hit?hit.object.userData.slot:-1;
+      const items=pickables.filter((_,i)=>s.props[i].visible);
+      if(s.runnerBox)items.push(s.runnerBox);
+      const hit=ray.intersectObjects(items,false)[0];
+      const obstacle=ray.intersectObjects(occluders,false)[0];
+      return hit&&(!obstacle||hit.distance<obstacle.distance)?hit.object.userData.slot:-1;
     };
     const valid=index=>{
       const options=s.options;
-      return options?.can&&!options.pending&&!options.guesses.includes(index)&&index>=0&&index<s.props.length;
+      return options?.can&&!options.pending&&index>=0&&(index<s.props.length||index===s.props.length&&s.runnerBox);
     };
     const pick=(index,fire=false)=>{
       if(!valid(index))return false;
       s.selected=index;
+      s.aimAt=index===s.props.length&&s.runner?s.runner.position.clone():null;
       onAim(index);
       draw();
-      if(fire)onFire(index);
+      if(fire)fireAt(index);
       return true;
     };
     function draw(){
       const zoom=s.zoom;
       const fit=Math.max(1, .97/camera.aspect);
-      const distance=(10.5+(fit-1)*5.7)/zoom;
-      camera.position.set(Math.sin(s.yaw)*distance,5.1+(fit-1)*1.7,Math.cos(s.yaw)*distance);
-      camera.lookAt(target.set(Math.sin(s.yaw)*1.8,s.look+1.07,-1.30));
+      const distance=(15.4+(fit-1)*6.7)/zoom;
+      const focus=s.options?.own?s.runner?.position:null;
+      const fx=focus?focus.x*.64:0, fz=focus?focus.z*.52:-1.4;
+      camera.position.set(fx+Math.sin(s.yaw)*distance,7.3+(fit-1)*2.35,Math.cos(s.yaw)*distance+fz);
+      camera.lookAt(target.set(fx+Math.sin(s.yaw)*2,s.look+1.05,fz));
       camera.updateMatrixWorld();
-      const focus=s.options?.spectate>=0?s.options.spectate:s.selected;
-      ring.visible=focus>=0&&Boolean(s.props[focus]);
+      const selectedModel=s.options?.own?s.runner:s.props[s.selected];
+      const aim=s.selected===s.props.length&&s.aimAt?s.aimAt:selectedModel?.position;
+      ring.visible=Boolean(aim);
       if(ring.visible){
-        ring.position.copy(s.props[focus].position);
+        ring.position.copy(aim);
         ring.position.y+=.029;
       }
       renderer.render(scene,camera);
@@ -1585,22 +1792,75 @@ const toyRoom = (() => {
       draw();
     }
     const resize=new ResizeObserver(resized);
+    function updateRunner(runner){
+      if(!runner){
+        cancelAnimationFrame(s.walkFrame);
+        if(s.runner)scene.remove(s.runner);
+        if(s.runnerBox)scene.remove(s.runnerBox);
+        s.runner=null;s.runnerShape=null;s.runnerTarget=null;
+        if(s.runnerBox){s.runnerBox.geometry.dispose();s.runnerBox.material.dispose();s.runnerBox=null;}
+        return;
+      }
+      if(s.runnerShape!==runner.shape){
+        const old=s.runner?.position.clone();
+        if(s.runner)scene.remove(s.runner);
+        s.runner=window.buildHideToy(T,runner.shape);scene.add(s.runner);
+        s.runnerShape=runner.shape;
+        if(old)s.runner.position.copy(old);
+      }
+      const y=hideFloorY(runner.x,runner.z)+.10;
+      if(!s.runnerBox){
+        s.runnerBox=new T.Mesh(new T.BoxGeometry(1.2,1.15,1.12),new T.MeshBasicMaterial({visible:false}));
+        s.runnerBox.userData.slot=s.props.length;
+        scene.add(s.runnerBox);
+      }
+      const previous=s.runnerTarget;
+      if(previous&&previous.x===runner.x&&previous.z===runner.z)return;
+      s.runnerTarget=runner;
+      const place=(x,py,z)=>{
+        s.runner.position.set(x,py,z);
+        s.runnerBox.position.set(x,py+.55,z);
+      };
+      cancelAnimationFrame(s.walkFrame);
+      if(!previous||reducedMotion){place(runner.x,y,runner.z);return;}
+      const before=s.runner.position.clone(), start=performance.now();
+      const walk=now=>{
+        const t=Math.min(1,(now-start)/140);
+        place(T.MathUtils.lerp(before.x,runner.x,t),T.MathUtils.lerp(before.y,y,t)+Math.sin(t*Math.PI)*.08,T.MathUtils.lerp(before.z,runner.z,t));
+        draw();
+        if(t<1)s.walkFrame=requestAnimationFrame(walk);
+      };
+      s.walkFrame=requestAnimationFrame(walk);
+    }
+    function obstacleInWay(position){
+      if(!position)return true;
+      center.copy(position);
+      center.y+=.45;
+      const origin=camera.position;
+      const distance=origin.distanceTo(center);
+      ray.set(origin,center.sub(origin).normalize());
+      return (ray.intersectObjects(occluders,false)[0]?.distance??Infinity)<distance;
+    }
+    function fireAt(index){
+      const moving=index===s.props.length;
+      if(obstacleInWay(moving?s.aimAt:s.props[index]?.position)){clearAim();onAim(-1,true);return;}
+      if(moving&&s.aimAt){
+        onFire(index,{x:s.aimAt.x,z:s.aimAt.z});
+      }else onFire(index);
+    }
     function populate(identifiers){
       for(const prop of s.props)scene.remove(prop);
       for(const item of pickables){scene.remove(item);item.geometry.dispose();item.material.dispose();}
       pickables.length=0;
       s.props=identifiers.map((id,index)=>{
-        const row=Math.floor(index/6), col=index%6;
-        const x=(col-2.5)*1.78+(row%2)*.30;
-        const y=[0,.50,1.0][row];
-        const z=[3.05,.30,-2.56][row];
+        const col=index%6;
+        const {x,y,z}=hideMap.slots[index];
         const prop=window.buildHideToy(T,id);
         prop.position.set(x,y+.12,z);
         prop.userData.baseY=prop.position.y;
-        prop.rotation.y=(col-2.5)*.065+(row===1?.17:-.07);
+        prop.rotation.y=(col-2.5)*.065;
         scene.add(prop);
-        round(.68,.10,0x8470a7,x,y+.044,z);
-        if(row>0)round(.56,y,0x54416b,x,y/2,z);
+        round(hideMap.slots[index].radius,.10,hideMap.slots[index].color,x,y+.044,z);
         const box=new T.Box3().setFromObject(prop);
         const size=box.getSize(new T.Vector3());
         const clickable=new T.Mesh(
@@ -1636,8 +1896,9 @@ const toyRoom = (() => {
       return pick(cast(x,y));
     }
     function drag(dx,dy){
-      s.yaw=T.MathUtils.clamp(s.yaw-dx*.008,-.82,.82);
-      s.look=T.MathUtils.clamp(s.look+dy*.018,-1.1,2.8);
+      s.selected=-1;onAim(-1);
+      s.yaw=T.MathUtils.clamp(s.yaw-dx*.008,-1.08,1.08);
+      s.look=T.MathUtils.clamp(s.look+dy*.018,-1.7,4.2);
       draw();
     }
     canvas.addEventListener('pointerdown',event=>{
@@ -1663,15 +1924,19 @@ const toyRoom = (() => {
       if(steps[event.key]){event.preventDefault();drag(...steps[event.key]);}
       if(event.key==='Enter'||event.code==='Space'){
         event.preventDefault();
-        if(valid(s.selected))onFire(s.selected);else pick(cast(0,0));
+        if(valid(s.selected))fireAt(s.selected);else pick(cast(0,0));
       }
     });
     function aimCenter(){
-      if(valid(s.selected)){onFire(s.selected);return;}
+      if(valid(s.selected)){fireAt(s.selected);return;}
       if(!pick(cast(0,0),true))onAim(-1,true);
+    }
+    function shootSelection(index){
+      if(pick(index))fireAt(index);
     }
     function clearAim(){
       s.selected=-1;
+      s.aimAt=null;
       onAim(-1);
       draw();
     }
@@ -1687,9 +1952,11 @@ const toyRoom = (() => {
       const previous=s.options;
       s.options=options;
       if(!s.props.length)populate(options.board);
+      updateRunner(options.runner);
       if(s.selected>=0&&!valid(s.selected)&&!options.pending)s.selected=-1;
       for(const [i,prop] of s.props.entries()){
-        prop.visible=true;
+        const position=options.runner;
+        prop.visible=!position||hideMap.slots[i].x!==position.x||hideMap.slots[i].z!==position.z;
         prop.position.y=prop.userData.baseY-(options.guesses.includes(i)&&options.revealed!==i?.24:0);
       }
       if(s.top!==frame){
@@ -1699,22 +1966,27 @@ const toyRoom = (() => {
       frame.dataset.renderer='webgl';
       resized();
       onAim(valid(s.selected)?s.selected:-1);
-      const shot=options.guesses.at(-1);
-      if(previous&&options.guesses.length>previous.guesses.length&&shot>=0)animateShot(shot,shot===options.revealed);
+      if(previous&&options.shots>previous.shots&&options.feedback){
+        s.selected=-1;s.aimAt=null;onAim(-1);
+        animateShot(options.feedback.index,options.feedback.found);
+        draw();
+      }
     }
     function destroy(){
       cancelAnimationFrame(s.raf);resize.disconnect();
+      updateRunner(null);
       for(const item of pickables){item.geometry.dispose();item.material.dispose();}
       for(const item of owned)item.dispose();
       renderer.dispose();renderer.forceContextLoss();
     }
     function getTargetPosition(index){
-      if(!s.props[index]||!s.rendered)return null;
-      pickables[index].getWorldPosition(center).project(camera);
+      const model=index===s.props.length?s.runnerBox:pickables[index];
+      if(!model||!s.rendered)return null;
+      model.getWorldPosition(center).project(camera);
       const b=canvas.getBoundingClientRect();
       return {x:b.left+(center.x+1)*b.width/2,y:b.top+(1-center.y)*b.height/2};
     }
-    return {attach,aimCenter,clearAim,reset,setZoom,pick,destroy,getTargetPosition,canvas};
+    return {attach,aimCenter,clearAim,reset,setZoom,shootSelection,destroy,getTargetPosition,canvas};
   }
 
   return {
@@ -1751,7 +2023,166 @@ const toyRoom = (() => {
       if(id==='hide-zoom-in')room.setZoom(.16);
       if(id==='hide-zoom-out')room.setZoom(-.16);
     },
+    shootSelection(index){
+      if(!current?.room)return false;
+      current.room.shootSelection(index);
+      return true;
+    },
     targetPosition(index){return current?.room?.getTargetPosition(index)??null;}
+  };
+})();
+
+const hideMovement = (() => {
+  const direction = {
+    up: [0, -1],
+    right: [1, 0],
+    down: [0, 1],
+    left: [-1, 0],
+  };
+  const keyDirection = {
+    arrowup: 'up', w: 'up',
+    arrowright: 'right', d: 'right',
+    arrowdown: 'down', s: 'down',
+    arrowleft: 'left', a: 'left',
+  };
+  const repeatDelay = 150;
+  const controls = '[data-hide-move]';
+  const editTarget = 'input, textarea, select, [contenteditable]:not([contenteditable="false"]), [role="textbox"]';
+  const fingers = new Map();
+  const keys = new Map();
+  let root = null;
+  let onStep = null;
+  let timer = null;
+  let installed = false;
+
+  function available(control) {
+    return Boolean(control && !control.disabled && control.getAttribute('aria-disabled') !== 'true' &&
+      !control.closest('[hidden], [inert]') && control.getClientRects().length);
+  }
+
+  function controlFor(name) {
+    return root?.querySelector(`[data-hide-move="${name}"]`);
+  }
+
+  function clearHeld() {
+    fingers.clear();
+    keys.clear();
+    clearInterval(timer);
+    timer = null;
+  }
+
+  function stop() {
+    root = null;
+    onStep = null;
+    clearHeld();
+  }
+
+  function announceStep() {
+    if (!root?.isConnected || !onStep || document.hidden) {
+      clearHeld();
+      return;
+    }
+
+    if (document.activeElement?.closest?.(editTarget)) {
+      keys.clear();
+      release();
+    }
+
+    let dx = 0;
+    let dz = 0;
+    let present = false;
+    const held = new Set([...fingers.values(), ...keys.values()]);
+    for (const name of held) {
+      const control = controlFor(name);
+      if (!control) continue;
+      present = true;
+      if (!available(control)) continue;
+      dx += direction[name][0];
+      dz += direction[name][1];
+    }
+    if (held.size && !present) {
+      clearHeld();
+      return;
+    }
+    if (dx || dz) onStep(Math.sign(dx), Math.sign(dz));
+  }
+
+  function press() {
+    if (timer === null) timer = setInterval(announceStep, repeatDelay);
+    announceStep();
+  }
+
+  function release() {
+    if (fingers.size || keys.size) return;
+    clearInterval(timer);
+    timer = null;
+  }
+
+  function pointControl(target) {
+    const control = target?.closest?.(controls);
+    return control && root?.contains(control) && Object.hasOwn(direction, control.dataset.hideMove) && available(control)
+      ? control
+      : null;
+  }
+
+  function install() {
+    if (installed) return;
+    installed = true;
+    document.addEventListener('pointerdown', event => {
+      if (event.button !== 0) return;
+      const control = pointControl(event.target);
+      if (!control) return;
+      event.preventDefault();
+      fingers.set(event.pointerId, control.dataset.hideMove);
+      press();
+    }, { passive: false });
+
+    const releasePointer = event => {
+      if (fingers.delete(event.pointerId)) release();
+    };
+    window.addEventListener('pointerup', releasePointer);
+    window.addEventListener('pointercancel', releasePointer);
+    window.addEventListener('blur', clearHeld);
+    document.addEventListener('visibilitychange', () => {
+      if (document.hidden) clearHeld();
+    });
+
+    document.addEventListener('keydown', event => {
+      const key = event.key?.toLowerCase();
+      if (!Object.hasOwn(keyDirection, key) || event.defaultPrevented || event.isComposing ||
+        event.ctrlKey || event.metaKey || event.altKey || event.target?.closest?.(editTarget) ||
+        document.activeElement?.closest?.(editTarget)) return;
+      const name = keyDirection[key];
+      if (!available(controlFor(name))) return;
+      event.preventDefault();
+      if (event.repeat || keys.has(key)) return;
+      keys.set(key, name);
+      press();
+    });
+    window.addEventListener('keyup', event => {
+      if (keys.delete(event.key?.toLowerCase())) release();
+    });
+
+    document.addEventListener('click', event => {
+      if (event.detail !== 0 || !onStep || document.hidden) return;
+      const control = pointControl(event.target);
+      if (!control) return;
+      event.preventDefault();
+      onStep(...direction[control.dataset.hideMove]);
+    });
+  }
+
+  return {
+    bind(newRoot, step) {
+      if (!newRoot || typeof step !== 'function') {
+        stop();
+        return;
+      }
+      root = newRoot;
+      onStep = step;
+      install();
+    },
+    stop,
   };
 })();
 
@@ -1766,7 +2197,7 @@ const roles = [
   {name:'糖豆熊',detail:'围小领巾的熊',icon:'🐻',color:'#715650'}
 ];
 const games = {
-  hide:{name:'星光捉迷藏',icon:'☾',accent:'#c5adff',brief:'3D 玩具房 · 扫描、干扰、十发',rules:'一人随机变成玩具，另一人拖动 3D 视角，点玩具瞄准，再按「点射」。有十发和两次扫描。第一次提示左右位置，第二次提示前后位置。躲藏者可放一次干扰，干扰第二次扫描。命中或用完十发后，交换角色。',x:22,y:25},
+  hide:{name:'星光捉迷藏',icon:'☾',accent:'#c5adff',brief:'3D 大玩具房 · 跑动变身 · 十发',rules:'躲藏者变成玩具，可以用方向键或长按屏幕方向键跑动，每十秒随机换一次外形。寻找者拖动 3D 视角，点玩具瞄准，再按「点射」。有十发和两次扫描。躲藏者可放一次假信号干扰第二次扫描。命中或用完十发后交换角色。',x:22,y:25},
   shoot:{name:'十发打星星',icon:'✸',accent:'#ffcf8e',brief:'每人五发 · 合计十发',rules:'看清闪亮的星星在哪一格。两人轮流点击，每人五次，加起来十次。每次点中亮星就得一分。',x:74,y:24},
   toy:{name:'玩具搬运',icon:'♟',accent:'#ffa6a7',brief:'一人变玩具 · 搭档护送',rules:'一人变成小玩具，先选怎么移动。搭档从三种方法里选怎么帮忙。一起过三道障碍后交换角色，选错可以重试。',x:79,y:62},
   memory:{name:'记忆翻牌',icon:'▦',accent:'#b3dbc8',brief:'八张牌 · 四对图案',rules:'每回合翻两张牌，找出相同的图案。配对成功的牌留在桌上，确认后由搭档继续。',x:52,y:79},
@@ -1835,6 +2266,7 @@ const defaultNetwork=()=>window.arcadeRelay?'relay':'internet';
 let shotKey='', shotTimer=0, flashShot=true;
 let walkOrigin=null;
 let hideAim=-1;
+let localHideOwner=false;
 function notify(message){
   clearTimeout(toastTimer);toast.textContent=message;toast.hidden=false;
   toastTimer=setTimeout(()=>{toast.hidden=true;},3000);
@@ -1910,7 +2342,8 @@ function shellGame(body,metric){
 }
 function handoffPanel(){
   const s=state.play;
-  return `<section class="panel play handoff">${avatar(state.roles[s.turn])}<h2>交给${player(s.turn)}</h2><p>准备好后查看你的线索或选择。</p>${btn('reveal-turn','到我了',true)}</section>`;
+  const next=state.game==='hide'&&localHideOwner?s.hider:s.turn;
+  return `<section class="panel play handoff">${avatar(state.roles[next])}<h2>交给${player(next)}</h2><p>准备好后继续操作。</p>${btn('reveal-turn','到我了',true)}</section>`;
 }
 function resultGame(){
   const s=state.play,id=state.game;
@@ -1942,12 +2375,12 @@ function renderPuzzle(s,can){
 function renderHide(s,can){
   if(handoff)return handoffPanel();
   const limit=miniGameData.hideShotLimit;
-  const remaining=limit-s.guesses.length;
+  const remaining=limit-s.shots;
   const isHider=mode==='solo'||seat===s.hider;
   const findToy=(board,index)=>miniGameData.hideProps[board[index]];
   if(s.phase==='result'){
-    const result=s.results.at(-1), toy=findToy(result.board,result.spot);
-    return `<section class="panel play hide-scene"><div class="hide-reveal" aria-hidden="true">${toy.icon}</div><h2>${result.found?'猜中了！':'十次机会用完了'}</h2><p>${player(s.hider)}变成了<strong>${toy.label}</strong>。${result.found?`第 ${result.guesses.length} 发找到搭档。`:''}</p>${can?continued(s.round===0?'交换角色':'查看结果'):`<p>${waitText()}</p>`}</section>`;
+    const result=s.results.at(-1), toy=miniGameData.hideProps[result.shape];
+    return `<section class="panel play hide-scene"><div class="hide-reveal" aria-hidden="true">${toy.icon}</div><h2>${result.found?'猜中了！':'十次机会用完了'}</h2><p>${player(s.hider)}最后变成了<strong>${toy.label}</strong>。${result.found?`第 ${result.shots} 发找到搭档。`:''}</p>${can?continued(s.round===0?'交换角色':'查看结果'):`<p>${waitText()}</p>`}</section>`;
   }
   if(s.phase==='hide'||s.phase==='reveal'){
     if(!isHider)return `<section class="panel play hide-scene"><div class="hide-reveal" aria-hidden="true">✨</div><h2>搭档正在变身</h2><p>准备好后，你会看到一整架小玩具。</p></section>`;
@@ -1955,20 +2388,30 @@ function renderHide(s,can){
     const toy=findToy(s.board,s.spot);
     return `<section class="panel play hide-scene"><div class="hide-reveal" aria-hidden="true">${toy.icon}</div><h2>你变成了${toy.label}</h2><p>记住你的伪装。准备好后，就让搭档开始找你。</p>${btn('start-hide','我藏好了',true,pending)}</section>`;
   }
-  const shots=Array.from({length:limit},(_,i)=>`<span class="shot-dot ${i<s.guesses.length?'miss':''}" aria-hidden="true">${i<s.guesses.length?'×':''}</span>`).join('');
+  const shots=Array.from({length:limit},(_,i)=>`<span class="shot-dot ${i<s.shots?'miss':''}" aria-hidden="true">${i<s.shots?'×':''}</span>`).join('');
   const props=s.board.map((prop,i)=>{
     const toy=miniGameData.hideProps[prop];
     const miss=s.guesses.includes(i);
-    const mine=mode!=='solo'&&isHider&&i===s.spot;
-    if(!can)return `<div class="hide-prop ${mine?'my-prop':''} ${miss?'shot-prop':''}"><span class="option-icon" aria-hidden="true">${toy.icon}</span><span>${toy.label}</span>${mine?'<small>你的伪装</small>':miss?'<small>已猜过</small>':''}</div>`;
-    return `<button class="hide-prop ${miss?'shot-prop':''}" data-choice="${i}" aria-label="${toy.label}${miss?'，已猜过':''}" ${miss||pending?'disabled':''}><span class="option-icon" aria-hidden="true">${toy.icon}</span><span>${toy.label}</span>${miss?'<small>×</small>':''}</button>`;
+    if(!can)return `<div class="hide-prop ${miss?'shot-prop':''}"><span class="option-icon" aria-hidden="true">${toy.icon}</span><span>${toy.label}</span></div>`;
+    return `<button class="hide-prop ${miss?'shot-prop':''}" data-choice="${i}" aria-label="${toy.label}${miss?'，曾点射过':''}" ${pending?'disabled':''}><span class="option-icon" aria-hidden="true">${toy.icon}</span><span>${toy.label}</span>${miss?'<small>×</small>':''}</button>`;
   }).join('');
   const tools=can
     ?btn('hide-scan',s.scans<2?`扫描 · ${2-s.scans} 次`:'扫描已用完',false,pending||s.scans>=2)
     :btn('hide-decoy',s.decoyUsed?'干扰已用':'放一次假信号',false,pending||s.decoyUsed||s.scans>=2);
   const clue=s.clue?`<div class="scan-clue" role="status"><b>${s.clue.interference?'信号受到干扰':'扫描结果'}</b><span>${s.clue.interference?'可能在':'搭档在'}${s.clue.zone}</span></div>`:'';
-  const instruction=can?'拖动视角，点玩具瞄准，再按「点射」。':'拖动视角观战。你可以放假信号来干扰搭档的第二次扫描。';
-  return `<section class="panel play hide-scene"><h2>${can?'哪件玩具是搭档？':'守住你的伪装'}</h2><div class="hide-shots"><span>剩余 <strong>${remaining} / ${limit}</strong> 发</span><div class="shot-row">${shots}</div></div><div class="hide-stage" data-hide-scene data-renderer="fallback"><div class="hide-crosshair" aria-hidden="true">+</div><span class="hide-view-label" aria-hidden="true">玩具房</span><div class="hide-camera">${btn('hide-zoom-out','−')}${btn('hide-zoom-in','＋')}${btn('hide-reset','复位')}</div></div><div class="hide-toolbar"><span id="hide-aim" role="status">${can?'未瞄准':'观看搭档寻找'}</span><div class="actions">${tools}${can?btn('hide-fire','点射',true,pending):''}</div></div>${clue}<p class="hide-help">${instruction}</p><details class="hide-list"><summary>${can?'展开玩具列表':'展开观战列表'}</summary><div class="hide-board" aria-label="玩具架">${props}</div></details></section>`;
+  const instruction=can?'拖动视角，点玩具瞄准，再按「点射」。瞄准后玩具还会跑，抓紧点射。':'长按方向键跑动。走斜坡上高台，也可以绕到家具背后。';
+  const cool=Math.max(0,Math.ceil((s.changedAt+10_000-Date.now())/1000));
+  const movement=!can?`<div class="hide-runner-controls"><div class="hide-dpad" aria-label="移动"><button class="btn" data-hide-move="up" aria-label="向前">↑</button><button class="btn" data-hide-move="left" aria-label="向左">←</button><button class="btn" data-hide-move="down" aria-label="向后">↓</button><button class="btn" data-hide-move="right" aria-label="向右">→</button></div><div class="hide-morph"><span>${miniGameData.hideProps[s.shape].icon} ${miniGameData.hideProps[s.shape].label}</span>${btn('hide-morph',cool?`变身冷却 ${cool} 秒`:'随机变身',true,cool>0||pending)}</div></div>`:'';
+  const switcher=mode==='solo'?btn('hide-switch-view',can?'交给躲藏者移动':'交给寻找者点射'):'';
+  const fallbackGrid=Array.from({length:42},(_,i)=>{
+    const point=hideFallbackPoint(i);
+    const marked=!can&&s.position&&hideFallbackCell(s.position.x,s.position.z)===i;
+    const prop=hideMap.slots.findIndex(slot=>hideFallbackCell(slot.x,slot.z)===i);
+    const blocked=!hideCanMove(point.x,point.z);
+    const display=marked?miniGameData.hideProps[s.shape].icon:prop>=0?miniGameData.hideProps[s.board[prop]].icon:blocked?'▧':'·';
+    return can?`<button class="hide-prop hide-grid-cell" data-hide-grid="${i}" aria-label="地图第 ${i+1} 格" ${pending?'disabled':''}>${display}</button>`:`<span class="hide-prop hide-grid-cell ${marked?'my-prop':''}">${display}</span>`;
+  }).join('');
+  return `<section class="panel play hide-scene"><h2>${can?'哪件玩具是搭档？':'守住你的伪装'}</h2><div class="hide-shots"><span>剩余 <strong>${remaining} / ${limit}</strong> 发</span><div class="shot-row">${shots}</div></div><div class="hide-stage" data-hide-scene data-renderer="fallback"><div class="hide-crosshair" aria-hidden="true">+</div><span class="hide-view-label" aria-hidden="true">玩具房</span><div class="hide-camera">${btn('hide-zoom-out','−')}${btn('hide-zoom-in','＋')}${btn('hide-reset','复位')}</div></div><div class="hide-flat-map"><p>平面房间图 · 下方为房间前侧</p><div class="hide-flat-grid">${fallbackGrid}</div></div>${movement}<div class="hide-toolbar"><span id="hide-aim" role="status">${can?'未瞄准':'搭档正在寻找你'}</span><div class="actions">${tools}${can?btn('hide-fire','点射',true,pending):''}${switcher}</div></div>${clue}<p class="hide-help">${instruction}</p><details class="hide-list"><summary>${can?'展开玩具列表':'展开观战列表'}</summary><div class="hide-board" aria-label="玩具架">${props}</div></details></section>`;
 }
 function renderShoot(s,can){
   const key=`${state.session}-${s.shot}`;
@@ -2041,7 +2484,7 @@ function renderGame(){
   if(s.done)return resultGame();
   const can=mode==='solo'||seat===s.turn;
   const id=state.game;
-  if(id==='hide')return shellGame(renderHide(s,can),`第 ${s.round+1} / 2 轮`);
+  if(id==='hide')return shellGame(renderHide(s,can&&!(mode==='solo'&&s.phase==='guess'&&localHideOwner)),`第 ${s.round+1} / 2 轮`);
   if(id==='shoot')return shellGame(renderShoot(s,can),`剩余 ${10-s.shot} / 10 发`);
   if(id==='toy')return shellGame(renderToy(s,can),`第 ${s.round+1} / 2 轮 · 障碍 ${s.step+1} / 3`);
   if(id==='memory')return shellGame(renderMemory(s,can),`已配对 ${s.matched.length/2} / 4`);
@@ -2052,17 +2495,37 @@ function renderGame(){
 function render(){
   const screens={home:renderHome,rooms:renderRooms,lobby:renderLobby,hub:renderHub,game:renderGame};
   const listOpen=app.querySelector('.hide-list')?.open;
-  app.innerHTML=screens[view]();
+  const markup=screens[view](), existing=app.querySelector('[data-hide-scene]');
+  if(existing&&view==='game'&&state.game==='hide'&&state.play.phase==='guess'&&!handoff){
+    const scratch=document.createElement('div');
+    scratch.innerHTML=markup;
+    const next=scratch.querySelector('[data-hide-scene]');
+    const currentSection=existing.parentElement, nextSection=next.parentElement;
+    const stale=Array.from(currentSection.children);
+    for(const child of Array.from(nextSection.children)){
+      if(child===next)continue;
+      const prior=stale.find(item=>item!==existing&&item.tagName===child.tagName&&item.className===child.className);
+      if(prior){
+        if(prior.outerHTML!==child.outerHTML)prior.replaceWith(child);
+        stale.splice(stale.indexOf(prior),1);
+      }else if(child.compareDocumentPosition(next)&Node.DOCUMENT_POSITION_FOLLOWING)currentSection.insertBefore(child,existing);
+      else currentSection.append(child);
+    }
+    for(const item of stale)if(item!==existing)item.remove();
+  }else app.innerHTML=markup;
   const frame=app.querySelector('[data-hide-scene]');
   if(frame){
-    const play=state.play, can=mode==='solo'||seat===play.turn;
+    const play=state.play, can=mode==='solo'?!localHideOwner:seat===play.turn;
+    const runner=play.position&&(mode!=='solo'||!can||play.moving)&&{...play.position,shape:play.shape};
     if(listOpen)app.querySelector('.hide-list').open=true;
-    toyRoom.sync(frame,{key:state.session+'-'+play.round,board:play.board,can,pending,guesses:play.guesses,spectate:can?-1:play.spot},(index,empty)=>{
+    toyRoom.sync(frame,{key:state.session+'-'+play.round,board:play.board,can,pending,guesses:play.guesses,runner,own:!can,shots:play.shots,feedback:play.feedback,revealUntil:play.revealUntil},(index,empty)=>{
       hideAim=index;
       const status=app.querySelector('#hide-aim');
-      if(status&&can)status.textContent=index<0?(empty?'准心没对着玩具':'未瞄准'):'瞄准：'+miniGameData.hideProps[play.board[index]].label;
-    },index=>dispatch({type:'game-action',input:{type:'shoot',index}}));
-  }else{toyRoom.sync(null);hideAim=-1;}
+      if(status&&can)status.textContent=index<0?(empty?'准心没对着玩具':'未瞄准'):'瞄准：'+(index===play.board.length?'移动的玩具':miniGameData.hideProps[play.board[index]].label);
+    },(index,at)=>dispatch({type:'game-action',input:{type:'shoot',index,at}}));
+    if(app.querySelector('[data-hide-move]'))hideMovement.bind(app,(dx,dz)=>dispatch({type:'game-action',input:{type:'move',dx,dz}},play.hider));
+    else hideMovement.stop();
+  }else{toyRoom.sync(null);hideMovement.stop();hideAim=-1;}
   walkOrigin=null;
 }
 function gameID(){
@@ -2101,6 +2564,7 @@ function applyState(next){
   if(!next)return;
   const previous=state;
   state=next;
+  if(next.stage!=='game'||next.game!=='hide'||next.play.phase!=='guess')localHideOwner=false;
   if(next.stage==='hub'&&previous.stage==='hub')walkOrigin=previous.positions;
   if(mode==='solo'&&next.stage==='game'&&previous.stage==='game'&&previous.session===next.session){
     if(next.game==='hide'&&next.play.phase==='guess'&&previous.play.phase==='reveal')handoff=true;
@@ -2152,7 +2616,9 @@ async function pollLan(){
 function publishInternet(){
   let shared=state;
   if(state.game==='hide'&&state.play.hider===0&&['reveal','guess'].includes(state.play.phase)){
-    shared={...state,play:{...state.play,spot:null,decoy:null}};
+    const play=state.play;
+    const visible=play.phase==='guess'&&play.moving;
+    shared={...state,play:{...play,spot:null,decoy:null,position:visible?play.position:null,shape:visible?play.shape:null}};
   }
   if(state.game==='signal'&&state.play.phase!=='result'&&state.play.reader===0){
     shared={...state,play:{...state.play,sequence:[]}};
@@ -2182,7 +2648,9 @@ function peerEvent(event,connectionEpoch){
   if(seat===0&&incoming.kind==='action'&&incoming.action&&typeof incoming.action==='object'){
     const duelInput=incoming.action.type==='game-action'&&state.game==='duel'&&incoming.session===state.session&&
       incoming.round===state.play.round&&incoming.shots===state.play.shots;
-    if(incoming.version===version||duelInput){
+    const hideInput=incoming.action.type==='game-action'&&state.game==='hide'&&incoming.session===state.session&&
+      incoming.round===state.play.round&&incoming.hidePhase===state.play.phase&&incoming.shots===state.play.shots;
+    if(incoming.version===version||duelInput||hideInput){
       const next=reduce(state,incoming.action,1);
       if(next!==state){version++;applyState(next);}
     }
@@ -2236,8 +2704,9 @@ async function dispatch(action,actor=mode==='solo'?(view==='lobby'?roleCursor:vi
   if(pending)return;
   if(mode==='internet'&&seat===1){
     if(!joined){notify('搭档已断开，请重新加入。');return;}
-    pending=true;
-    if(!room.send({kind:'action',version,action,session:state.session,round:state.play?.round,shots:state.play?.shots})){pending=false;notify('消息发送失败，请再试一次。');}
+    const move=state.game==='hide'&&action.input?.type==='move';
+    pending=!move;
+    if(!room.send({kind:'action',version,action,session:state.session,round:state.play?.round,shots:state.play?.shots,hidePhase:state.play?.phase})){pending=false;notify('消息发送失败，请再试一次。');}
     else{
       const sentVersion=version;
       setTimeout(()=>{
@@ -2336,11 +2805,17 @@ document.addEventListener('click',e=>{
   if(b.dataset.enter){dispatch({type:'enter',game:b.dataset.enter});return;}
   if(b.dataset.choice!==undefined){
     const type=['shoot','hide','duel'].includes(state.game)?'shoot':state.game==='memory'?'flip':'pick';
-    dispatch({type:'game-action',input:{type,index:Number(b.dataset.choice)}});return;
+    const index=Number(b.dataset.choice);
+    if(state.game==='hide'&&toyRoom.shootSelection(index))return;
+    dispatch({type:'game-action',input:{type,index}});return;
   }
   if(b.dataset.pose!==undefined){
     const actor=mode==='solo'?1-state.play.turn:seat;
     dispatch({type:'game-action',input:{type:'pose',index:Number(b.dataset.pose)}},actor);
+    return;
+  }
+  if(b.dataset.hideGrid!==undefined){
+    dispatch({type:'game-action',input:{type:'shoot',index:state.play.board.length,grid:Number(b.dataset.hideGrid)}});
     return;
   }
   if(b.id==='join-room')return;
@@ -2363,7 +2838,12 @@ document.addEventListener('click',e=>{
   if(b.id==='start-hide')dispatch({type:'game-action',input:{type:'ready'}});
   if(b.id==='signal-ready')dispatch({type:'game-action',input:{type:'ready'}});
   if(b.id==='hide-scan')dispatch({type:'game-action',input:{type:'scan'}});
-  if(b.id==='hide-decoy')dispatch({type:'game-action',input:{type:'decoy'}});
+  if(b.id==='hide-switch-view'){
+    localHideOwner=!localHideOwner;
+    handoff=true;render();
+  }
+  if(b.id==='hide-decoy')dispatch({type:'game-action',input:{type:'decoy'}},state.play.hider);
+  if(b.id==='hide-morph')dispatch({type:'game-action',input:{type:'morph'}},state.play.hider);
   if(['hide-fire','hide-reset','hide-zoom-in','hide-zoom-out'].includes(b.id))toyRoom.action(b.id);
   if(b.id==='continue-game')dispatch({type:'game-action',input:{type:'continue'}});
   if(b.id==='records')showRecords();
@@ -2407,6 +2887,14 @@ async function startPage(){
   }
 }
 startPage();
+setInterval(()=>{
+  const button=app.querySelector('#hide-morph');
+  if(!button||state.game!=='hide')return;
+  const left=Math.max(0,Math.ceil((state.play.changedAt+10_000-Date.now())/1000));
+  const text=left?`变身冷却 ${left} 秒`:'随机变身';
+  if(button.textContent!==text)button.textContent=text;
+  button.disabled=left>0||pending;
+},200);
 
 </script>
 </body>
