@@ -152,11 +152,13 @@ button.hide-prop:hover:not(:disabled){border-color:var(--gold)}
 .hide-help{font-size:12px!important;margin:4px 0 9px!important}
 .hide-runner-controls{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;margin-top:9px}
 .hide-dpad{display:grid;grid-template-columns:repeat(3,44px);gap:3px}
-.hide-dpad [data-hide-move]{min-width:44px;min-height:42px;padding:3px;font-size:20px;touch-action:none;user-select:none}
-.hide-dpad [data-hide-move=up]{grid-column:2;grid-row:1}
-.hide-dpad [data-hide-move=left]{grid-column:1;grid-row:2}
-.hide-dpad [data-hide-move=down]{grid-column:2;grid-row:2}
-.hide-dpad [data-hide-move=right]{grid-column:3;grid-row:2}
+.hide-dpad button{min-width:44px;min-height:42px;padding:3px;font-size:20px;touch-action:none;user-select:none}
+.hide-dpad button:nth-child(1){grid-column:2;grid-row:1}
+.hide-dpad button:nth-child(2){grid-column:1;grid-row:2}
+.hide-dpad button:nth-child(3){grid-column:2;grid-row:2}
+.hide-dpad button:nth-child(4){grid-column:3;grid-row:2}
+.hide-stage[data-renderer=webgl]~.hide-list{display:none}
+.hide-stage[data-renderer=fallback]~.hide-seeker-controls{display:none}
 .hide-morph{display:grid;justify-items:end;gap:5px;color:var(--gold);font-size:13px}
 .hide-flat-map{display:none}
 .hide-stage[data-renderer=fallback]+.hide-flat-map{display:block}
@@ -452,12 +454,57 @@ button.duel-cell:hover:not(:disabled){outline:2px solid #ffdd9c;outline-offset:-
 @media(max-width:420px){.duel-hps{gap:5px}.duel-hp{gap:4px;padding:5px}.duel-hp .avatar{width:27px;height:27px}.duel-cell{font-size:18px}.signal-tile{min-width:36px}}
 
 
+.challenge-panel{background:radial-gradient(ellipse at 55% 0,color-mix(in srgb,var(--arcade-accent) 15%,#372744),#21192f 74%);padding:18px}
+.challenge-head{display:flex;justify-content:space-between;align-items:baseline;gap:8px;flex-wrap:wrap;margin-bottom:10px}
+.challenge-head h2{margin:0;font-size:clamp(20px,4.2vw,30px)}
+.challenge-meter{color:var(--arcade-accent);font-size:13px}
+.challenge-scene{position:relative;isolation:isolate;overflow:hidden;height:clamp(255px,44svh,425px);border:1px solid #665778;border-radius:14px;background:#171429}
+.challenge-scene canvas{position:absolute;inset:0;display:block;width:100%;height:100%;touch-action:none;cursor:pointer;outline-offset:-4px}
+.challenge-scene[data-renderer=fallback]{display:none}
+.challenge-scene[data-arcade-kind=memory]{height:clamp(315px,52svh,470px)}
+.challenge-offset{height:0}
+.challenge-status{display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;min-height:44px;margin:7px 0}
+.challenge-status p{margin:0;font-size:13px}
+.challenge-status .last-hit{color:#bceacc}
+.challenge-status .last-miss{color:#ffb4aa}
+.arcade-backup{margin-top:9px;font-size:12px;color:#d0c1dc}
+.arcade-backup summary{padding:7px 0;cursor:pointer}
+.arcade-backup-grid{display:grid;grid-template-columns:repeat(var(--arcade-cols),minmax(0,1fr));gap:5px}
+.arcade-choice{display:grid;place-items:center;min-height:50px;font-size:25px;padding:1px;background:#332645;border:1px solid #7a628b;border-radius:8px;color:var(--arcade-accent)}
+.arcade-choice.is-lit{color:#fff3c9;background:#5d475d;border-color:#ffce92}
+.arcade-choice.is-matched{background:#374c54;opacity:1}
+.arcade-choice,.arcade-choice.is-lit{color:var(--tile-color,var(--arcade-accent))}
+.arcade-choice small{font-size:10px;margin-top:-5px}
+.arcade-choice[data-arcade-hidden=true]{visibility:hidden}
+.challenge-progress{display:flex;gap:5px;align-items:center;color:#e2d2ef;font-family:system-ui,sans-serif}
+.challenge-progress span{width:14px;height:12px;border-radius:99px;border:1px solid #9273a0;background:#312643}
+.challenge-progress .done{background:#9cdbc4;border-color:#9cdbc4}
+.challenge-progress .active{background:#ffcc91;border-color:#ffcc91}
+.challenge-dots{display:flex;gap:9px;align-items:center;font-size:19px;letter-spacing:.05em;color:#faa3bf}
+.challenge-dots .dim{opacity:.4}
+.challenge-countdown{height:4px;border-radius:8px;overflow:hidden;background:#382d4a;margin:0 0 9px}
+.challenge-countdown i{width:100%;height:100%;display:block;background:var(--arcade-accent);transform-origin:left;animation:challenge-time var(--arcade-time,2s) linear both}
+@keyframes challenge-time{to{transform:scaleX(0)}}
+@media(max-width:420px){.challenge-panel{padding:12px}.challenge-scene{height:clamp(233px,40svh,330px)}.challenge-scene[data-arcade-kind=memory]{height:clamp(278px,45svh,356px)}.arcade-choice{min-height:44px}}
+.game-layout:has(.duel-panel){max-width:1010px}
+.duel-arena{height:clamp(390px,59svh,615px)}
+@media(max-width:480px){.duel-panel{padding:11px}.duel-arena{height:clamp(360px,56svh,500px)}}
+.footer-actions{display:flex;gap:18px}
+.wardrobe-wallet{color:var(--gold)!important}
+.wardrobe-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px}
+.wardrobe-card{display:grid;justify-items:center;gap:4px;padding:9px 3px;border:1px solid #63506f;border-radius:10px;background:#392b4a;text-align:center;min-height:90px;color:#fff1ea}
+.wardrobe-card span{font-size:27px;color:var(--skin)}
+.wardrobe-card strong{font-size:12px}.wardrobe-card small{font-size:11px;color:var(--skin)}
+.wardrobe-card[aria-pressed=true]{border-color:var(--skin);opacity:1}
+.wardrobe-avatar{position:relative;border:2px solid var(--role-color)}
+.wardrobe-avatar small{position:absolute!important;right:0;top:0;margin:0!important;padding:0 2px!important;background:#24192c!important;border:0!important;border-radius:6px!important;color:var(--role-color)!important;font-size:11px!important}
+
 </style>
 </head>
 <body>
 <header class="bar wrap"><button class="brand" id="home-link"><span class="brand-logo" aria-hidden="true">✦</span><span>双星夜市<small>TWIN STARS ARCADE</small></span></button><button class="quiet bar-rule" data-rules>玩法说明 <span aria-hidden="true">↗</span></button></header>
 <main id="app" class="wrap"></main>
-<footer class="foot wrap"><span><b aria-hidden="true">✦</b> 双星夜市</span><button class="footer-record" id="records">本机存档</button></footer>
+<footer class="foot wrap"><span><b aria-hidden="true">✦</b> 双星夜市</span><div class="footer-actions"><button class="footer-record" id="wardrobe">本机衣柜</button><button class="footer-record" id="records">本机存档</button></div></footer>
 <div class="toast" id="toast" role="status" hidden></div>
 <dialog id="rules-dialog"><div class="dialog-inner"><form method="dialog"><button class="icon-btn close" aria-label="关闭">×</button></form><div id="rule-content"></div></div></dialog>
 <script>/*
@@ -501,8 +548,8 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 window.arcadeStatic=true;
 window.arcadeArt={"hero":"./assets/hero.webp","map":"./assets/map.webp","avatars":["./assets/role-0.webp","./assets/role-1.webp","./assets/role-2.webp","./assets/role-3.webp"]};
 const internetRooms = (() => {
-  const roomPrefix = 'starlight-arcade-v4-';
-  const channelLabel = 'starlight-arcade-v4';
+  const roomPrefix = 'starlight-arcade-v5-';
+  const channelLabel = 'starlight-arcade-v5';
   const codeAlphabet = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
   const roomTimeout = 15_000;
 
@@ -989,7 +1036,14 @@ function randomMiniGameOrder(items) {
 function startHideRound(round, results = []) {
   const props = miniGameData.hideProps.map((_, index) => index);
   const board = randomMiniGameOrder(props);
-  return {turn:round,done:false,round,phase:'hide',hider:round,board,spot:null,position:null,shape:null,moving:false,changedAt:0,revealUntil:0,feedback:null,shots:0,guesses:[],scans:0,clue:null,decoy:null,decoyUsed:false,results};
+  return {turn:round,done:false,round,phase:'hide',hider:round,board,spot:null,position:null,shape:null,moving:false,changedAt:0,jumpAt:0,jumpUntil:0,prepareUntil:0,revealUntil:0,feedback:null,shots:0,guesses:[],scans:0,clue:null,decoy:null,decoyUsed:false,results};
+}
+
+const hidePreparationMs=10_000;
+const hideJumpMs=850;
+function hideJumpHeight(state,now=Date.now()){
+  const t=(now-state.jumpAt)/hideJumpMs;
+  return state.jumpAt&&t>0&&t<1?Math.sin(Math.PI*t)*1.25:0;
 }
 
 function hideZone(index, dimension) {
@@ -1006,7 +1060,17 @@ const miniGames = {
       return startHideRound(0);
     },
     act(state, action, seat) {
-      if(state.phase==='guess'&&!state.done&&seat===state.hider&&action?.type==='move'){
+      const active=['prepare','guess'].includes(state.phase)&&!state.done;
+      if(active&&seat===state.hider&&action?.type==='jump'){
+        const now=Date.now();
+        if(now<state.jumpUntil+240)return state;
+        return {...state,jumpAt:now,jumpUntil:now+hideJumpMs,moving:true};
+      }
+      if(state.phase==='prepare'&&action?.type==='hunt'){
+        if(seat!==state.hider||Date.now()<state.prepareUntil)return state;
+        return {...state,phase:'guess',turn:1-state.hider};
+      }
+      if(active&&seat===state.hider&&action?.type==='move'){
         const dx=action.dx,dz=action.dz;
         if(![-1,0,1].includes(dx)||![-1,0,1].includes(dz)||(!dx&&!dz))return state;
         const now=Date.now();
@@ -1014,10 +1078,10 @@ const miniGames = {
         const length=Math.hypot(dx,dz), stride=.49/length;
         const x=Math.round((state.position.x+dx*stride)*100)/100;
         const z=Math.round((state.position.z+dz*stride)*100)/100;
-        if(!hideCanMove(x,z)||Math.abs(hideFloorY(x,z)-hideFloorY(state.position.x,state.position.z))>.38)return state;
+        if(!hideCanMove(x,z)||hideFloorY(x,z)-hideFloorY(state.position.x,state.position.z)>.38+hideJumpHeight(state,now))return state;
         return {...state,position:{x,z},moving:true,movedAt:now,revealUntil:now+850};
       }
-      if(state.phase==='guess'&&!state.done&&seat===state.hider&&action?.type==='morph'){
+      if(active&&seat===state.hider&&action?.type==='morph'){
         const now=Date.now();
         if(now-state.changedAt<10_000)return state;
         const shapes=miniGameData.hideProps.map((_,i)=>i).filter(i=>i!==state.shape);
@@ -1041,7 +1105,8 @@ const miniGames = {
       }
       if (state.phase === 'reveal') {
         if (action?.type !== 'ready') return state;
-        return {...state,phase:'guess',turn:1-state.hider,changedAt:Date.now()};
+        const now=Date.now();
+        return {...state,phase:'prepare',prepareUntil:now+hidePreparationMs,changedAt:now};
       }
       if(state.phase==='guess'&&action?.type==='scan'&&state.scans<2){
         const dimension=state.scans===0?'side':'depth';
@@ -1058,7 +1123,9 @@ const miniGames = {
       const aim=grid||(aimedAtRunner?action.at:hideMap.slots[index]);
       if(!aim||!Number.isFinite(aim.x)||!Number.isFinite(aim.z))return state;
       const hitDistance=Math.hypot(aim.x-state.position.x,aim.z-state.position.z);
-      const found=grid?hideFallbackCell(state.position.x,state.position.z)===action.grid:hitDistance<.78;
+      const vertical=aimedAtRunner&&!grid&&Number.isFinite(aim.y)?
+        Math.abs(aim.y-(hideFloorY(state.position.x,state.position.z)+.10+hideJumpHeight(state))):hideJumpHeight(state);
+      const found=grid?hideFallbackCell(state.position.x,state.position.z)===action.grid:hitDistance<.78&&vertical<.72;
       const shots=state.shots+1;
       const guesses=aimedAtRunner?state.guesses:[...state.guesses,index];
       const feedback={index,found};
@@ -1133,81 +1200,865 @@ const miniGames = {
   }
 };
 
-const signalSymbols = [
+const arcadeRules = {
+  shootTargetCount: 8,
+  shootMaxShots: 12,
+  memoryMissLimit: 10,
+  toyLegLength: 4,
+  toyMaxLives: 3,
+  memorySymbols: [
+    { icon: '🌙', label: '月牙' },
+    { icon: '🍓', label: '草莓' },
+    { icon: '🧸', label: '小熊' },
+    { icon: '💌', label: '情书' },
+    { icon: '🌈', label: '彩虹' },
+    { icon: '🎈', label: '气球' },
+    { icon: '🔔', label: '铃铛' },
+    { icon: '🦋', label: '蝴蝶' },
+  ],
+  toyLanes: [
+    { color: '#e7a1bc', label: '左侧' },
+    { color: '#f5cf91', label: '中间' },
+    { color: '#96ddd0', label: '右侧' },
+  ],
+};
+
+const arcadeGames = (() => {
+  function shuffled(items) {
+    const order = [...items];
+    for (let index = order.length - 1; index > 0; index--) {
+      const pick = Math.floor(Math.random() * (index + 1));
+      [order[index], order[pick]] = [order[pick], order[index]];
+    }
+    return order;
+  }
+
+  function isActive(state, seat) {
+    return !state.done && seat === state.turn;
+  }
+
+  function isIndex(input, type, count) {
+    return input?.type === type && Number.isInteger(input.index) && input.index >= 0 && input.index < count;
+  }
+
+  function targetsFor(shot, previous) {
+    const targets = Array(arcadeRules.shootTargetCount).fill(null);
+    if (shot >= arcadeRules.shootMaxShots) return targets;
+    const slots = shuffled(targets.map((_, index) => index).filter(index => index !== previous));
+    targets[slots[0]] = 'hit';
+    if (shot >= 4 && (shot >= 8 || Math.random() < 0.65)) targets[slots[1]] = 'decoy';
+    return targets;
+  }
+
+  function newStages() {
+    const hazards = ['gap', 'block', 'spinner'];
+    const themes = ['bridge', 'tunnel', 'lift', 'factory', 'bridge', 'tunnel', 'lift', 'factory'];
+    return themes.map((theme, stage) => {
+      const blocked = stage < 2 ? [null, null, hazards[stage]] : [null, hazards[stage % hazards.length], hazards[(stage + 1) % hazards.length]];
+      return { theme, hazards: shuffled(blocked), latches: shuffled([0, 1, 2]) };
+    });
+  }
+
+  function toyMistake(state, index, reason) {
+    const lives = state.lives - 1;
+    return { ...state, lives, done: lives === 0, won: lives === 0 ? false : null,
+      feedback: { seat: state.turn, index, correct: false, reason } };
+  }
+
+  return {
+    shoot: {
+      init() {
+        return { turn: 0, done: false, shot: 0, maxShots: arcadeRules.shootMaxShots, phase: 'wait', openedAt: null,
+          targets: targetsFor(0), scores: [0, 0], history: [] };
+      },
+      act(state, input, seat) {
+        if (!isActive(state, seat)) return state;
+        if (state.phase === 'wait') {
+          return input?.type === 'ready' ? { ...state, phase: 'aim', openedAt: Date.now() } : state;
+        }
+        const timeout = input?.type === 'timeout';
+        if (!timeout && !isIndex(input, 'shoot', state.targets.length)) return state;
+        const index = timeout ? null : input.index;
+        const target = index === null ? null : state.targets[index];
+        const hit = target === 'hit';
+        const shot = state.shot + 1;
+        const scores = [...state.scores];
+        if (hit) scores[seat] += 1;
+        return { ...state, turn: 1 - seat, done: shot === state.maxShots, shot, phase: 'wait', openedAt: null,
+          targets: targetsFor(shot, state.targets.indexOf('hit')), scores,
+          history: [...state.history, { seat, index, hit, timeout, decoy: target === 'decoy' }] };
+      },
+    },
+    memory: {
+      init() {
+        const symbols = arcadeRules.memorySymbols.map((_, index) => index);
+        return { turn: 0, done: false, won: null, deck: shuffled([...symbols, ...symbols]), open: [],
+          matched: [], scores: [0, 0], misses: 0, missLimit: arcadeRules.memoryMissLimit, result: null };
+      },
+      act(state, input, seat) {
+        if (!isActive(state, seat)) return state;
+        if (state.result) {
+          if (input?.type !== 'continue') return state;
+          const won = state.matched.length === state.deck.length;
+          const done = won || state.misses >= state.missLimit;
+          return { ...state, turn: 1 - seat, done, won: done ? won : null, open: [], result: null };
+        }
+        if (!isIndex(input, 'flip', state.deck.length) || state.matched.includes(input.index) || state.open.includes(input.index)) return state;
+        const open = [...state.open, input.index];
+        if (open.length === 1) return { ...state, open };
+        if (state.deck[open[0]] !== state.deck[open[1]]) {
+          return { ...state, open, misses: state.misses + 1, result: 'miss' };
+        }
+        const scores = [...state.scores];
+        scores[seat] += 1;
+        return { ...state, open, matched: [...state.matched, ...open], scores, result: 'match' };
+      },
+    },
+    toy: {
+      init() {
+        return { turn: 0, done: false, won: null, round: 0, toySeat: 0, step: 0, completed: 0,
+          phase: 'move', lane: null, lives: arcadeRules.toyMaxLives, maxLives: arcadeRules.toyMaxLives,
+          stages: newStages(), feedback: null };
+      },
+      act(state, input, seat) {
+        if (!isActive(state, seat) || !isIndex(input, 'pick', arcadeRules.toyLanes.length)) return state;
+        const { index } = input;
+        const stage = state.stages[state.completed];
+        if (state.phase === 'move') {
+          if (stage.hazards[index]) return toyMistake(state, index, stage.hazards[index]);
+          return { ...state, turn: 1 - seat, phase: 'help', lane: index,
+            feedback: { seat, index, correct: true, reason: 'lane' } };
+        }
+        if (stage.latches[state.lane] !== index) return toyMistake(state, index, 'latch');
+        const completed = state.completed + 1;
+        const feedback = { seat, index, correct: true, reason: 'gate' };
+        if (completed === state.stages.length) return { ...state, completed, done: true, won: true, feedback };
+        const round = Math.floor(completed / arcadeRules.toyLegLength);
+        return { ...state, completed, round, toySeat: round, step: completed % arcadeRules.toyLegLength,
+          turn: round, lane: null, phase: 'move', feedback };
+      },
+    },
+  };
+})();
+
+const wardrobe = (() => {
+  const catalog = Object.freeze([
+    Object.freeze({ id: 'classic', name: '原色', color: '#e8c2ad', cost: 0, icon: '✦' }),
+    Object.freeze({ id: 'peach', name: '蜜桃星光', color: '#ffadad', cost: 6, icon: '☀' }),
+    Object.freeze({ id: 'mint', name: '薄荷云朵', color: '#8de0c0', cost: 9, icon: '☁' }),
+    Object.freeze({ id: 'moon', name: '月海蓝', color: '#8bc8ff', cost: 12, icon: '☾' }),
+    Object.freeze({ id: 'aurora', name: '紫霭极光', color: '#d7adff', cost: 15, icon: '✧' }),
+    Object.freeze({ id: 'gold', name: '金色流星', color: '#ffcf76', cost: 18, icon: '★' }),
+  ]);
+  const initialSkin = catalog[0].id;
+  const rewardGames = new Set(['hide', 'shoot', 'toy', 'memory', 'signal', 'puzzle', 'duel']);
+  const coinReward = 3;
+
+  function normalize(value) {
+    const list = Array.isArray(value?.unlocked) ? value.unlocked : [];
+    const unlocked = catalog.filter(item => item.cost === 0 || list.includes(item.id)).map(item => item.id);
+    return {
+      coins: Number.isSafeInteger(value?.coins) && value.coins >= 0 ? value.coins : 0,
+      unlocked,
+      active: unlocked.includes(value?.active) ? value.active : initialSkin,
+    };
+  }
+
+  function earn(value, game) {
+    const current = normalize(value);
+    if (!rewardGames.has(game)) return current;
+    return { ...current, coins: Math.min(Number.MAX_SAFE_INTEGER, current.coins + coinReward) };
+  }
+
+  function buy(value, id) {
+    const current = normalize(value);
+    const item = catalog.find(skin => skin.id === id);
+    if (!item || current.unlocked.includes(id) || current.coins < item.cost) return current;
+    return normalize({ ...current, coins: current.coins - item.cost, unlocked: [...current.unlocked, id] });
+  }
+
+  function equip(value, id) {
+    const current = normalize(value);
+    return current.unlocked.includes(id) ? { ...current, active: id } : current;
+  }
+
+  return { catalog, normalize, earn, buy, equip };
+})();
+
+const challengePipe = {
+  width: 4,
+  height: 3,
+  edges: { n: 1, e: 2, s: 4, w: 8 },
+  levels: [
+    { source: 4, receiver: 7, budget: 13, scramble: 8, path: [4, 5, 1, 2, 6, 7] },
+    { source: 0, receiver: 11, budget: 17, scramble: 12, path: [0, 1, 5, 4, 8, 9, 10, 6, 7, 11] },
+    { source: 8, receiver: 3, budget: 21, scramble: 16, path: [8, 9, 5, 4, 0, 1, 2, 6, 10, 11, 7, 3] }
+  ]
+};
+
+const challengeSymbols = [
   { icon: '🌙', label: '月亮' },
   { icon: '🔔', label: '铃铛' },
   { icon: '🍓', label: '草莓' },
-  { icon: '💎', label: '宝石' }
+  { icon: '💎', label: '宝石' },
+  { icon: '⚓', label: '船锚' },
+  { icon: '🌿', label: '嫩芽' }
 ];
 
-function nextSignalSequence(length, previous) {
-  const sequence = Array.from({ length }, () => Math.floor(Math.random() * signalSymbols.length));
+const challengeDirections = [
+  { bit: 1, reverse: 4, dx: 0, dy: -1 },
+  { bit: 2, reverse: 8, dx: 1, dy: 0 },
+  { bit: 4, reverse: 1, dx: 0, dy: 1 },
+  { bit: 8, reverse: 2, dx: -1, dy: 0 }
+];
+
+function rotateChallengePipe(mask, steps = 1) {
+  return ((mask << steps) | (mask >> (4 - steps))) & 15;
+}
+
+function challengeTileEdge(from, to) {
+  const difference = to - from;
+  const { n, e, s, w } = challengePipe.edges;
+  if (difference === 1) return e;
+  if (difference === -1) return w;
+  return difference < 0 ? n : s;
+}
+
+function challengePipeNetwork(tiles, source, receiver) {
+  const { width, height, edges } = challengePipe;
+  const lit = [];
+  if ((tiles[source] & edges.w) === 0) return { lit, solved: false };
+
+  lit.push(source);
+  const seen = new Set(lit);
+  for (let cursor = 0; cursor < lit.length; cursor++) {
+    const cell = lit[cursor];
+    const x = cell % width;
+    const y = Math.floor(cell / width);
+    for (const direction of challengeDirections) {
+      if ((tiles[cell] & direction.bit) === 0) continue;
+      const nextX = x + direction.dx;
+      const nextY = y + direction.dy;
+      if (nextX < 0 || nextX >= width || nextY < 0 || nextY >= height) continue;
+      const neighbor = nextY * width + nextX;
+      if (seen.has(neighbor) || (tiles[neighbor] & direction.reverse) === 0) continue;
+      seen.add(neighbor);
+      lit.push(neighbor);
+    }
+  }
+  return { lit, solved: seen.has(receiver) && (tiles[receiver] & edges.e) !== 0 };
+}
+
+function scrambleChallengePipes(level) {
+  const decoys = [3, 5, 6, 9, 10, 12];
+  const { width, height, edges } = challengePipe;
+  const tiles = Array.from({ length: width * height }, () => decoys[Math.floor(Math.random() * decoys.length)]);
+  const turns = level.path.map((index, step, path) => {
+    const incoming = step === 0 ? edges.w : challengeTileEdge(index, path[step - 1]);
+    const outgoing = step === path.length - 1 ? edges.e : challengeTileEdge(index, path[step + 1]);
+    tiles[index] = incoming | outgoing;
+    const straight = tiles[index] === (edges.n | edges.s) || tiles[index] === (edges.e | edges.w);
+    return { index, rotations: 0, limit: straight ? 1 : 3 };
+  });
+
+  let candidates = turns;
+  for (let move = 0; move < level.scramble && candidates.length; move++) {
+    const selected = candidates[Math.floor(Math.random() * candidates.length)];
+    selected.rotations++;
+    if (selected.rotations === selected.limit) candidates = candidates.filter(item => item !== selected);
+  }
+  for (const item of turns) tiles[item.index] = rotateChallengePipe(tiles[item.index], 4 - item.rotations);
+
+  // A decoy can occasionally complete a different route. Break its incoming port.
+  if (challengePipeNetwork(tiles, level.source, level.receiver).solved) {
+    do {
+      tiles[level.source] = rotateChallengePipe(tiles[level.source]);
+    } while (tiles[level.source] & edges.w);
+  }
+  return tiles;
+}
+
+function startChallengePipes(round, turn) {
+  const level = challengePipe.levels[round];
+  const { source, receiver, budget } = level;
+  const tiles = scrambleChallengePipes(level);
+  const { lit } = challengePipeNetwork(tiles, source, receiver);
+  return { turn, done: false, round, phase: 'play', tiles, lit, source, receiver, moves: 0, budget, outcome: null, cleared: round };
+}
+
+function randomChallengeSequence(length, previous) {
+  const sequence = [];
+  for (let i = 0; i < length; i++) {
+    const last = sequence[i - 1];
+    const choices = challengeSymbols.map((_, index) => index).filter(index => index !== last);
+    sequence.push(choices[Math.floor(Math.random() * choices.length)]);
+  }
   if (previous?.length === length && sequence.every((symbol, index) => symbol === previous[index])) {
-    const last = length - 1;
-    sequence[last] = (sequence[last] + 1 + Math.floor(Math.random() * (signalSymbols.length - 1))) % signalSymbols.length;
+    const alternatives = challengeSymbols.map((_, index) => index)
+      .filter(index => index !== sequence[length - 1] && index !== sequence[length - 2]);
+    sequence[length - 1] = alternatives[Math.floor(Math.random() * alternatives.length)];
   }
   return sequence;
 }
 
-function startSignalRound(round, energy, history, previous) {
+function startChallengeSignal(round, energy, history, previous) {
   const reader = round % 2;
   return {
-    turn: reader,
-    done: false,
-    round,
-    phase: 'read',
-    reader,
-    sequence: nextSignalSequence(round + 3, previous),
-    picks: [],
-    energy,
-    history,
-    outcome: null,
-    cleared: round
+    turn: reader, done: false, round, phase: 'read', reader, sequence: randomChallengeSequence(round + 4, previous),
+    picks: [], energy, history, outcome: null, cleared: round
   };
 }
 
-const signalGame = {
-  init() {
-    return startSignalRound(0, 3, []);
+function isChallengePick(action, length) {
+  return action?.type === 'pick' && Number.isInteger(action.index) && action.index >= 0 && action.index < length;
+}
+
+const challengeGames = {
+  puzzle: {
+    init() {
+      return startChallengePipes(0, 0);
+    },
+    act(state, action, seat) {
+      if (state.done || state.turn !== seat) return state;
+      if (state.phase === 'result') {
+        if (action?.type !== 'continue') return state;
+        if (state.cleared === challengePipe.levels.length) return { ...state, done: true };
+        return startChallengePipes(state.cleared, 1 - seat);
+      }
+      if (!isChallengePick(action, state.tiles.length)) return state;
+
+      const tiles = [...state.tiles];
+      tiles[action.index] = rotateChallengePipe(tiles[action.index]);
+      const { lit, solved } = challengePipeNetwork(tiles, state.source, state.receiver);
+      const moves = state.moves + 1;
+      const outcome = solved ? 'success' : moves >= state.budget ? 'miss' : null;
+      if (!outcome) return { ...state, tiles, lit, moves, turn: 1 - seat };
+      return { ...state, tiles, lit, moves, phase: 'result', outcome, cleared: state.cleared + Number(solved) };
+    }
   },
-  act(state, action, seat) {
-    if (state.done || seat !== state.turn) return state;
+  signal: {
+    init() {
+      return startChallengeSignal(0, 3, []);
+    },
+    act(state, action, seat) {
+      if (state.done || state.turn !== seat) return state;
+      if (state.phase === 'read') {
+        if (action?.type !== 'ready') return state;
+        return { ...state, phase: 'repeat', turn: 1 - state.reader };
+      }
+      if (state.phase === 'result') {
+        if (action?.type !== 'continue') return state;
+        if (state.energy === 0 || state.cleared === 3) return { ...state, done: true };
+        return startChallengeSignal(state.cleared, state.energy, state.history, state.sequence);
+      }
+      if (!isChallengePick(action, challengeSymbols.length)) return state;
 
-    if (state.phase === 'read') {
-      if (action?.type !== 'ready') return state;
-      return { ...state, phase: 'repeat', turn: 1 - state.reader };
+      const picks = [...state.picks, action.index];
+      const correct = action.index === state.sequence[state.picks.length];
+      if (correct && picks.length < state.sequence.length) return { ...state, picks };
+      return {
+        ...state, picks, phase: 'result', outcome: correct ? 'success' : 'miss',
+        energy: state.energy - Number(!correct), cleared: state.cleared + Number(correct),
+        history: [...state.history, { round: state.round, success: correct, picks }]
+      };
     }
-
-    if (state.phase === 'result') {
-      if (action?.type !== 'continue') return state;
-      if (state.energy === 0 || state.cleared === 3) return { ...state, done: true };
-      return startSignalRound(state.cleared, state.energy, state.history, state.sequence);
-    }
-
-    if (state.phase !== 'repeat' || action?.type !== 'pick' || !Number.isInteger(action.index) ||
-        action.index < 0 || action.index >= signalSymbols.length) return state;
-
-    const picks = [...state.picks, action.index];
-    const correct = action.index === state.sequence[state.picks.length];
-    if (correct && picks.length < state.sequence.length) return { ...state, picks };
-
-    return {
-      ...state,
-      phase: 'result',
-      picks,
-      energy: state.energy - Number(!correct),
-      history: [...state.history, { round: state.round, success: correct, picks }],
-      outcome: correct ? 'success' : 'miss',
-      cleared: state.cleared + Number(correct)
-    };
   }
 };
+
+const arcadeWorld = (() => {
+  const accents = { signal: 0xaf9afe, shoot: 0xffbf85, toy: 0x8ad8bc, memory: 0xce9af8, puzzle: 0xffc77c };
+  const glyphColors = [0xf5bc76, 0xf58cae, 0xa69bf6, 0x66d9bd, 0x6abafa, 0xf48c73, 0xe4db78, 0xf1cfed];
+  const separation = 1.32;
+  const padTop = .14;
+  let world = null;
+
+  function reset() {
+    if (!world) return;
+    const previous = world;
+    world = null;
+    previous.observer?.disconnect();
+    previous.abort.abort();
+    for (const resource of previous.resources) resource.dispose();
+    previous.renderer.dispose();
+    previous.renderer.forceContextLoss();
+    previous.renderer.domElement.remove();
+    if (previous.frame.dataset.renderer === 'webgl') delete previous.frame.dataset.renderer;
+  }
+
+  function numberColor(value, fallback) {
+    return Number.isInteger(value) && value >= 0 && value <= 0xffffff ? value : fallback;
+  }
+
+  function create(frame) {
+    const T = window.THREE;
+    if (!T?.WebGLRenderer) throw new Error('WebGL renderer is unavailable');
+    const canvas = document.createElement('canvas');
+    canvas.className = 'arcade-world-canvas';
+    canvas.setAttribute('aria-hidden', 'true');
+    Object.assign(canvas.style, { display: 'block', width: '100%', height: '100%', touchAction: 'pan-y' });
+    const renderer = new T.WebGLRenderer({ canvas, antialias: true, alpha: true, powerPreference: 'low-power' });
+    renderer.setClearColor(0x20172d, 1);
+    renderer.outputColorSpace = T.SRGBColorSpace;
+    const scene = new T.Scene();
+    const camera = new T.OrthographicCamera(-1, 1, 1, -1, .1, 80);
+    camera.position.set(0, 10, 6.5);
+    camera.lookAt(0, 0, 0);
+    scene.add(new T.HemisphereLight(0xffecf7, 0x706485, 2.35));
+    const keyLight = new T.DirectionalLight(0xffdcc3, 2.5);
+    keyLight.position.set(-3, 8, 4);
+    scene.add(keyLight);
+    const fillLight = new T.DirectionalLight(0x9cbbff, 1.1);
+    fillLight.position.set(6, 4, -6);
+    scene.add(fillLight);
+
+    const view = {
+      T, frame, renderer, scene, camera, canvas, keyLight, fillLight,
+      resources: new Set(), materials: new Map(), geometries: new Map(),
+      raycaster: new T.Raycaster(), pointer: new T.Vector2(), abort: new AbortController(),
+    };
+    const options = { signal: view.abort.signal };
+    let down;
+    canvas.addEventListener('pointerdown', event => {
+      if (event.button === 0 && event.isPrimary) down = { id: event.pointerId, x: event.clientX, y: event.clientY };
+    }, options);
+    canvas.addEventListener('pointerup', event => {
+      if (down?.id !== event.pointerId) return;
+      const start = down;
+      down = null;
+      if (!view.interactive || Math.hypot(event.clientX - start.x, event.clientY - start.y) > 12) return;
+      const bounds = canvas.getBoundingClientRect();
+      if (!bounds.width || !bounds.height) return;
+      view.pointer.set((event.clientX - bounds.left) / bounds.width * 2 - 1, 1 - (event.clientY - bounds.top) / bounds.height * 2);
+      view.raycaster.setFromCamera(view.pointer, view.camera);
+      const target = view.raycaster.intersectObjects(view.pickables)[0];
+      if (target && !view.tiles[target.object.userData.index].disabled) view.onChoice(target.object.userData.index);
+    }, options);
+    canvas.addEventListener('pointercancel', () => { down = null; }, options);
+    canvas.addEventListener('webglcontextlost', event => {
+      event.preventDefault();
+      if (world === view) reset();
+      view.frame.dataset.renderer = 'fallback';
+    }, options);
+    frame.append(canvas);
+    return view;
+  }
+
+  function cache(view, map, key, make) {
+    if (!map.has(key)) {
+      const value = make();
+      map.set(key, value);
+      view.resources.add(value);
+    }
+    return map.get(key);
+  }
+
+  function material(view, color, glow = 0) {
+    return cache(view, view.materials, `${color}:${glow}`, () => new view.T.MeshStandardMaterial({
+      color, emissive: glow, emissiveIntensity: glow ? .65 : 0, metalness: .05, roughness: .59,
+    }));
+  }
+
+  function geometry(view, shape, dimensions) {
+    const { T } = view;
+    return cache(view, view.geometries, `${shape}:${dimensions.join(',')}`, () => {
+      switch (shape) {
+        case 'box': return new T.BoxGeometry(...dimensions);
+        case 'sphere': return new T.SphereGeometry(dimensions[0], 12, 8);
+        case 'disc': return new T.CylinderGeometry(...dimensions);
+        case 'ring': return new T.TorusGeometry(...dimensions);
+        case 'gem': return new T.OctahedronGeometry(dimensions[0]);
+        case 'triangle': return new T.TetrahedronGeometry(dimensions[0]);
+        default: return new T.IcosahedronGeometry(dimensions[0], 0);
+      }
+    });
+  }
+
+  function mesh(view, group, shape, dimensions, tint, x, y, z, glow = 0) {
+    const part = new view.T.Mesh(geometry(view, shape, dimensions), material(view, tint, glow));
+    part.position.set(x, y, z);
+    group.add(part);
+    return part;
+  }
+
+  function flatRing(view, group, radius, width, tint, y, glow = 0) {
+    const ring = mesh(view, group, 'ring', [radius, width, 7, 28], tint, 0, y, 0, glow);
+    ring.rotation.x = -Math.PI / 2;
+    return ring;
+  }
+
+  function glyph(view, group, index, y, size, tint) {
+    const color = tint ?? glyphColors[index];
+    switch (index) {
+      case 0: mesh(view, group, 'gem', [size * .78], color, 0, y + size * .53, 0); break;
+      case 1: flatRing(view, group, size * .62, size * .17, color, y + size * .24); break;
+      case 2: mesh(view, group, 'box', [size, size * .54, size], color, 0, y + size * .39, 0).rotation.y = Math.PI / 4; break;
+      case 3: mesh(view, group, 'triangle', [size * .82], color, 0, y + size * .53, 0).rotation.y = Math.PI / 4; break;
+      case 4:
+        mesh(view, group, 'box', [size * 1.26, size * .36, size * .39], color, 0, y + size * .23, 0);
+        mesh(view, group, 'box', [size * .39, size * .36, size * 1.26], color, 0, y + size * .23, 0);
+        break;
+      case 5:
+        for (const [x, z] of [[-.48, .29], [.48, .29], [0, -.41]]) mesh(view, group, 'sphere', [size * .37], color, x * size, y + size * .32, z * size);
+        break;
+      case 6: mesh(view, group, 'disc', [size * .63, size * .63, size * .32, 6], color, 0, y + size * .24, 0).rotation.y = Math.PI / 6; break;
+      default: mesh(view, group, 'rock', [size * .79], color, 0, y + size * .48, 0).scale.set(1, .7, 1);
+    }
+  }
+
+  function showCar(view, group, color) {
+    mesh(view, group, 'box', [.58, .16, .84], color, 0, .31, 0);
+    mesh(view, group, 'box', [.39, .19, .37], 0xb4d7e2, 0, .43, .06);
+    for (const x of [-.31, .31]) {
+      for (const z of [-.28, .28]) {
+        mesh(view, group, 'disc', [.13, .13, .12, 12], 0x29273d, x, .24, z).rotation.z = Math.PI / 2;
+      }
+      mesh(view, group, 'box', [.12, .065, .04], 0xffe5a2, x * .65, .34, -.43, 0xf6b857);
+    }
+  }
+
+  function makeFeature(view, group, tile, accent) {
+    const raw = tile.detail;
+    const detail = raw && typeof raw === 'object' ? raw : null;
+    const value = detail?.symbol ?? detail?.value ?? raw;
+    const symbol = Number.isInteger(value) && value >= 0 && value <= 7 ? value : null;
+    const color = numberColor(tile.color, symbol === null ? accent : glyphColors[symbol]);
+    const glow = numberColor(tile.glow, 0);
+    switch (tile.kind ?? tile.type) {
+      case 'coil':
+        mesh(view, group, 'disc', [.35, .43, .16, 24], color, 0, .24, 0, glow);
+        flatRing(view, group, .39, .036, glow || 0xc8a5ec, .23);
+        if (symbol !== null) glyph(view, group, symbol, .33, .28, color);
+        else mesh(view, group, 'sphere', [.15], color, 0, .39, 0, glow);
+        break;
+      case 'target':
+        mesh(view, group, 'disc', [.38, .42, .13, 24], 0x46324d, 0, .25, 0);
+        flatRing(view, group, .31, .033, color, .33, glow);
+        flatRing(view, group, .18, .027, color, .34, glow);
+        mesh(view, group, 'gem', [glow ? .14 : .095], color, 0, .36, 0, glow);
+        break;
+      case 'card':
+        mesh(view, group, 'box', [.78, .16, .88], symbol === null ? 0x685385 : 0x46345d, 0, .25, 0, glow);
+        if (symbol === null) {
+          mesh(view, group, 'box', [.65, .024, .75], 0x886faf, 0, .34, 0);
+          glyph(view, group, 0, .35, .22, 0xf3ca93);
+        } else glyph(view, group, symbol, .34, .34, color);
+        break;
+      case 'car': showCar(view, group, color); break;
+      case 'gate':
+        for (const x of [-.33, .33]) mesh(view, group, 'box', [.13, .65, .18], color, x, .49, 0, glow);
+        mesh(view, group, 'box', [.8, .14, .19], color, 0, .83, 0, glow);
+        mesh(view, group, 'sphere', [.09], 0xffdba4, 0, .91, 0, glow);
+        break;
+      case 'crystal':
+        flatRing(view, group, .32, .045, color, .18, glow);
+        if (symbol !== null) glyph(view, group, symbol, .28, .5, color);
+        else mesh(view, group, 'gem', [.40], color, 0, .55, 0, glow).scale.set(.74, 1, .74);
+        break;
+      case 'pipe':
+        mesh(view, group, 'disc', [.15, .17, .15, 14], color, 0, .27, 0, glow);
+        for (const [flag, dx, dz] of [[1, 0, -1], [2, 1, 0], [4, 0, 1], [8, -1, 0]]) {
+          if (Number(value) & flag) {
+            mesh(view, group, 'box', [dx ? .62 : .15, .10, dz ? .62 : .15], color, dx * .35, .27, dz * .35, glow);
+          }
+        }
+        break;
+      case 'lane':
+        if (value === 'car') showCar(view, group, color);
+        else if (value === 'gap') {
+          mesh(view, group, 'box', [.85, .04, .85], 0x211b32, 0, .17, 0);
+          for (const x of [-.37, .37]) mesh(view, group, 'box', [.042, .045, .78], 0xe1868c, x, .2, 0);
+        } else if (value === 'block') {
+          mesh(view, group, 'box', [.70, .28, .32], color, 0, .31, 0);
+          for (const x of [-.23, 0, .23]) mesh(view, group, 'box', [.08, .04, .34], 0xffc68a, x, .47, 0);
+        } else if (value === 'spinner') {
+          mesh(view, group, 'disc', [.18, .2, .14, 16], color, 0, .22, 0);
+          const spinner = mesh(view, group, 'box', [.75, .09, .14], color, 0, .36, 0, glow);
+          spinner.rotation.y = Math.PI / 4;
+          for (const x of [-.19, .19]) mesh(view, group, 'sphere', [.1], color, x, .39, -x);
+        } else mesh(view, group, 'box', [.08, .025, .47], 0xb8c1c9, 0, .19, 0);
+        break;
+      default: flatRing(view, group, .19, .024, color, .18, glow);
+    }
+    if (detail?.selected || detail?.matched) flatRing(view, group, .56, .025, detail.matched ? 0x9cdbb2 : 0xffd193, .18);
+  }
+
+  function draw(view, settings) {
+    const { T, scene, resources } = view;
+    if (view.board) scene.remove(view.board);
+    for (const resource of resources) resource.dispose();
+    resources.clear();
+    view.materials.clear();
+    view.geometries.clear();
+
+    const accent = numberColor(settings.theme, accents[settings.theme] ?? accents.signal);
+    const board = new T.Group();
+    view.board = board;
+    scene.add(board);
+    view.cols = settings.cols;
+    view.rows = settings.rows;
+    const width = (view.cols - 1) * separation + 1.44;
+    const depth = (view.rows - 1) * separation + 1.49;
+    mesh(view, board, 'box', [width + .22, .2, depth + .22], 0x362842, 0, -.18, 0);
+    mesh(view, board, 'box', [width, .075, depth], 0x513c5b, 0, -.067, 0);
+    for (const x of [-.5, .5]) {
+      for (const z of [-.5, .5]) mesh(view, board, 'sphere', [.075], accent, x * width, -.01, z * depth, accent);
+    }
+    view.pickables = settings.tiles.map((tile, index) => {
+      const group = new T.Group();
+      group.position.set((index % view.cols - (view.cols - 1) * .5) * separation, 0,
+        (Math.floor(index / view.cols) - (view.rows - 1) * .5) * separation);
+      board.add(group);
+      const pad = mesh(view, group, 'box', [1.22, .17, 1.22], tile.disabled ? 0x493953 : 0x63516d, 0, padTop - .062, 0);
+      pad.userData.index = index;
+      const model = new T.Group();
+      group.add(model);
+      const rotation = Number.isFinite(tile.rotation) ? tile.rotation : 0;
+      model.rotation.y = (tile.kind ?? tile.type) === 'pipe' ? -rotation : rotation;
+      makeFeature(view, model, tile, accent);
+      return pad;
+    });
+    scene.updateMatrixWorld(true);
+  }
+
+  function paint(view) {
+    const { frame, renderer, camera, scene, cols, rows } = view;
+    const width = frame.clientWidth;
+    const height = frame.clientHeight;
+    if (!width || !height) return false;
+    const aspect = width / height;
+    const contentWidth = (cols - 1) * separation + 1.96;
+    const contentHeight = ((rows - 1) * separation + 1.72) * .84 + .6;
+    const halfHeight = Math.max(contentHeight, contentWidth / aspect) * .5;
+    camera.left = -halfHeight * aspect;
+    camera.right = halfHeight * aspect;
+    camera.top = halfHeight;
+    camera.bottom = -halfHeight;
+    camera.updateProjectionMatrix();
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 1.6));
+    renderer.setSize(width, height, false);
+    renderer.render(scene, camera);
+    return true;
+  }
+
+  function sync(frame, settings, onChoice) {
+    if (!frame || !settings || !Number.isInteger(settings.cols) || !Number.isInteger(settings.rows) ||
+      settings.cols < 1 || settings.rows < 1 || settings.tiles?.length !== settings.cols * settings.rows) {
+      reset();
+      return;
+    }
+    try {
+      if (!world || world.key !== settings.key) {
+        reset();
+        world = create(frame);
+        world.key = settings.key;
+        const view = world;
+        if (typeof ResizeObserver === 'function') {
+          view.observer = new ResizeObserver(() => {
+            if (world === view && paint(view)) view.frame.dataset.renderer = 'webgl';
+          });
+          view.observer.observe(frame);
+        }
+      } else if (world.frame !== frame) {
+        if (world.frame.dataset.renderer === 'webgl') delete world.frame.dataset.renderer;
+        world.observer?.disconnect();
+        world.frame = frame;
+        frame.append(world.canvas);
+        world.observer?.observe(frame);
+      }
+      world.interactive = Boolean(settings.interactive);
+      world.onChoice = onChoice;
+      world.tiles = settings.tiles;
+      world.canvas.style.cursor = world.interactive ? 'pointer' : 'default';
+      draw(world, settings);
+      if (paint(world)) frame.dataset.renderer = 'webgl';
+    } catch {
+      reset();
+      frame.dataset.renderer = 'fallback';
+    }
+  }
+
+  function targetPosition(index) {
+    const pad = world?.pickables[index];
+    if (!pad || world.frame.dataset.renderer !== 'webgl') return null;
+    const position = pad.getWorldPosition(new world.T.Vector3()).project(world.camera);
+    const bounds = world.canvas.getBoundingClientRect();
+    return { x: bounds.left + (position.x + 1) * bounds.width / 2, y: bounds.top + (1 - position.y) * bounds.height / 2 };
+  }
+
+  return { sync, reset, targetPosition };
+})();
+
+const arcadeAccent={puzzle:0x75d7ef,signal:0xa8ddf2,shoot:0xffc378,memory:0xb0ddc4,toy:0xf8a1a4};
+const signalColors=[0xe6bf7e,0xbfa5ed,0xf187a0,0x8bcbf3,0x9ce1bb,0xe5a46f];
+const memoryColors=[0xecc278,0xf18795,0xf0a976,0xe9acd5,0x90ddef,0xab9eeb,0xa7deb3,0x86afe9];
+const pipeGlyph={3:'└',5:'│',6:'┌',9:'┘',10:'─',12:'┐'};
+const hazardIcons={gap:'◼',block:'▧',spinner:'✣'};
+let arcadeTiming={shotKey:'',shotEnd:0,shotTimer:0,signalKey:'',signalStep:-1,signalTimers:[]};
+
+function arcadeTile(kind,label,icon,color,detail,disabled=false,glow,extra={}){
+  return {kind,label,icon,color,detail,disabled,glow,...extra};
+}
+function arcadeProgress(done,total){
+  return `<span class="challenge-progress" aria-label="${done} / ${total}">${Array.from({length:total},(_,i)=>`<span class="${i<done?'done':i===done?'active':''}"></span>`).join('')}</span>`;
+}
+function arcadeBoard(id,s,can){
+  const active=can&&!pending;
+  const theme=arcadeAccent[id];
+  if(id==='puzzle'){
+    const enabled=active&&s.phase==='play';
+    return {
+      cols:4,rows:3,heading:s.outcome==='success'?'光路已接通':s.outcome==='miss'?'步数用完了':'接通光路',
+      meter:`剩余 ${s.budget-s.moves} / ${s.budget} 步`,note:'蓝色入口 · 橙色出口 · 轮流转动接头',
+      control:can&&s.outcome?continued(s.outcome==='miss'?'重开本关':s.cleared===3?'结算':'下一关'):'',
+      interactive:enabled,tiles:s.tiles.map((value,i)=>{
+        const endpoint=i===s.source||i===s.receiver;
+        const color=i===s.source?0x73dbff:i===s.receiver?0xffa365:s.lit.includes(i)?0x96e0b2:0x8e80aa;
+        return arcadeTile('pipe',i===s.source?'入口接头':i===s.receiver?'出口接头':`接头 ${i+1}`,pipeGlyph[value]||'✚',color,value,!enabled,endpoint||s.lit.includes(i)?color:0,{lit:s.lit.includes(i)});
+      })
+    };
+  }
+  if(id==='shoot'){
+    const aiming=s.phase==='aim';
+    const enabled=active&&aiming;
+    const last=s.history.at(-1);
+    return {
+      cols:4,rows:2,heading:`第 ${s.shot+1} 发`,meter:`${s.scores.join(' / ')} 分`,
+      note:last?(last.timeout?'上一发超时':last.hit?'上一发命中':last.decoy?'上一发打中假靶':'上一发落空'):'瞄准金色星靶，避开紫色假靶。',
+      noteClass:last?last.hit?'last-hit':'last-miss':'',
+      control:can&&!aiming?btn('arcade-start-shot','准备好了',true,pending):'',
+      countdown:enabled?arcadeShotMs(s.shot):0,interactive:enabled,
+      tiles:s.targets.map((value,i)=>{
+        const visible=enabled&&value;
+        const color=visible==='hit'?0xffcf6b:visible==='decoy'?0xbf8afe:0x50496d;
+        return arcadeTile('target',visible==='hit'?'金色星靶':visible==='decoy'?'紫色假靶':`靶位 ${i+1}`,visible==='hit'?'✦':visible==='decoy'?'✸':'·',color,visible||null,!enabled,visible?color:0,{lit:!!visible});
+      })
+    };
+  }
+  if(id==='memory'){
+    const enabled=active&&!s.result;
+    return {
+      cols:4,rows:4,heading:s.result==='match'?'配对成功':s.result==='miss'?'图案不一样':'翻出一对',
+      meter:`${s.matched.length/2} / 8 对 · 余 ${s.missLimit-s.misses} 次失配`,
+      note:s.result?'两张牌留在桌面上，确认后换手。':'每回合翻两张，记住搭档翻过的位置。',
+      control:can&&s.result?continued(s.matched.length===16||s.misses>=s.missLimit?'结算':'换手'):'',
+      interactive:enabled,
+      tiles:s.deck.map((value,i)=>{
+        const matched=s.matched.includes(i),open=s.open.includes(i)||matched;
+        return arcadeTile('card',open?arcadeRules.memorySymbols[value].label:`翻第 ${i+1} 张牌`,open?arcadeRules.memorySymbols[value].icon:'✧',open?memoryColors[value]:0x8172ad,open?{symbol:value,matched}:null,!enabled||open,matched?0x74dcaa:0,{matched});
+      })
+    };
+  }
+  if(id==='signal'){
+    const playback=s.phase==='read'&&can;
+    const enabled=active&&s.phase==='repeat';
+    const activeLamp=playback?s.sequence[arcadeTiming.signalStep]:s.phase==='repeat'&&s.picks.at(-1);
+    const result=s.phase==='result';
+    const lives=`<span class="challenge-dots" aria-label="剩余 ${s.energy} 次失误机会">${'♥'.repeat(s.energy)}${'<span class="dim">♡</span>'.repeat(3-s.energy)}</span>`;
+    return {
+      cols:3,rows:2,heading:result?(s.outcome==='success'?'顺序正确':'顺序断开'):playback?'看灯阵的顺序':enabled?'复现灯阵的顺序':'搭档正在操作',
+      meter:result?lives:`${s.phase==='repeat'?s.picks.length:0} / ${s.round+4} · ${lives}`,
+      note:playback?'灯会依次亮起。下一位按刚才的顺序复现。':result?'换一轮会出现新的序列。':'每关长度增加一盏。',
+      control:playback?btn('signal-ready','交给搭档',true,pending||arcadeTiming.signalStep<s.sequence.length):
+        can&&result?continued(s.cleared===3||!s.energy?'结算':s.outcome==='success'?'交换角色':'再试一次'):'',
+      interactive:enabled,
+      tiles:challengeSymbols.map((symbol,i)=>{
+        const lit=activeLamp===i;
+        return arcadeTile('coil',symbol.label,symbol.icon,signalColors[i],i,!enabled,lit?signalColors[i]:0,{lit});
+      })
+    };
+  }
+  const stage=s.stages[s.completed], color=[0xeb8faf,0xffcc82,0x85d8c7];
+  const driving=s.phase==='move';
+  const chosen=s.lane;
+  const progress=arcadeProgress(s.completed,s.stages.length);
+  const names={bridge:'断桥',tunnel:'隧道',lift:'升降台',factory:'玩具工厂'};
+  const enabled=active;
+  const options=Array.from({length:3},(_,i)=>{
+    if(driving){
+      const hazard=stage.hazards[i];
+      return arcadeTile('lane',`车道 ${i+1}`,hazard?hazardIcons[hazard]:'➜',color[i],hazard||'open',!enabled,0);
+    }
+    const gateColor=color[stage.latches.indexOf(i)];
+    const gateName=['玫红','金黄','薄荷'][stage.latches.indexOf(i)];
+    return arcadeTile('gate',`${gateName}闸门`,'◉',gateColor,null,!enabled,0,{badge:gateName});
+  });
+  const landmarks=Array.from({length:3},(_,i)=>arcadeTile(i===chosen||driving&&i===1?'car':'lane','',i===chosen||driving&&i===1?'🚗':'·',i===chosen?color[i]:0x5b5470,null,true,0,{badge:i===chosen?['玫红','金黄','薄荷'][i]:''}));
+  const lives=`<span class="challenge-dots" aria-label="剩余 ${s.lives} 次失误机会">${'♥'.repeat(s.lives)}${'<span class="dim">♡</span>'.repeat(s.maxLives-s.lives)}</span>`;
+  return {
+    cols:3,rows:2,heading:driving?'选能通过的车道':'打开同色闸门',meter:`${names[stage.theme]} · ${lives}`,
+    note:s.feedback&&!s.feedback.correct?'碰到了障碍，损失一次机会。':driving?'前方缺口、积木和转子会挡路。':'比较车身和闸门颜色。',
+    noteClass:s.feedback&&!s.feedback.correct?'last-miss':'',
+    control:progress,interactive:enabled,tiles:[...options,...landmarks]
+  };
+}
+function renderArcadeGame(id,s,can){
+  const board=arcadeBoard(id,s,can);
+  const choices=board.tiles.map((tile,i)=>`<button class="arcade-choice ${tile.lit?'is-lit':''} ${tile.matched?'is-matched':''}" style="--tile-color:#${tile.color.toString(16).padStart(6,'0')}" data-choice="${i}" aria-label="${safe(tile.label||'装饰')}" ${tile.disabled?'disabled':''}><span>${tile.icon}</span>${tile.badge?`<small>${tile.badge}</small>`:''}</button>`).join('');
+  return `<section class="panel play challenge-panel" style="--arcade-accent:${games[id].accent}"><div class="challenge-head"><h2>${board.heading}</h2><span class="challenge-meter">${board.meter}</span></div>${board.countdown?`<div class="challenge-countdown" style="--arcade-time:${board.countdown}ms"><i></i></div>`:''}<div class="challenge-scene" data-arcade-scene data-arcade-kind="${id}" data-renderer="loading"></div><div class="challenge-status"><p class="${board.noteClass||''}">${board.note}</p>${board.control||''}</div><details class="arcade-backup"><summary>备用操作面板</summary><div class="arcade-backup-grid" style="--arcade-cols:${board.cols}">${choices}</div></details></section>`;
+}
+function arcadeShotMs(shot){return shot<4?2200:shot<8?1650:1200;}
+function arcadeChoice(index){
+  if(state.game==='shoot'&&arcadeTiming.shotEnd&&performance.now()>=arcadeTiming.shotEnd)return;
+  const type=state.game==='shoot'?'shoot':state.game==='memory'?'flip':'pick';
+  dispatch({type:'game-action',input:{type,index}});
+}
+function scheduleArcade(){
+  const s=state.play, id=state.game;
+  const own=view==='game'&&s&&!s.done&&!handoff&&(mode==='solo'||seat===s.turn);
+  const shotKey=own&&id==='shoot'&&s.phase==='aim'?`${state.session}:${s.shot}`:'';
+  if(shotKey!==arcadeTiming.shotKey){
+    clearTimeout(arcadeTiming.shotTimer);
+    arcadeTiming.shotEnd=0;arcadeTiming.shotKey=shotKey;
+    if(shotKey){
+      const duration=arcadeShotMs(s.shot);
+      arcadeTiming.shotEnd=performance.now()+duration;
+      const fireTimeout=()=>{
+        if(arcadeTiming.shotKey!==shotKey)return;
+        if(pending){arcadeTiming.shotTimer=setTimeout(fireTimeout,150);return;}
+        dispatch({type:'game-action',input:{type:'timeout'}});
+      };
+      arcadeTiming.shotTimer=setTimeout(fireTimeout,duration);
+    }
+  }
+  const signalKey=own&&id==='signal'&&s.phase==='read'?`${state.session}:${s.round}:${s.energy}`:'';
+  if(signalKey!==arcadeTiming.signalKey){
+    for(const timer of arcadeTiming.signalTimers)clearTimeout(timer);
+    arcadeTiming.signalTimers=[];arcadeTiming.signalKey=signalKey;arcadeTiming.signalStep=-1;
+    if(signalKey){
+      const stepMs=Math.max(340,620-s.round*120);
+      for(let i=0;i<=s.sequence.length;i++){
+        arcadeTiming.signalTimers.push(setTimeout(()=>{
+          if(arcadeTiming.signalKey!==signalKey)return;
+          arcadeTiming.signalStep=i;render();
+        },430+i*stepMs));
+      }
+    }
+  }
+}
+function syncArcade(frame){
+  if(!frame){arcadeWorld.reset();return;}
+  const id=state.game,s=state.play,can=mode==='solo'||seat===s.turn;
+  const board=arcadeBoard(id,s,can);
+  arcadeWorld.sync(frame,{key:state.session,theme:id,cols:board.cols,rows:board.rows,tiles:board.tiles,interactive:board.interactive},arcadeChoice);
+  if(frame.dataset.renderer==='fallback'){
+    const backup=app.querySelector('.arcade-backup');
+    if(backup)backup.open=true;
+  }
+  if(id==='shoot'){
+    const timebar=app.querySelector('.challenge-countdown');
+    if(timebar&&arcadeTiming.shotEnd){
+      const remaining=Math.max(0,arcadeTiming.shotEnd-performance.now());
+      timebar.style.setProperty('--arcade-time',remaining+'ms');
+    }
+  }
+}
 
 const duelGrid = {
   cols: 5,
   rows: 4,
   shotsPerTurn: 3,
-  maxHP: 150,
+  maxHP: 100,
+  preparation: 5000,
   poseCooldown: 1_000,
 };
 
@@ -1266,6 +2117,16 @@ const duelDamage = { head: 100, torso: 30, limb: 10 };
 function randomDuelPose() {
   return Math.floor(Math.random() * duelPoses.length);
 }
+function duelBodyParts(state) {
+  const pose=duelPoses[state.pose].parts;
+  const side=state.position||0;
+  if(!side)return pose;
+  const shifted=Array(pose.length).fill(null);
+  const occupied=pose.map((part,index)=>part?index%duelGrid.cols:null).filter(index=>index!==null);
+  const offset=side<0?-Math.min(1,...occupied):Math.min(1,duelGrid.cols-1-Math.max(...occupied));
+  pose.forEach((part,index)=>{if(part)shifted[index+offset]=part;});
+  return shifted;
+}
 
 const duelGame = {
   init() {
@@ -1277,6 +2138,8 @@ const duelGame = {
       round: 0,
       shots: 0,
       pose: randomDuelPose(),
+      position: 0,
+      prepareUntil: Date.now()+duelGrid.preparation,
       poseChangedAt: Date.now(),
       feedback: null,
       winner: null,
@@ -1290,6 +2153,11 @@ const duelGame = {
     const target = 1 - attacker;
     const index = action.index;
 
+    if (action.type === 'sidestep') {
+      if(seat!==target||![-1,0,1].includes(index)||index===state.position)return state;
+      if(Date.now()-state.poseChangedAt<duelGrid.poseCooldown)return state;
+      return {...state,position:index,poseChangedAt:Date.now()};
+    }
     if (action.type === 'pose') {
       if (seat !== target || !duelPoses[index] || state.pose === index) return state;
       const now = Date.now();
@@ -1297,12 +2165,12 @@ const duelGame = {
       return { ...state, pose: index, poseChangedAt: now };
     }
 
-    if (action.type !== 'shoot' || seat !== attacker || index < 0 || index >= duelInitialCover.length || state.shots >= duelGrid.shotsPerTurn) {
+    if (action.type !== 'shoot' || seat !== attacker || index < 0 || index >= duelInitialCover.length || state.shots >= duelGrid.shotsPerTurn || Date.now()<state.prepareUntil) {
       return state;
     }
 
     const blocked = state.covers[target][index];
-    const part = blocked ? null : duelPoses[state.pose].parts[index];
+    const part = blocked ? null : duelBodyParts(state)[index];
     const damage = part ? duelDamage[part] : 0;
     const shots = state.shots + 1;
     const feedback = {
@@ -1332,7 +2200,7 @@ const duelGame = {
 
     const next = { ...state, shots, covers, hp, feedback };
     if (hp[target] === 0) return { ...next, done: true, winner: attacker };
-    if (shots < duelGrid.shotsPerTurn) return next;
+    if (!damage&&shots < duelGrid.shotsPerTurn) return next;
 
     return {
       ...next,
@@ -1340,6 +2208,8 @@ const duelGame = {
       round: state.round + 1,
       shots: 0,
       pose: randomDuelPose(),
+      position:0,
+      prepareUntil:Date.now()+duelGrid.preparation,
       poseChangedAt: Date.now(),
     };
   },
@@ -1352,8 +2222,8 @@ const duelRoom=(()=>{
   const baseY=.30;
   const wallZ=[3.25,-3.25];
   const palettes=[
-    {shell:0x97cedd,bright:0xb5e8f9,dark:0x3c728d,light:0x76ebee,player:0xccf0c2},
-    {shell:0xe5a899,bright:0xffcab3,dark:0x975870,light:0xffb897,player:0xdbbcfc}
+    {shell:0x57b4d6,bright:0xa6e7fe,dark:0x265875,light:0x83efff,player:0x94e2bf,boot:0x4362a5,suit:0x536de0},
+    {shell:0xe18955,bright:0xffc986,dark:0x754664,light:0xffad70,player:0xe8a0e0,boot:0x7b4c9d,suit:0xc25fa6}
   ];
   function cellPoint(i,z){
     return [(i%duelGrid.cols-2)*cellSize,baseY+(duelGrid.rows-.5-Math.floor(i/duelGrid.cols))*cellSize,z];
@@ -1383,41 +2253,90 @@ const duelRoom=(()=>{
     rim.position.set(-6,7,-7);
     scene.add(new T.HemisphereLight(0xdee1ff,0x604466,2.0),direct,rim);
     const resources=new Set();
-    const box=(w,h,d)=>{
-      const geometry=new T.BoxGeometry(w,h,d);resources.add(geometry);return geometry;
-    };
-    const sphere=(r,segments=16)=>{
-      const geometry=new T.SphereGeometry(r,segments,12);resources.add(geometry);return geometry;
-    };
+    const primitiveCache=new Map();
+    function geometry(kind,parameters,Constructor){
+      const key=`${kind}:${parameters.join(',')}`;
+      if(!primitiveCache.has(key)){
+        const object=new Constructor(...parameters);resources.add(object);primitiveCache.set(key,object);
+      }
+      return primitiveCache.get(key);
+    }
+    const box=(w,h,d)=>geometry('box',[w,h,d],T.BoxGeometry);
+    const sphere=(r,segments=16)=>geometry('sphere',[r,segments,12],T.SphereGeometry);
+    const cylinder=(top,bottom,h,segments=18)=>geometry('cylinder',[top,bottom,h,segments],T.CylinderGeometry);
+    const ring=(r,t)=>geometry('ring',[r,t,10,30],T.TorusGeometry);
     function material(color,extra={}){
       const value=new T.MeshStandardMaterial({color,roughness:.68,...extra});resources.add(value);return value;
     }
     function add(parent,geometry,finish,x=0,y=0,z=0){
       const item=new T.Mesh(geometry,finish);item.position.set(x,y,z);parent.add(item);return item;
     }
-    const floor=material(0x303354), line=material(0x485271), glass=material(0x576786);
+    const floor=material(0x29334c), line=material(0x414e68), glass=material(0x5d7294), rail=material(0x1e2940,{metalness:.3});
     const neon=material(0xa0dfea,{emissive:0x3286ae,emissiveIntensity:.5});
     const stage=new T.Group();scene.add(stage);
-    const base=add(stage,box(13,.22,14),floor,0,-.12,0);
-    base.receiveShadow=true;
-    for(let i=-6;i<=6;i++){
-      add(stage,box(.025,.014,13.8),line,i,0,0);
-      add(stage,box(12.8,.014,.025),line,0,0,i);
+    add(stage,box(21,.39,24),rail,0,-.40,0);
+    add(stage,box(20.8,.24,23.8),floor,0,-.12,0);
+    for(let i=-9;i<=9;i++){
+      add(stage,box(.02,.014,23.6),line,i,0,0);
+      if(i%2===0)add(stage,box(20.6,.014,.02),line,0,0,i*1.25);
     }
+    const ringFloor=add(stage,ring(1.45,.035),neon,0,.03,0);
+    ringFloor.rotation.x=Math.PI/2;
+    add(stage,cylinder(1.12,1.12,.055,6),glass,0,.032,0);
+    add(stage,cylinder(.64,.64,.06,6),rail,0,.061,0);
+    for(const z of [-1.8,1.8])add(stage,box(11.5,.027,.11),neon,0,.035,z);
+    const sideCrate=box(.7,.55,1.05), sideRail=box(.15,.10,16);
     for(const side of [-1,1]){
-      add(stage,box(.24,.38,13.8),glass,side*6.3,.15,0);
-      add(stage,box(.045,.02,13.55),neon,side*6.3,.35,0);
-      for(let j=-2;j<=2;j++){
-        add(stage,box(.48,.66,.74),glass,side*5.9,.3,j*2.7);
-        add(stage,box(.13,.045,.6),neon,side*5.9,.647,j*2.7);
+      add(stage,box(.36,.56,20),rail,side*7.25,.21,0);
+      add(stage,sideRail,neon,side*7.15,.48,0);
+      for(let j=-3;j<=3;j++){
+        add(stage,sideCrate,glass,side*6.6,.27,j*2.6);
+        add(stage,box(.31,.045,.76),neon,side*6.6,.56,j*2.6);
       }
     }
-    add(stage,box(10,.025,.095),neon,0,.023,0);
-    scene.fog=new T.Fog(0x181b34,43,90);
+    scene.fog=new T.Fog(0x181b34,49,95);
+    const darkDisplay=material(0x18273a,{roughness:.34,metalness:.22});
+    const silver=material(0xa0b7ca,{roughness:.42,metalness:.18});
+    const beamGeos={post:box(.46,4.2,.50),base:box(1.27,.23,1.17),sign:box(4.8,.74,.25),pipe:cylinder(.12,.12,2.4),vent:box(.63,.045,.064)};
+    const bays = palettes.map((palette,seat)=>{
+      const bay=new T.Group(), direction=seat===0?1:-1;
+      bay.position.z=direction*6.65;stage.add(bay);
+      const housing=material(palette.dark,{roughness:.55,metalness:.16});
+      const fascia=material(palette.shell);
+      const light=material(palette.light,{emissive:palette.light,emissiveIntensity:.85});
+      add(bay,box(11.6,.16,7.1),housing,0,.01,.68*direction);
+      add(bay,box(10.35,.05,5.85),darkDisplay,0,.10,.6*direction);
+      for(const side of [-1,1]){
+        add(bay,box(.085,.045,6.7),light,side*5.49,.14,.61*direction);
+        const docking=add(bay,cylinder(1.08,1.25,.27,8),housing,side*4.40,.19,1.20*direction);
+        docking.rotation.y=Math.PI/8;
+        const topRing=add(bay,ring(.81,.050),light,side*4.40,.335,1.20*direction);
+        topRing.rotation.x=Math.PI/2;
+        add(bay,beamGeos.base,rail,side*5.1,.32,2.36*direction);
+        add(bay,beamGeos.post,housing,side*5.1,2.42,2.36*direction);
+        add(bay,box(.095,3.64,.085),light,side*5.1,2.47,2.05*direction);
+        add(bay,beamGeos.pipe,fascia,side*5.55,1.62,2.17*direction);
+        const station=add(bay,box(1.43,.83,.77),housing,side*4.15,.56,-1.64*direction);
+        station.rotation.y=-side*direction*.16;
+        const screen=add(bay,box(1.05,.56,.08),darkDisplay,side*4.15,1.14,-1.93*direction);
+        screen.rotation.x=-direction*.34;
+        for(let col=0;col<3;col++)add(bay,box(.22,.028,.092),light,side*4.15+(col-1)*.31,.98,-2.02*direction);
+        for(let row=0;row<4;row++)add(bay,beamGeos.vent,silver,side*4.15,.48+row*.10,-2.065*direction);
+      }
+      add(bay,box(10.5,.27,.34),housing,0,4.48,2.36*direction);
+      add(bay,box(10.05,.05,.085),light,0,4.37,2.12*direction);
+      add(bay,beamGeos.sign,rail,0,4.34,2.15*direction);
+      add(bay,box(4.57,.53,.06),fascia,0,4.36,1.99*direction);
+      for(let i=0;i<5;i++)add(bay,box(.36,.12,.065),i===2?light:darkDisplay,(i-2)*.65,4.35,1.94*direction);
+      return bay;
+    });
     const blockGeo=box(.97,.96,.47), trimGeo=box(.75,.68,.05), pickGeo=box(1.05,1.05,.035);
     const headGeo=sphere(.37),eyeGeo=sphere(.06,10),antennaGeo=sphere(.083,10);
-    const chestGeo=box(.80,.83,.47),limbGeo=sphere(.31);
+    const chestGeo=sphere(.42),limbGeo=sphere(.31),littleSphere=sphere(.12,12);
+    const pilotBody=sphere(.59),pilotHead=sphere(.52),pilotSleeve=sphere(.24),pilotBoot=sphere(.26),ovalEye=sphere(.116,14);
+    const boltGeo=cylinder(.077,.077,.038,8), lampGeo=box(.42,.073,.065), packShell=box(.65,.92,.32);
     const eyes=material(0x232642);
+    const eyeWhite=material(0xfff4e8,{roughness:.38});
     const pickMat=new T.MeshBasicMaterial({visible:false});resources.add(pickMat);
     const boardSize=duelGrid.cols*duelGrid.rows;
     function makeWall(seat){
@@ -1425,49 +2344,88 @@ const duelRoom=(()=>{
       root.position.z=wallZ[seat];
       const palette=palettes[seat], face=seat===0?-1:1;
       const solid=material(palette.shell), trim=material(palette.bright), frame=material(palette.dark);
-      const body=material(palette.player), lamp=material(palette.light,{emissive:palette.light,emissiveIntensity:.54});
-      add(root,box(5.86,.37,1.02),frame,0,.13,0);
-      add(root,box(5.76,.08,.68),lamp,0,.30,.02);
+      const body=material(palette.player,{roughness:.51}), suit=material(palette.suit,{roughness:.47}), boots=material(palette.boot);
+      const lamp=material(palette.light,{emissive:palette.light,emissiveIntensity:.66});
+      const selection=material(palette.light,{emissive:palette.light,emissiveIntensity:.46,transparent:true,opacity:.32});
+      add(root,box(6.14,.37,1.13),frame,0,.13,0);
+      add(root,box(5.92,.08,.67),lamp,0,.30,.02);
       for(const side of [-1,1]){
-        add(root,box(.20,4.7,.37),frame,side*2.84,2.40,0);
-        add(root,box(.07,4.44,.05),lamp,side*2.84,2.43,face*.22);
+        add(root,box(.30,4.7,.46),frame,side*2.88,2.40,0);
+        add(root,box(.105,4.31,.11),trim,side*2.9,2.45,face*.22);
+        add(root,box(.068,2.52,.07),lamp,side*2.9,3.31,face*.3);
+        add(root,box(.53,.53,.58),frame,side*2.84,4.43,0);
+        add(root,box(.22,.086,.12),lamp,side*2.84,4.48,face*.30);
       }
       const cells=Array.from({length:boardSize},(_,index)=>{
         const [x,y]=cellPoint(index,0);
         const panel=new T.Group();panel.position.set(x,y,0);root.add(panel);
         add(panel,blockGeo,solid);
         add(panel,trimGeo,trim,0,.008,face*.255);
-        add(panel,box(.13,.045,.053),frame,-.245*face,-.229,face*.283);
-        const behind=-face*.61;
+        const bolt=add(panel,boltGeo,frame,-.26*face,-.23,face*.292);bolt.rotation.x=Math.PI/2;
+        for(const z of [face*.283,-face*.256])add(panel,lampGeo,frame,.035*face,.19,z);
+        const behind=-face*.53;
         const head=new T.Group();head.position.set(x,y+.015,behind);root.add(head);
-        const skull=add(head,headGeo,body);skull.scale.set(1,.92,.75);
-        add(head,eyeGeo,eyes,-.122,.032,face*.252);
-        add(head,eyeGeo,eyes,.122,.032,face*.252);
-        add(head,antennaGeo,lamp,.19,.33,0);
-        const torso=add(root,chestGeo,body,x,y,behind);
-        const limb=add(root,limbGeo,body,x,y,behind);limb.scale.set(.86,1.25,.70);
+        const skull=add(head,headGeo,body);skull.scale.set(1.12,.91,.73);
+        for(const side of [-1,1]){
+          add(head,ovalEye,eyeWhite,side*.142,.038,face*.223).scale.set(.92,1.12,.37);
+          add(head,eyeGeo,eyes,side*.143,.043,face*.268);
+          add(head,littleSphere,boots,side*.355,-.04,0).scale.set(.60,1.21,.93);
+        }
+        const feeler=add(head,cylinder(.023,.035,.19,8),suit,.19,.338,0);feeler.rotation.z=-.36;
+        add(head,antennaGeo,lamp,.225,.43,0);
+        add(head,littleSphere,boots,0,-.137,face*.24).scale.set(.66,.23,.29);
+        const torso=new T.Group();torso.position.set(x,y,behind);root.add(torso);
+        add(torso,chestGeo,suit).scale.set(.97,1.05,.63);
+        add(torso,chestGeo,body,0,-.06,face*.18).scale.set(.60,.74,.31);
+        add(torso,littleSphere,lamp,0,.08,face*.31).scale.set(.75,.75,.46);
+        const limb=new T.Group();limb.position.set(x,y,behind);root.add(limb);
+        add(limb,limbGeo,suit,0,.08,0).scale.set(.72,1.22,.65);
+        add(limb,limbGeo,body,.079,-.20,face*.041).scale.set(.81,.48,.72);
         const pick=add(root,pickGeo,pickMat,x,y,face*.31);pick.userData.cell=index;
-        const mark=add(root,box(.98,.98,.03),material(palette.light,{emissive:palette.light,emissiveIntensity:.46,transparent:true,opacity:.32}),x,y,face*.327);
+        const mark=add(root,box(.98,.98,.03),selection,x,y,face*.327);
         mark.visible=false;
         return {panel,head,torso,limb,pick,mark};
       });
       const pilot=new T.Group();pilot.position.set(0,.75,-face*1.03);root.add(pilot);
-      add(pilot,headGeo,body,0,1.42,0);
-      add(pilot,eyeGeo,eyes,-.122,1.45,face*.315);
-      add(pilot,eyeGeo,eyes,.122,1.45,face*.315);
-      add(pilot,chestGeo,frame,0,.72,0);
-      add(pilot,limbGeo,body,-.48,.68,0);
-      add(pilot,limbGeo,body,.48,.68,0);
-      add(pilot,limbGeo,body,-.25,.16,0);
-      add(pilot,limbGeo,body,.25,.16,0);
-      add(pilot,antennaGeo,lamp,.16,1.79,0);
-      return {root,cells,pilot};
+      const trunk=add(pilot,pilotBody,suit,0,.93,0);trunk.scale.set(.98,1.12,.72);
+      const belly=add(pilot,pilotBody,body,0,.89,.34);belly.scale.set(.65,.76,.25);
+      const badge=add(pilot,cylinder(.11,.11,.054,6),lamp,0,1.0,.505);badge.rotation.x=Math.PI/2;
+      const skull=add(pilot,pilotHead,body,0,1.84,.02);skull.scale.set(1.25,.89,.89);
+      add(pilot,pilotHead,boots,0,2.055,-.14).scale.set(1.14,.62,.87);
+      add(pilot,littleSphere,boots,0,1.65,.466).scale.set(1.0,.28,.25);
+      add(pilot,packShell,boots,0,1.03,-.489);
+      add(pilot,box(.42,.61,.075),silver,0,1.02,-.69);
+      add(pilot,box(.28,.078,.067),lamp,0,1.23,-.755);
+      const arms=[];
+      for(const side of [-1,1]){
+        add(pilot,ovalEye,eyeWhite,side*.215,1.892,.402).scale.set(1.17,1.46,.56);
+        add(pilot,eyeGeo,eyes,side*.216,1.888,.466).scale.set(1.05,1.4,.62);
+        add(pilot,littleSphere,eyeWhite,side*.219-.025,1.916,.502).scale.set(.19,.20,.18);
+        add(pilot,pilotSleeve,suit,side*.60,1.85,-.06).scale.set(.51,.81,.95);
+        add(pilot,littleSphere,lamp,side*.708,1.86,-.051).scale.set(.36,.73,.65);
+        add(pilot,pilotBoot,boots,side*.28,.21,.105).scale.set(1.12,.64,1.45);
+        add(pilot,pilotSleeve,suit,side*.25,.41,.02).scale.set(.85,1.08,.79);
+        add(pilot,pilotSleeve,trim,side*.40,1.14,-.46).scale.set(.74,1.24,.66);
+        const arm=new T.Group();arm.position.set(side*.53,1.2,0);pilot.add(arm);arms.push(arm);
+        add(arm,pilotSleeve,suit,side*.10,-.16,0).scale.set(.83,1.39,.78);
+        add(arm,pilotSleeve,body,side*.16,-.42,.017).scale.set(.83,.94,.86);
+        add(arm,littleSphere,boots,side*.265,-.445,.132).scale.set(.71,.69,.78);
+      }
+      const antenna=add(pilot,cylinder(.039,.063,.26,12),suit,seat===0?-.28:.28,2.33,-.09);
+      antenna.rotation.z=seat===0?.31:-.31;
+      add(pilot,antennaGeo,lamp,seat===0?-.32:.32,2.48,-.09).scale.setScalar(1.42);
+      return {root,cells,pilot,arms};
     }
     const walls=palettes.map((_,seat)=>makeWall(seat));
-    const beam=add(scene,box(.055,1,.055),neon);beam.visible=false;
-    const orb=add(scene,sphere(.15,14),material(0xffd8a1,{emissive:0xff9768,emissiveIntensity:1.7}));orb.visible=false;
-    const flakes=Array.from({length:8},()=>add(scene,box(.105,.12,.1),material(0xffbd86,{emissive:0xd86551,emissiveIntensity:.48})));
+    const trailMat=material(0x8aebff,{emissive:0x8aebff,emissiveIntensity:.85,transparent:true,opacity:.75,depthWrite:false});
+    const beam=add(scene,box(.10,1,.10),trailMat);beam.visible=false;
+    const orbMat=material(0xffd8a1,{emissive:0xff9768,emissiveIntensity:1.8});
+    const orb=add(scene,sphere(.22,16),orbMat);orb.visible=false;
+    const flakeMat=material(0xffbd86,{emissive:0xd86551,emissiveIntensity:.55});
+    const flakes=Array.from({length:14},(_,index)=>add(scene,index%4===0?sphere(.13,9):box(.17,.16,.13),flakeMat));
     flakes.forEach(piece=>{piece.visible=false;});
+    const burstMaterial=new T.MeshBasicMaterial({color:0xffa26f,transparent:true,opacity:.9,depthWrite:false});resources.add(burstMaterial);
+    const burst=add(scene,ring(.40,.039),burstMaterial);burst.visible=false;
     const ray=new T.Raycaster(), pointer=new T.Vector2();
     const s={frame:null,data:null,mode:null,lastShot:'',selected:-1,transition:null,effect:null,animation:0,pointerId:null,lastX:0,yaw:.86};
     let onAim=()=>{},onFire=()=>{};
@@ -1490,8 +2448,8 @@ const duelRoom=(()=>{
         return {location:new T.Vector3(0,2.45,z+facing*39),look:new T.Vector3(0,2.45,z),fov:2*Math.atan(span/78)*180/Math.PI};
       }
       const sign=s.data.turn===0?1:-1;
-      const distance=Math.max(15.5,15/camera.aspect);
-      return {location:new T.Vector3(Math.sin(s.yaw)*distance*sign,11.6,Math.cos(s.yaw)*distance*sign),look:new T.Vector3(0,1.25,0),fov:49};
+      const distance=Math.max(14.6,13.2/camera.aspect);
+      return {location:new T.Vector3(Math.sin(s.yaw)*distance*sign,10.2,Math.cos(s.yaw)*distance*sign),look:new T.Vector3(0,1.53,0),fov:48};
     }
     function setCamera(mode,instant=false){
       const before={location:cameraState.location.clone(),look:cameraState.look.clone(),fov:cameraState.fov};
@@ -1506,6 +2464,11 @@ const duelRoom=(()=>{
       s.lastShot=stamp;
       const from=new T.Vector3(0,1.65,wallZ[feedback.attacker]*.56);
       const to=new T.Vector3(...cellPoint(feedback.index,wallZ[feedback.target]));
+      const color=palettes[feedback.attacker].light;
+      trailMat.color.setHex(color);trailMat.emissive.setHex(color);
+      orbMat.color.setHex(color);orbMat.emissive.setHex(color);
+      flakeMat.color.setHex(feedback.type==='cover'?palettes[feedback.target].bright:color);
+      flakeMat.emissive.setHex(color);burstMaterial.color.setHex(color);
       s.effect={start:performance.now(),from,to,feedback};
     }
     function draw(now=performance.now()){
@@ -1526,27 +2489,37 @@ const duelRoom=(()=>{
       camera.lookAt(cameraState.look);
       camera.fov=cameraState.fov;camera.updateProjectionMatrix();camera.updateMatrixWorld();
       const target=1-s.data.turn;
-      walls.forEach((wall,i)=>{wall.root.visible=s.mode!=='aim'||i===target;});
-      orb.visible=false;beam.visible=false;flakes.forEach(piece=>{piece.visible=false;});
+      walls.forEach((wall,i)=>{
+        wall.root.visible=s.mode!=='aim'||i===target;
+        wall.pilot.visible=s.mode!=='aim'&&(i===s.data.turn||!s.data.can);
+      });
+      bays.forEach((bay,i)=>{bay.visible=s.mode!=='aim'||i===target;});
+      orb.visible=false;beam.visible=false;burst.visible=false;flakes.forEach(piece=>{piece.visible=false;});
       if(s.effect){
         const duration=now-s.effect.start;
         const {from,to,feedback}=s.effect;
-        if(duration>640)s.effect=null;
-        else if(duration<240&&!reducedMotion){
+        if(duration>660)s.effect=null;
+        else if(duration<210&&!reducedMotion){
           orb.visible=true;beam.visible=true;
-          orb.position.lerpVectors(from,to,Math.max(0,duration/240));
+          orb.position.lerpVectors(from,to,Math.max(0,duration/210));
           pos.subVectors(orb.position,from);
-          beam.position.copy(from).addScaledVector(pos,.5);
-          beam.scale.y=pos.length();
+          beam.position.copy(orb.position).addScaledVector(pos,-.28);
+          beam.scale.y=pos.length()*.56;
           if(pos.lengthSq()>0)beam.quaternion.setFromUnitVectors(up,pos.normalize());
         }else if(feedback.type!=='miss'){
+          const time=reducedMotion?.16:Math.max(0,(duration-210)/450);
+          burst.visible=true;
+          burst.position.copy(to);
+          burst.position.z+=feedback.target===0?-.36:.36;
+          burst.scale.setScalar(.60+1.61*time);
+          burstMaterial.opacity=.91*(1-time);
           for(const [i,piece] of flakes.entries()){
-            const time=reducedMotion?.13:Math.max(0,(duration-240)/600);
             piece.visible=true;piece.position.copy(to);
-            piece.position.x+=Math.cos(i*2.40)*time*2;
-            piece.position.y+=Math.sin(i*1.80)*time*2;
-            piece.position.z+=(i%2?1:-1)*time*.5;
-            piece.rotation.set(time*7+i,time*4,0);
+            piece.position.x+=Math.cos(i*2.40)*time*2.10;
+            piece.position.y+=Math.sin(i*2.40)*time*1.75-time*time*.65;
+            piece.position.z+=((i%2?1:-1)*time*.58+(feedback.target===0?-.38:.38));
+            piece.scale.setScalar(1.18-time*.75);
+            piece.rotation.set(time*7+i,time*5,0);
           }
         }
       }
@@ -1605,12 +2578,17 @@ const duelRoom=(()=>{
       }
       frame.dataset.renderer='webgl';
       const defender=1-data.turn;
-      walls.forEach(({cells,pilot},seat)=>{
-        pilot.visible=seat===data.turn||!data.can;
+      walls.forEach(({cells,pilot,arms},seat)=>{
         pilot.rotation.y=seat===0?Math.PI:0;
-        const posture=seat!==data.turn?data.pose:null;
-        pilot.position.y=posture===3||posture===4?.44:.75;
-        pilot.rotation.z=posture===1?.18:posture===2?-.18:posture===4?-.72:0;
+        const posture=seat!==data.turn&&!data.can?data.pose:null;
+        pilot.position.y=posture===3?.22:posture===4?.4:.08;
+        const offset=seat!==data.turn&&!data.can?(data.position??0)*cellSize:0;
+        pilot.position.x=offset+(posture===1?-.30:posture===2?.30:0);
+        pilot.position.z=(seat===0?1:-1)*1.31;
+        pilot.rotation.z=posture===1?.19:posture===2?-.19:posture===4?-.73:0;
+        pilot.scale.set(1.18,posture===3?.89:posture===4?.63:1.17,1.18);
+        arms[0].rotation.z=seat===data.turn?-.56:posture===1?-.85:-.1;
+        arms[1].rotation.z=seat===data.turn?.72:posture===2?.85:.1;
         cells.forEach((cell,index)=>{
           const covered=data.covers[seat][index];
           const part=seat===defender?data.parts[index]:null;
@@ -2049,11 +3027,22 @@ const toyRoom = (() => {
     const round=(radius,height,color,x,y,z)=>mesh(new T.CylinderGeometry(radius,radius,height,20),color,[x,y,z]);
     const {minX,maxX,minZ,maxZ}=hideMap.bounds;
     const width=maxX-minX, depth=maxZ-minZ, midZ=(minZ+maxZ)/2;
-    const wallZ=minZ-.7, sideDepth=depth-1.5;
+    const wallZ=minZ-.7, frontZ=maxZ+.58, sideDepth=frontZ-wallZ;
+    const occluders=[];
     block(width+1.7,.24,depth+2.3,hideMap.palette.floor,0,-.12,midZ);
-    block(width+1.7,10.6,.34,hideMap.palette.wall,0,5.27,wallZ);
+    const backWall=block(width+1.7,10.6,.34,hideMap.palette.wall,0,5.27,wallZ);
     const leftWall=block(.26,5.15,sideDepth,hideMap.palette.wallLeft,minX-.52,2.56,wallZ+sideDepth/2);
     const rightWall=block(.26,5.15,sideDepth,hideMap.palette.wallRight,maxX+.52,2.56,wallZ+sideDepth/2);
+    const frontWall=new T.Group();
+    room.add(frontWall);
+    const frontFrame=block(width+1.1,5.15,.26,hideMap.palette.wall,0,2.56,frontZ);
+    frontWall.add(frontFrame);
+    frontWall.add(block(width+1.1,.12,.11,hideMap.palette.trim,0,1.26,frontZ-.16));
+    for(const x of [-10,0,10]){
+      frontWall.add(block(4.8,1.64,.08,hideMap.palette.wallRight,x,3.1,frontZ-.16));
+      frontWall.add(block(4.5,.055,.08,hideMap.palette.trim,x,3.72,frontZ-.21));
+    }
+    occluders.push(backWall,leftWall,rightWall,frontFrame);
     for(let x=minX+1.25;x<maxX;x+=2.5)block(.022,.006,depth,hideMap.palette.grid,x,.006,midZ);
     for(let z=minZ+1.25;z<maxZ;z+=2.5)block(width,.006,.022,hideMap.palette.grid,0,.006,z);
     block(width,.11,.12,hideMap.palette.trim,0,.054,maxZ);
@@ -2075,17 +3064,17 @@ const toyRoom = (() => {
       block(.035,Math.max(.5,8.25-height),.05,0x755a78,x,(8.25+height)/2,wallZ+.54);
       mesh(new T.OctahedronGeometry(.20),0xffd395,[x,height,wallZ+.55],{emissive:0xfda84f,emissiveIntensity:.48});
     }
-    for(const tier of hideMap.tiers)block(tier.w,tier.y,tier.d,tier.color,tier.x,tier.y/2,tier.z);
+    for(const tier of hideMap.tiers)occluders.push(block(tier.w,tier.y,tier.d,tier.color,tier.x,tier.y/2,tier.z));
     for(const ramp of hideMap.ramps){
       const diff=ramp.yTo-ramp.yFrom;
       const plank=block(ramp.w,.16,Math.hypot(diff,ramp.d),ramp.color,ramp.x,(ramp.yFrom+ramp.yTo)/2-.08,ramp.z);
       plank.rotation.x=Math.atan2(diff,ramp.d);
+      occluders.push(plank);
     }
-    const occluders=[];
     for(const o of hideMap.obstacles){
       const floor=hideFloorY(o.x,o.z);
-      const base=block(o.w,o.h,o.d,o.color,o.x,floor+o.h/2,o.z);
-      occluders.push(base);
+      const obstacleStart=room.children.length;
+      block(o.w,o.h,o.d,o.color,o.x,floor+o.h/2,o.z);
       if(o.kind==='plant'||o.kind==='pot'){
         for(let i=0;i<4;i++){
           const leaf=mesh(new T.IcosahedronGeometry(o.w*.33,1),o.accent,[o.x+Math.sin(i*1.7)*o.w*.23,floor+o.h+.20+i*.06,o.z+Math.cos(i*1.7)*o.d*.22]);
@@ -2108,6 +3097,7 @@ const toyRoom = (() => {
           lantern.rotation.z=Math.PI/4;
         }
       }
+      occluders.push(...room.children.slice(obstacleStart));
     }
     for(const mat of hideMap.mats){
       const y=hideFloorY(mat.x,mat.z)+.015;
@@ -2122,15 +3112,23 @@ const toyRoom = (() => {
     ring.rotation.x=Math.PI/2;ring.visible=false;
     const ray=new T.Raycaster(),pointer=new T.Vector2();
     const s={yaw:0,look:0,zoom:1,options:null,selected:-1,aimAt:null,props:[],top:null,raf:0,walkFrame:0,down:null,hadDrag:false,pulse:null,rendered:false,runner:null,runnerBox:null,runnerShape:null,runnerTarget:null};
+    const spawnZ=Math.min(10.5,maxZ-.4);
+    const seeker={x:0,z:spawnZ,yaw:0,pitch:-.05};
+    const seekerFov=42;
+    const eyeHeight=1.65;
     const target=new T.Vector3();
     const center=new T.Vector3();
+    const worldPosition=new T.Vector3();
+    const occlusionMeshes=()=>occluders.filter(mesh=>mesh.visible&&(mesh!==frontFrame||frontWall.visible));
+    const canLook=()=>s.options&&!s.options.own&&s.options.can;
+    const canStep=(x,z)=>hideCanMove(x,z)&&hideFloorY(x,z)-hideFloorY(seeker.x,seeker.z)<=.31;
     const cast=(x,y)=>{
       if(!s.options||!s.rendered)return -1;
       ray.setFromCamera(pointer.set(x,y),camera);
       const items=pickables.filter((_,i)=>s.props[i].visible);
       if(s.runnerBox)items.push(s.runnerBox);
       const hit=ray.intersectObjects(items,false)[0];
-      const obstacle=ray.intersectObjects(occluders,false)[0];
+      const obstacle=ray.intersectObjects(occlusionMeshes(),false)[0];
       return hit&&(!obstacle||hit.distance<obstacle.distance)?hit.object.userData.slot:-1;
     };
     const valid=index=>{
@@ -2147,17 +3145,28 @@ const toyRoom = (() => {
       return true;
     };
     function draw(){
-      const zoom=s.zoom;
-      const fit=Math.max(1,1.02/camera.aspect);
-      const focus=s.options?.own?s.runner?.position:null;
-      const distance=((focus?24.7:28.7)+(fit-1)*16)/zoom;
-      const fx=focus?focus.x*.72:0, fz=focus?midZ+(focus.z-midZ)*.65:midZ;
-      const yaw=Math.sin(s.yaw);
-      const height=(focus?12:14)+(fit-1)*3.5+s.look*.7;
-      camera.position.set(fx+yaw*distance,height,Math.cos(s.yaw)*distance+fz);
-      camera.lookAt(target.set(fx+yaw*4,s.look*.47+1.08,fz-s.look*.75));
-      leftWall.visible=camera.position.x>minX-3.5;
-      rightWall.visible=camera.position.x<maxX+3.5;
+      const own=s.options?.own;
+      frontWall.visible=!own;
+      if(own){
+        const fit=Math.max(1,1.02/camera.aspect);
+        const focus=s.runner?.position;
+        const distance=((focus?24.7:28.7)+(fit-1)*16)/s.zoom;
+        const fx=focus?focus.x*.72:0, fz=focus?midZ+(focus.z-midZ)*.65:midZ;
+        const yaw=Math.sin(s.yaw);
+        const height=(focus?12:14)+(fit-1)*3.5+s.look*.7;
+        camera.fov=53;
+        camera.position.set(fx+yaw*distance,height,Math.cos(s.yaw)*distance+fz);
+        camera.lookAt(target.set(fx+yaw*4,s.look*.47+1.08,fz-s.look*.75));
+      }else{
+        const y=hideFloorY(seeker.x,seeker.z)+eyeHeight;
+        const horizontal=Math.cos(seeker.pitch);
+        camera.fov=seekerFov/T.MathUtils.clamp(s.zoom,.9,1.4);
+        camera.position.set(seeker.x,y,seeker.z);
+        camera.lookAt(target.set(seeker.x+Math.sin(seeker.yaw)*horizontal,y+Math.sin(seeker.pitch),seeker.z-Math.cos(seeker.yaw)*horizontal));
+      }
+      leftWall.visible=!own||camera.position.x>minX-3.5;
+      rightWall.visible=!own||camera.position.x<maxX+3.5;
+      camera.updateProjectionMatrix();
       camera.updateMatrixWorld();
       const selectedModel=s.options?.own?s.runner:s.props[s.selected];
       const aim=s.selected===s.props.length&&s.aimAt?s.aimAt:selectedModel?.position;
@@ -2195,44 +3204,65 @@ const toyRoom = (() => {
         s.runnerShape=runner.shape;
         if(old)s.runner.position.copy(old);
       }
-      const y=hideFloorY(runner.x,runner.z)+.10;
       if(!s.runnerBox){
         s.runnerBox=new T.Mesh(new T.BoxGeometry(1.2,1.15,1.12),new T.MeshBasicMaterial({visible:false}));
         s.runnerBox.userData.slot=s.props.length;
         scene.add(s.runnerBox);
       }
       const previous=s.runnerTarget;
-      if(previous&&previous.x===runner.x&&previous.z===runner.z)return;
+      if(previous&&previous.x===runner.x&&previous.z===runner.z&&previous.y===runner.y&&previous.jumpAt===runner.jumpAt&&previous.jumpUntil===runner.jumpUntil)return;
       s.runnerTarget=runner;
       const place=(x,py,z)=>{
         s.runner.position.set(x,py,z);
         s.runnerBox.position.set(x,py+.55,z);
       };
       cancelAnimationFrame(s.walkFrame);
-      if(!previous||reducedMotion){place(runner.x,y,runner.z);return;}
+      const jumpAt=Number(runner.jumpAt)||0,jumpUntil=Number(runner.jumpUntil)||0;
+      const timed=jumpAt>0&&jumpUntil>jumpAt;
+      const height=()=>{
+        if(!timed)return Number.isFinite(runner.y)?Math.max(0,runner.y):0;
+        const phase=(Date.now()-jumpAt)/(jumpUntil-jumpAt);
+        return phase>0&&phase<1?Math.sin(phase*Math.PI)*1.25:0;
+      };
+      const slides=!reducedMotion&&previous&&(previous.x!==runner.x||previous.z!==runner.z);
+      if(!slides&&(!timed||Date.now()>=jumpUntil)){
+        place(runner.x,hideFloorY(runner.x,runner.z)+.10+height(),runner.z);
+        return;
+      }
       const before=s.runner.position.clone(), start=performance.now();
       const walk=now=>{
-        const t=Math.min(1,(now-start)/140);
-        place(T.MathUtils.lerp(before.x,runner.x,t),T.MathUtils.lerp(before.y,y,t)+Math.sin(t*Math.PI)*.08,T.MathUtils.lerp(before.z,runner.z,t));
+        const t=slides?Math.min(1,(now-start)/140):1;
+        const x=T.MathUtils.lerp(before.x,runner.x,t),z=T.MathUtils.lerp(before.z,runner.z,t);
+        place(x,hideFloorY(x,z)+.10+height()+Math.sin(t*Math.PI)*.08,z);
         draw();
-        if(t<1)s.walkFrame=requestAnimationFrame(walk);
+        if(t<1||timed&&Date.now()<jumpUntil)s.walkFrame=requestAnimationFrame(walk);
       };
-      s.walkFrame=requestAnimationFrame(walk);
+      walk(start);
     }
     function obstacleInWay(position){
       if(!position)return true;
-      center.copy(position);
-      center.y+=.45;
       const origin=camera.position;
-      const distance=origin.distanceTo(center);
-      ray.set(origin,center.sub(origin).normalize());
-      return (ray.intersectObjects(occluders,false)[0]?.distance??Infinity)<distance;
+      const distance=origin.distanceTo(position);
+      ray.set(origin,worldPosition.subVectors(position,origin).normalize());
+      return (ray.intersectObjects(occlusionMeshes(),false)[0]?.distance??Infinity)<distance;
+    }
+    function inFrustum(position){
+      const projected=worldPosition.copy(position).project(camera);
+      return Math.abs(projected.x)<=1&&Math.abs(projected.y)<=1&&projected.z>=-1&&projected.z<=1;
+    }
+    function hitbox(index){
+      return index===s.props.length?s.runnerBox:s.props[index]?.visible?pickables[index]:null;
+    }
+    function getAimPoint(index){
+      if(index===s.props.length&&s.aimAt)return center.copy(s.aimAt).add(target.set(0,.55,0));
+      return hitbox(index)?.getWorldPosition(center)??null;
     }
     function fireAt(index){
       const moving=index===s.props.length;
-      if(obstacleInWay(moving?s.aimAt:s.props[index]?.position)){clearAim();onAim(-1,true);return;}
+      const position=getAimPoint(index);
+      if(!position||!inFrustum(position)||obstacleInWay(position)){clearAim();onAim(-1,true);return;}
       if(moving&&s.aimAt){
-        onFire(index,{x:s.aimAt.x,z:s.aimAt.z});
+        onFire(index,{x:s.aimAt.x,z:s.aimAt.z,y:s.aimAt.y});
       }else onFire(index);
     }
     function populate(identifiers){
@@ -2283,10 +3313,37 @@ const toyRoom = (() => {
       return pick(cast(x,y));
     }
     function drag(dx,dy){
-      s.selected=-1;onAim(-1);
-      s.yaw=T.MathUtils.clamp(s.yaw-dx*.007,-1.16,1.16);
-      s.look=T.MathUtils.clamp(s.look+dy*.027,-3.2,5.2);
+      s.selected=-1;s.aimAt=null;onAim(-1);
+      if(canLook()){
+        seeker.yaw=T.MathUtils.euclideanModulo(seeker.yaw-dx*.006+Math.PI,2*Math.PI)-Math.PI;
+        seeker.pitch=T.MathUtils.clamp(seeker.pitch+dy*.005,-1.13,1.13);
+      }else if(s.options?.own){
+        s.yaw=T.MathUtils.clamp(s.yaw-dx*.007,-1.16,1.16);
+        s.look=T.MathUtils.clamp(s.look+dy*.027,-3.2,5.2);
+      }
       draw();
+    }
+    function walk(dx,dz){
+      if(!canLook()||!Number.isFinite(dx)||!Number.isFinite(dz))return false;
+      const length=Math.hypot(dx,dz);
+      if(!length)return false;
+      const scale=Math.min(1,1.1/length);
+      const sin=Math.sin(seeker.yaw),cos=Math.cos(seeker.yaw);
+      const strideX=(cos*dx+sin*dz)*scale;
+      const strideZ=(sin*dx-cos*dz)*scale;
+      const beforeX=seeker.x,beforeZ=seeker.z;
+      const steps=Math.ceil(Math.hypot(strideX,strideZ)/.18);
+      for(let i=0;i<steps;i++){
+        const x=seeker.x+strideX/steps,z=seeker.z+strideZ/steps;
+        if(canStep(x,seeker.z))seeker.x=x;
+        if(canStep(seeker.x,z))seeker.z=z;
+      }
+      if(seeker.x===beforeX&&seeker.z===beforeZ)return false;
+      clearAim();
+      return true;
+    }
+    function seekerPosition(){
+      return canLook()?{x:seeker.x,y:camera.position.y,z:seeker.z,yaw:seeker.yaw,pitch:seeker.pitch,fov:camera.fov}:null;
     }
     canvas.addEventListener('pointerdown',event=>{
       if(!event.isPrimary||event.button>0)return;
@@ -2308,6 +3365,8 @@ const toyRoom = (() => {
     canvas.addEventListener('pointercancel',()=>{s.down=null;});
     canvas.addEventListener('keydown',event=>{
       const steps={ArrowLeft:[22,0],ArrowRight:[-22,0],ArrowUp:[0,-22],ArrowDown:[0,22]};
+      const walking={a:[-.62,0],d:[.62,0],w:[0,.62],s:[0,-.62]};
+      if(walking[event.key.toLowerCase()]&&canLook()){event.preventDefault();walk(...walking[event.key.toLowerCase()]);}
       if(steps[event.key]){event.preventDefault();drag(...steps[event.key]);}
       if(event.key==='Enter'||event.code==='Space'){
         event.preventDefault();
@@ -2319,6 +3378,8 @@ const toyRoom = (() => {
       if(!pick(cast(0,0),true))onAim(-1,true);
     }
     function shootSelection(index){
+      const point=getAimPoint(index);
+      if(!point||!inFrustum(point)||obstacleInWay(point)){clearAim();onAim(-1,true);return;}
       if(pick(index))fireAt(index);
     }
     function clearAim(){
@@ -2329,6 +3390,7 @@ const toyRoom = (() => {
     }
     function reset(){
       s.yaw=0;s.look=0;s.zoom=1;
+      seeker.yaw=0;seeker.pitch=-.05;seeker.x=0;seeker.z=spawnZ;
       clearAim();
     }
     function setZoom(delta){
@@ -2367,13 +3429,15 @@ const toyRoom = (() => {
       renderer.dispose();renderer.forceContextLoss();
     }
     function getTargetPosition(index){
-      const model=index===s.props.length?s.runnerBox:pickables[index];
+      const model=hitbox(index);
       if(!model||!s.rendered)return null;
-      model.getWorldPosition(center).project(camera);
+      model.getWorldPosition(center);
+      if(!s.options.own&&(!inFrustum(center)||obstacleInWay(center)))return null;
+      center.project(camera);
       const b=canvas.getBoundingClientRect();
       return {x:b.left+(center.x+1)*b.width/2,y:b.top+(1-center.y)*b.height/2};
     }
-    return {attach,aimCenter,clearAim,reset,setZoom,shootSelection,destroy,getTargetPosition,canvas};
+    return {attach,aimCenter,clearAim,reset,setZoom,shootSelection,destroy,getTargetPosition,walk,seekerPosition,canvas};
   }
 
   return {
@@ -2415,6 +3479,8 @@ const toyRoom = (() => {
       current.room.shootSelection(index);
       return true;
     },
+    walk(dx,dz){return current?.room?.walk(dx,dz)??false;},
+    seekerPosition(){return current?.room?.seekerPosition()??null;},
     targetPosition(index){return current?.room?.getTargetPosition(index)??null;}
   };
 })();
@@ -2433,7 +3499,6 @@ const hideMovement = (() => {
     arrowleft: 'left', a: 'left',
   };
   const repeatDelay = 150;
-  const controls = '[data-hide-move]';
   const editTarget = 'input, textarea, select, [contenteditable]:not([contenteditable="false"]), [role="textbox"]';
   const fingers = new Map();
   const keys = new Map();
@@ -2441,6 +3506,7 @@ const hideMovement = (() => {
   let onStep = null;
   let timer = null;
   let installed = false;
+  let attribute = 'data-hide-move';
 
   function available(control) {
     return Boolean(control && !control.disabled && control.getAttribute('aria-disabled') !== 'true' &&
@@ -2448,7 +3514,7 @@ const hideMovement = (() => {
   }
 
   function controlFor(name) {
-    return root?.querySelector(`[data-hide-move="${name}"]`);
+    return root?.querySelector(`[${attribute}="${name}"]`);
   }
 
   function clearHeld() {
@@ -2506,8 +3572,8 @@ const hideMovement = (() => {
   }
 
   function pointControl(target) {
-    const control = target?.closest?.(controls);
-    return control && root?.contains(control) && Object.hasOwn(direction, control.dataset.hideMove) && available(control)
+    const control = target?.closest?.(`[${attribute}]`);
+    return control && root?.contains(control) && Object.hasOwn(direction, control.getAttribute(attribute)) && available(control)
       ? control
       : null;
   }
@@ -2520,7 +3586,7 @@ const hideMovement = (() => {
       const control = pointControl(event.target);
       if (!control) return;
       event.preventDefault();
-      fingers.set(event.pointerId, control.dataset.hideMove);
+      fingers.set(event.pointerId, control.getAttribute(attribute));
       press();
     }, { passive: false });
 
@@ -2555,16 +3621,18 @@ const hideMovement = (() => {
       const control = pointControl(event.target);
       if (!control) return;
       event.preventDefault();
-      onStep(...direction[control.dataset.hideMove]);
+      onStep(...direction[control.getAttribute(attribute)]);
     });
   }
 
   return {
-    bind(newRoot, step) {
+    bind(newRoot, step, controlAttribute='data-hide-move') {
       if (!newRoot || typeof step !== 'function') {
         stop();
         return;
       }
+      if(attribute!==controlAttribute)clearHeld();
+      attribute=controlAttribute;
       root = newRoot;
       onStep = step;
       install();
@@ -2584,40 +3652,15 @@ const roles = [
   {name:'糖豆熊',detail:'围小领巾的熊',icon:'🐻',color:'#715650'}
 ];
 const games = {
-  hide:{name:'星光捉迷藏',icon:'☾',accent:'#c5adff',brief:'3D 大玩具房 · 跑动变身 · 十发',rules:'躲藏者变成玩具，可以用方向键或长按屏幕方向键跑动，每十秒随机换一次外形。寻找者拖动 3D 视角，点玩具瞄准，再按「点射」。有十发和两次扫描。躲藏者可放一次假信号干扰第二次扫描。命中或用完十发后交换角色。',x:22,y:25},
-  shoot:{name:'十发打星星',icon:'✸',accent:'#ffcf8e',brief:'每人五发 · 合计十发',rules:'看清闪亮的星星在哪一格。两人轮流点击，每人五次，加起来十次。每次点中亮星就得一分。',x:74,y:24},
-  toy:{name:'玩具搬运',icon:'♟',accent:'#ffa6a7',brief:'一人变玩具 · 搭档护送',rules:'一人变成小玩具，先选怎么移动。搭档从三种方法里选怎么帮忙。一起过三道障碍后交换角色，选错可以重试。',x:79,y:62},
-  memory:{name:'记忆翻牌',icon:'▦',accent:'#b3dbc8',brief:'八张牌 · 四对图案',rules:'每回合翻两张牌，找出相同的图案。配对成功的牌留在桌上，确认后由搭档继续。',x:52,y:79},
-  puzzle:{name:'双星解谜',icon:'✦',accent:'#ffc4ac',brief:'两条线索 · 点亮五颗星',rules:'一人猜图案，另一人猜颜色。两个答案都答对就点亮一颗星，答错可以回到这一关重来。',x:19,y:57},
-  signal:{name:'双人信号接力',icon:'♫',accent:'#a8ddf2',brief:'传暗号 · 三轮合作',rules:'一人看暗号并用语音告诉搭档，另一人按顺序点图案。三轮暗号会从三个变成五个，两人轮流读暗号。共有三次失误机会。',x:28,y:82},
-  duel:{name:'积木对决',icon:'▤',accent:'#f3ac80',brief:'3D 双墙 · 正面瞄准 · 三发换边',rules:'两只外星玩偶隔着各自的积木墙轮流进攻。到你进攻时，镜头切到正面。点或拖动准心，再按「点射」。每轮三发，对方的墙会留下打出的缺口。露出的头部、躯干、四肢分别扣 100、30、10 点，初始 150 点。防守时每秒可换一次姿势，每轮随机起始姿势。',x:51,y:18}
+  hide:{name:'星光捉迷藏',icon:'☾',accent:'#c5adff',brief:'先藏十秒 · 第一人称搜索',rules:'躲藏者先用十秒跑动、跳上台面或躲到家具后面。每十秒可换一次玩具外形。寻找者从入口出发，方向键走路，拖动画面转头，点玩具瞄准，再按「点射」。共有十发和两次扫描。',x:22,y:25},
+  shoot:{name:'星靶速射',icon:'✸',accent:'#ffcf8e',brief:'3D 反应靶场 · 十二发 · 假靶',rules:'两人轮流点金色星靶，每人六发。紫色是假靶。越往后，能出手的时间越短。',x:74,y:24},
+  toy:{name:'玩具障碍接力',icon:'♟',accent:'#ffa6a7',brief:'3D 三车道 · 八段接力',rules:'驾驶员看清前方障碍，点一条安全车道。搭档跟着颜色开启对应的闸门。四段后交换职责。共八段、三次失误机会。',x:79,y:62},
+  memory:{name:'立体记忆翻牌',icon:'▦',accent:'#b3dbc8',brief:'3D 翻牌桌 · 十六张牌',rules:'每回合翻两张立体牌，配对后留在桌上，下一回合换人。找齐八对即胜利。最多失配十次。',x:52,y:79},
+  puzzle:{name:'双星光路',icon:'✦',accent:'#ffc4ac',brief:'3D 管线台 · 三关限步',rules:'两人轮流转动接头，让亮起的光路从蓝色入口连到橙色出口。每关旋转次数有限，接通后进入下一关。',x:19,y:57},
+  signal:{name:'双人信号接力',icon:'♫',accent:'#a8ddf2',brief:'3D 灯阵 · 六盏灯 · 三轮接力',rules:'一人观看灯阵依次闪亮，把顺序告诉搭档。搭档按顺序按灯。每关换角色，顺序从四盏增加到六盏，允许失误三次。',x:28,y:82},
+  duel:{name:'积木对决',icon:'▤',accent:'#f3ac80',brief:'3D 外星双墙 · 拆墙与闪躲',rules:'两只外星玩偶各有一面会留下缺口的积木墙。每次换边后有五秒准备。防守者可移动到左、中、右，或每秒换一次姿势。进攻方有三发，点或拖动准心，再按「点射」。命中躯干或四肢后立即换边。双方初始 100 点耐久，头部、躯干、四肢分别扣 100、30、10 点。',x:51,y:18}
 };
-const puzzles = [
-  {name:'初遇之星',clues:['我像夜空里弯弯的小船。','我像一盏温暖的夜灯。'],icons:['☁️','🌙','⭐'],shapes:['云朵','月牙','星星'],colors:['夜蓝','暖黄','樱粉'],hues:['#4d6eaa','#ffd184','#ef9bb3'],answer:[1,1]},
-  {name:'聆听之星',clues:['把我贴近耳边，仿佛能听见海浪。','我像晴天里的海水。'],icons:['🐚','⚓','⛵'],shapes:['海螺','船锚','帆船'],colors:['珊瑚粉','薄荷绿','海蓝'],hues:['#ec948c','#8dcab3','#75b5da'],answer:[0,2]},
-  {name:'心愿之星',clues:['一张纸折出了翅膀，据说我能带走心愿。','我像刚倒进玻璃杯的牛奶。'],icons:['🔔','🗝️','🕊️'],shapes:['铃铛','钥匙','纸鹤'],colors:['奶白','雾紫','橘黄'],hues:['#fff6da','#b3a0d2','#ffad69'],answer:[2,0]},
-  {name:'同行之星',clues:['我转来转去，针尖总爱朝北。','我像熟透的草莓。'],icons:['🧭','🗺️','🏮'],shapes:['指南针','地图','灯笼'],colors:['松绿','莓红','金黄'],hues:['#618776','#c05271','#e8b85d'],answer:[0,1]},
-  {name:'默契之星',clues:['我在夜空中砰的一声，开出一朵花。','我是日落前天边泛起的粉色。'],icons:['🩷','🎆','🌕'],shapes:['爱心','烟花','月亮'],colors:['霞粉','天蓝','萤绿'],hues:['#f4a1bf','#86b9e7','#b0dd8e'],answer:[1,0]}
-];
-const puzzleGame = {
-  init:()=>({turn:0,done:false,round:0,picks:[],result:null}),
-  act(s,a,seat){
-    if(s.done || seat!==s.turn)return s;
-    const round=puzzles[s.round];
-    if(a.type==='pick' && !s.result && Number.isInteger(a.index) && a.index>=0 && a.index<3){
-      const picks=[...s.picks];picks[seat]=a.index;
-      if(s.picks.length===0)return {...s,picks,turn:1-seat};
-      return {...s,picks,result:picks.every((v,i)=>v===round.answer[i])?'hit':'miss'};
-    }
-    if(a.type==='continue' && s.result==='miss')return {...s,picks:[],turn:0,result:null};
-    if(a.type==='continue' && s.result==='hit'){
-      if(s.round===puzzles.length-1)return {...s,done:true};
-      return {...s,round:s.round+1,picks:[],turn:0,result:null};
-    }
-    return s;
-  }
-};
-const engines={...miniGames,puzzle:puzzleGame,signal:signalGame,duel:duelGame};
+const engines={hide:miniGames.hide,...arcadeGames,...challengeGames,duel:duelGame};
 const buttons=['hide','shoot','toy','memory','puzzle','signal','duel'];
 const saveKey='twin-stars-arcade-v1';
 function loadSave(){
@@ -2625,10 +3668,11 @@ function loadSave(){
     const data=JSON.parse(localStorage.getItem(saveKey));
     return {
       roles:Array.isArray(data?.roles)?[0,1].map(i=>Number.isInteger(data.roles[i])&&roles[data.roles[i]]?data.roles[i]:null):[null,null],
-      records:Array.isArray(data?.records)?data.records.filter(x=>x&&Object.hasOwn(games,x.game)&&typeof x.id==='string').slice(0,50):[]
+      records:Array.isArray(data?.records)?data.records.filter(x=>x&&Object.hasOwn(games,x.game)&&typeof x.id==='string').slice(0,50):[],
+      wardrobe:wardrobe.normalize(data?.wardrobe)
     };
   }catch{
-    return {roles:[null,null],records:[]};
+    return {roles:[null,null],records:[],wardrobe:wardrobe.normalize(null)};
   }
 }
 const archive=loadSave();
@@ -2650,7 +3694,6 @@ function expectedCode(code,network=roomTab){
   return network==='internet'?/^[A-HJ-NP-Z2-9]{8}$/.test(code):/^[A-Z0-9]{6}$/.test(code);
 }
 const defaultNetwork=()=>window.arcadeRelay?'relay':'internet';
-let shotKey='', shotTimer=0, flashShot=true;
 let walkOrigin=null;
 let hideAim=-1;
 let localHideOwner=false;
@@ -2665,7 +3708,9 @@ function avatar(id){
   const role=roles[id];
   if(!role)return '<span class="avatar" aria-hidden="true">✧</span>';
   const image=window.arcadeArt?.avatars?.[id];
-  return `<span class="avatar" style="--role-color:${role.color}" aria-hidden="true">${image?`<img src="${image}" alt="">`:role.icon}</span>`;
+  const skin=wardrobe.catalog.find(item=>item.id===archive.wardrobe.active);
+  const styled=skin.id!=='classic'&&(mode==='solo'||state.roles[seat]===id);
+  return `<span class="avatar ${styled?'wardrobe-avatar':''}" style="--role-color:${styled?skin.color:role.color}" aria-hidden="true">${image?`<img src="${image}" alt="">`:role.icon}${styled?`<small>${skin.icon}</small>`:''}</span>`;
 }
 const player=i=>roles[state.roles[i]]?.name||`玩家 ${i+1}`;
 const btn=(id,label,primary=false,disabled=false)=>`<button class="btn ${primary?'primary':''}" id="${id}" ${disabled?'disabled':''}>${label}</button>`;
@@ -2735,35 +3780,25 @@ function handoffPanel(){
 function resultGame(){
   const s=state.play,id=state.game;
   const desc=summary(state);
-  return shellGame(`<section class="panel play result"><div class="big-star" aria-hidden="true">✦</div><h2>${id==='puzzle'?'五颗星全部点亮！':id==='duel'?'积木对决结束！':'这局完成！'}</h2><p>${desc}</p><p class="local-save-state">${savedOk?'已保存到这台设备。':'本局结果暂存在当前页面。'}</p><div class="actions">${btn('rematch','再玩一局',true,pending)}${btn('result-map','逛别的摊位')}</div></section>`,'');
+  return shellGame(`<section class="panel play result"><div class="big-star" aria-hidden="true">✦</div><h2>${id==='puzzle'?'三条光路全部接通！':id==='duel'?'积木对决结束！':s.won===false||id==='signal'&&s.energy===0?'挑战结束':'这局完成！'}</h2><p>${desc}</p><p class="local-save-state">${savedOk?'获得 3 星币 · 已保存到本机':'本局结果暂存在当前页面。'}</p><div class="actions">${btn('rematch','再玩一局',true,pending)}${btn('result-map','逛别的摊位')}</div></section>`,'');
 }
 function summary(st){
   const a=st.play;
   if(st.game==='hide')return `你们猜中了 ${a.results.filter(x=>x.found).length} / 2 次变成玩具的搭档。`;
-  if(st.game==='shoot')return `一共点亮 ${a.scores[0]+a.scores[1]} / 10 颗星。`;
-  if(st.game==='toy')return `两位小玩具都已经通过障碍。`;
-  if(st.game==='memory')return `找齐了四对图案。两人分别找到 ${a.scores[0]} 对和 ${a.scores[1]} 对。`;
+  if(st.game==='shoot')return `命中 ${a.scores[0]+a.scores[1]} / ${a.maxShots} 个星靶。两人得分 ${a.scores.join(' / ')}。`;
+  if(st.game==='toy')return `一起通过了 ${a.completed} / ${a.stages.length} 段赛道。`;
+  if(st.game==='memory')return `找到了 ${a.matched.length/2} / 8 对图案。两人分别找到 ${a.scores[0]} 对和 ${a.scores[1]} 对。`;
   if(st.game==='signal')return `合作传对了 ${a.cleared} / 3 轮暗号。`;
   if(st.game==='duel')return `${player(a.winner)}获胜！双方剩余耐久 ${a.hp.join(' / ')}。`;
-  return '两个人一起解开了五组星星谜题。';
-}
-function renderPuzzle(s,can){
-  const r=puzzles[s.round];
-  const stars=`<div class="stars-progress" aria-label="已点亮 ${s.round+(s.result==='hit'?1:0)} 颗星">${puzzles.map((_,i)=>`<span class="${i<s.round?'lit':i===s.round&&s.result==='hit'?'lit newly-lit':''}">★</span>`).join('')}</div>`;
-  if(s.result){
-    const hit=s.result==='hit';
-    return `<section class="panel play">${stars}<h2>${hit?`点亮${r.name}`:'这颗星还没亮'}</h2><p>你们选了 ${r.shapes[s.picks[0]]} 和 ${r.colors[s.picks[1]]}。</p>${can?continued(hit?(s.round===4?'查看星图':'下一颗星'):'再猜一次'):`<p>${waitText()}</p>`}</section>`;
-  }
-  if(handoff)return handoffPanel();
-  const hint=can?r.clues[s.turn]:waitText();
-  const opts=s.turn===0?r.shapes.map((label,i)=>({label,icon:r.icons[i]})):r.colors.map((label,i)=>({label,color:r.hues[i]}));
-  return `<section class="panel play">${stars}<h2>${can?s.turn===0?'这颗星是什么图案？':'这颗星是什么颜色？':r.name}</h2><p>${hint}</p>${can?`<div class="options">${opts.map((o,i)=>option(i,o,pending)).join('')}</div>`:''}</section>`;
+  return '两个人接通了全部三条光路。';
 }
 function renderHide(s,can){
   if(handoff)return handoffPanel();
   const limit=miniGameData.hideShotLimit;
   const remaining=limit-s.shots;
   const isHider=mode==='solo'||seat===s.hider;
+  const prep=s.phase==='prepare';
+  const prepLeft=Math.max(0,Math.ceil((s.prepareUntil-Date.now())/1000));
   const findToy=(board,index)=>miniGameData.hideProps[board[index]];
   if(s.phase==='result'){
     const result=s.results.at(-1), toy=miniGameData.hideProps[result.shape];
@@ -2773,8 +3808,9 @@ function renderHide(s,can){
     if(!isHider)return `<section class="panel play hide-scene"><div class="hide-reveal" aria-hidden="true">✨</div><h2>搭档正在变身</h2><p>准备好后，你会看到一整架小玩具。</p></section>`;
     if(s.phase==='hide')return `<section class="panel play hide-scene"><div class="hide-reveal" aria-hidden="true">🎁</div><h2>变成一件小玩具</h2><p>随机抽取玩具架上的一件物品作为伪装。</p>${btn('transform-hide','随机变身',true,pending)}</section>`;
     const toy=findToy(s.board,s.spot);
-    return `<section class="panel play hide-scene"><div class="hide-reveal" aria-hidden="true">${toy.icon}</div><h2>你变成了${toy.label}</h2><p>记住你的伪装。准备好后，就让搭档开始找你。</p>${btn('start-hide','我藏好了',true,pending)}</section>`;
+    return `<section class="panel play hide-scene"><div class="hide-reveal" aria-hidden="true">${toy.icon}</div><h2>你变成了${toy.label}</h2>${btn('start-hide','开始十秒躲藏',true,pending)}</section>`;
   }
+  if(prep&&!isHider)return `<section class="panel play hide-scene handoff"><div class="hide-reveal" aria-hidden="true">🔒</div><h2>房门还没开</h2><p id="hide-prep-status">搭档正在躲藏 · ${prepLeft} 秒</p></section>`;
   const shots=Array.from({length:limit},(_,i)=>`<span class="shot-dot ${i<s.shots?'miss':''}" aria-hidden="true">${i<s.shots?'×':''}</span>`).join('');
   const props=s.board.map((prop,i)=>{
     const toy=miniGameData.hideProps[prop];
@@ -2782,14 +3818,16 @@ function renderHide(s,can){
     if(!can)return `<div class="hide-prop ${miss?'shot-prop':''}"><span class="option-icon" aria-hidden="true">${toy.icon}</span><span>${toy.label}</span></div>`;
     return `<button class="hide-prop ${miss?'shot-prop':''}" data-choice="${i}" aria-label="${toy.label}${miss?'，曾点射过':''}" ${pending?'disabled':''}><span class="option-icon" aria-hidden="true">${toy.icon}</span><span>${toy.label}</span>${miss?'<small>×</small>':''}</button>`;
   }).join('');
-  const tools=can
+  const tools=prep?'':can
     ?btn('hide-scan',s.scans<2?`扫描 · ${2-s.scans} 次`:'扫描已用完',false,pending||s.scans>=2)
     :btn('hide-decoy',s.decoyUsed?'干扰已用':'放一次假信号',false,pending||s.decoyUsed||s.scans>=2);
   const clue=s.clue?`<div class="scan-clue" role="status"><b>${s.clue.interference?'信号受到干扰':'扫描结果'}</b><span>${s.clue.interference?'可能在':'搭档在'}${s.clue.zone}</span></div>`:'';
-  const instruction=can?'拖动视角，点玩具瞄准，再按「点射」。瞄准后玩具还会跑，抓紧点射。':'长按方向键跑动。走斜坡上高台，也可以绕到家具背后。';
+  const instruction=can?'方向键走路 · 拖动画面转头 · 点玩具瞄准':'方向键跑动 · 跳跃上矮台 · 家具会挡住视线';
   const cool=Math.max(0,Math.ceil((s.changedAt+10_000-Date.now())/1000));
-  const movement=!can?`<div class="hide-runner-controls"><div class="hide-dpad" aria-label="移动"><button class="btn" data-hide-move="up" aria-label="向前">↑</button><button class="btn" data-hide-move="left" aria-label="向左">←</button><button class="btn" data-hide-move="down" aria-label="向后">↓</button><button class="btn" data-hide-move="right" aria-label="向右">→</button></div><div class="hide-morph"><span>${miniGameData.hideProps[s.shape].icon} ${miniGameData.hideProps[s.shape].label}</span>${btn('hide-morph',cool?`变身冷却 ${cool} 秒`:'随机变身',true,cool>0||pending)}</div></div>`:'';
-  const switcher=mode==='solo'?btn('hide-switch-view',can?'交给躲藏者移动':'交给寻找者点射'):'';
+  const dirAttr=can?'data-hide-seek':'data-hide-move';
+  const dpad=`<div class="hide-dpad" aria-label="移动">${[['up','↑','向前'],['left','←','向左'],['down','↓','向后'],['right','→','向右']].map(([dir,icon,label])=>`<button class="btn" ${dirAttr}="${dir}" aria-label="${label}">${icon}</button>`).join('')}</div>`;
+  const movement=`<div class="hide-runner-controls ${can?'hide-seeker-controls':''}">${dpad}${can?'':`<div class="hide-morph"><span>${miniGameData.hideProps[s.shape].icon} ${miniGameData.hideProps[s.shape].label}</span><div class="actions">${btn('hide-jump','跳跃',false,Date.now()<s.jumpUntil+240||pending)}${btn('hide-morph',cool?`变身 ${cool} 秒`:'随机变身',true,cool>0||pending)}</div></div>`}</div>`;
+  const switcher=mode==='solo'&&!prep?btn('hide-switch-view',can?'交给躲藏者移动':'交给寻找者点射'):'';
   const fallbackGrid=Array.from({length:42},(_,i)=>{
     const point=hideFallbackPoint(i);
     const marked=!can&&s.position&&hideFallbackCell(s.position.x,s.position.z)===i;
@@ -2798,65 +3836,20 @@ function renderHide(s,can){
     const display=marked?miniGameData.hideProps[s.shape].icon:prop>=0?miniGameData.hideProps[s.board[prop]].icon:blocked?'▧':'·';
     return can?`<button class="hide-prop hide-grid-cell" data-hide-grid="${i}" aria-label="地图第 ${i+1} 格" ${pending?'disabled':''}>${display}</button>`:`<span class="hide-prop hide-grid-cell ${marked?'my-prop':''}">${display}</span>`;
   }).join('');
-  return `<section class="panel play hide-scene"><h2>${can?'哪件玩具是搭档？':'守住你的伪装'}</h2><div class="hide-shots"><span>剩余 <strong>${remaining} / ${limit}</strong> 发</span><div class="shot-row">${shots}</div></div><div class="hide-stage" data-hide-scene data-renderer="fallback"><div class="hide-crosshair" aria-hidden="true">+</div><span class="hide-view-label" aria-hidden="true">玩具房</span><div class="hide-camera">${btn('hide-zoom-out','−')}${btn('hide-zoom-in','＋')}${btn('hide-reset','复位')}</div></div><div class="hide-flat-map"><p>平面房间图 · 下方为房间前侧</p><div class="hide-flat-grid">${fallbackGrid}</div></div>${movement}<div class="hide-toolbar"><span id="hide-aim" role="status">${can?'未瞄准':'搭档正在寻找你'}</span><div class="actions">${tools}${can?btn('hide-fire','点射',true,pending):''}${switcher}</div></div>${clue}<p class="hide-help">${instruction}</p><details class="hide-list"><summary>${can?'展开玩具列表':'展开观战列表'}</summary><div class="hide-board" aria-label="玩具架">${props}</div></details></section>`;
-}
-function renderShoot(s,can){
-  const key=`${state.session}-${s.shot}`;
-  if(can&&shotKey!==key){
-    shotKey=key;
-    flashShot=true;
-    clearTimeout(shotTimer);
-    shotTimer=setTimeout(()=>{
-      flashShot=false;
-      if(view==='game'&&state.game==='shoot'&&shotKey===key){
-        app.querySelectorAll('.star-on').forEach(e=>{
-          e.classList.remove('star-on');e.classList.add('star-off');
-          e.querySelector('.option-icon').textContent='✧';
-        });
-      }
-    },1100);
-  }
-  const last=s.history.at(-1);
-  const dots=Array.from({length:10},(_,i)=>{const log=s.history[i];return `<span class="shot-dot ${log?log.hit?'hit':'miss':''}">${log?log.hit?'✦':'×':''}</span>`;}).join('');
-  let streak=0;for(let i=s.history.length-1;i>=0&&s.history[i].hit;i--)streak++;
-  return `<section class="panel play shoot-panel"><div class="shot-row" aria-label="已用 ${s.shot} 发">${dots}</div><h2>第 ${s.shot+1} 发</h2><p>${can?'记住刚刚闪亮的格子，再点它。':waitText()}</p>${can?`<div class="options shoot-targets">${s.targets.map((lit,i)=>option(i,{icon:lit&&flashShot?'✸':'✧',label:['左','中','右'][i]},pending,lit&&flashShot?'star-on':'star-off')).join('')}</div>`:''}${last?`<p class="feedback ${last.hit?'hit':'miss'}" id="shoot-feedback">${streak>1?`${streak} 连中！`:last.hit?'命中！':'这一发落空了'} · 累计点亮 ${s.scores[0]+s.scores[1]} 颗星</p>`:''}</section>`;
-}
-function renderToy(s,can){
-  const d=miniGameData.toySteps[s.round*3+s.step],part=d[s.phase];
-  const route=miniGameData.toySteps.slice(s.round*3,s.round*3+3).map((step,i)=>`<li class="toy-route-step ${i<s.step?'passed':i===s.step?'active':''}"><span class="toy-route-icon" aria-hidden="true">${step.icon}</span><span class="toy-route-label">${step.title}</span>${i===s.step?'<span class="toy-token" aria-hidden="true">🧸</span>':''}</li>`).join('');
-  return `<section class="panel play"><div class="toy-line"><div class="turn-pill"><span class="avatar toy-avatar" aria-hidden="true">🧸</span> ${player(s.toySeat)}变成小玩具</div><span class="toy-helper">${avatar(state.roles[1-s.toySeat])} 搭档</span></div><ol class="toy-course" aria-label="障碍路线">${route}</ol><h2 style="margin-top:12px">${d.icon} ${d.title}</h2><p>${can?part.prompt:waitText()}</p>${can?`<div class="options">${part.options.map((o,i)=>option(i,o,pending)).join('')}</div>`:''}${s.feedback?`<p class="feedback">${s.feedback.correct?'配合成功。':'这样过不去，再试一种。'}</p>`:''}</section>`;
-}
-function renderMemory(s,can){
-  return `<section class="panel play"><h2>找到一样的图案</h2><p>${s.result?s.result==='match'?'找对了一组！':'两张图案不一样。':can?(s.open.length?'再翻一张牌。':'翻开任意一张牌。'):waitText()}</p><div class="memory">${s.deck.map((id,i)=>{
-    const known=s.open.includes(i)||s.matched.includes(i);
-    const symbol=miniGameData.memorySymbols[id];
-    return `<button class="option ${s.matched.includes(i)?'matched':known?'revealed':''}" data-choice="${i}" aria-label="${known?symbol.label:`翻开第 ${i+1} 张`}" ${!can||pending||known||s.result?'disabled':''}>${known?symbol.icon:'✧'}</button>`;
-  }).join('')}</div>${s.result&&can?continued(s.matched.length===8?'查看结果':'轮到搭档'):''}</section>`;
-}
-function renderSignal(s,can){
-  if(handoff)return handoffPanel();
-  const hearts='♥'.repeat(s.energy)+'♡'.repeat(3-s.energy);
-  const symbols=sequence=>`<div class="signal-sequence">${sequence.map(i=>i==null?'<span class="signal-tile dim">·</span>':`<span class="signal-tile" aria-label="${signalSymbols[i].label}">${signalSymbols[i].icon}</span>`).join('')}</div>`;
-  if(s.phase==='result'){
-    const solved=s.outcome==='success';
-    return `<section class="panel play signal-panel"><span class="signal-energy" aria-label="剩余 ${s.energy} 次失误机会">${hearts}</span><h2>${solved?'暗号传对了！':'这组暗号对不上'}</h2>${symbols(s.sequence)}${can?continued(s.cleared===3||!s.energy?'查看结果':solved?'交换角色':'换一组暗号'):`<p>${waitText()}</p>`}</section>`;
-  }
-  if(s.phase==='read'){
-    return `<section class="panel play signal-panel"><span class="signal-energy" aria-label="剩余 ${s.energy} 次失误机会">${hearts}</span><h2>${can?'把暗号念给搭档':'听搭档的暗号'}</h2><p>${can?'从左到右读。准备好后，交给搭档复现。':'这组暗号显示在搭档的屏幕上。'}</p>${can?symbols(s.sequence)+btn('signal-ready','搭档来复现',true,pending):''}</section>`;
-  }
-  const slots=Array.from({length:s.round+3},(_,i)=>s.picks[i]);
-  return `<section class="panel play signal-panel"><span class="signal-energy" aria-label="剩余 ${s.energy} 次失误机会">${hearts}</span><h2>${can?'按顺序点出暗号':'搭档正在复现暗号'}</h2>${symbols(slots)}${can?`<div class="options signal-choices">${signalSymbols.map((symbol,i)=>option(i,symbol,pending)).join('')}</div>`:''}</section>`;
+  return `<section class="panel play hide-scene"><h2>${can?'寻找变形玩具':'守住你的伪装'}</h2>${prep?`<p id="hide-prep-status">躲藏时间 · ${prepLeft} 秒</p>`:`<div class="hide-shots"><span>剩余 <strong>${remaining} / ${limit}</strong> 发</span><div class="shot-row">${shots}</div></div>`}<div class="hide-stage" data-hide-scene data-renderer="loading"><div class="hide-crosshair" aria-hidden="true">+</div><span class="hide-view-label" aria-hidden="true">${can?'第一人称':'藏身视角'}</span><div class="hide-camera">${can?'':btn('hide-zoom-out','−')+btn('hide-zoom-in','＋')}${btn('hide-reset',can?'朝前':'复位')}</div></div><div class="hide-flat-map"><p>平面备用操作 · 下方为房间前侧</p><div class="hide-flat-grid">${fallbackGrid}</div></div>${movement}<div class="hide-toolbar"><span id="hide-aim" role="status">${can?'未瞄准':prep?'先找藏身点':'搭档正在寻找你'}</span><div class="actions">${tools}${can?btn('hide-fire','点射',true,pending):''}${switcher}</div></div>${clue}<p class="hide-help">${instruction}</p><details class="hide-list"><summary>备用玩具列表</summary><div class="hide-board" aria-label="玩具架">${props}</div></details></section>`;
 }
 const duelPartNames={head:'头部',torso:'躯干',limb:'四肢'};
 const duelPartIcons={head:'◉',torso:'◆',limb:'●'};
 function duelCellName(s,i){
-  const part=(s.visibleParts||duelPoses[s.pose].parts)[i];
+  const part=(s.visibleParts||duelBodyParts(s))[i];
   return s.covers[1-s.turn][i]?'掩体':part?duelPartNames[part]:'空位';
 }
 function renderDuel(s,can){
   const defender=1-s.turn, f=s.feedback;
   const defend=mode==='solo'||seat===defender;
-  const pose=duelPoses[s.pose], parts=s.visibleParts||pose.parts, field=s.covers[defender];
+  const prep=Math.max(0,Math.ceil((s.prepareUntil-Date.now())/1000));
+  const pose=duelPoses[s.pose], field=s.covers[defender];
+  const parts=can&&prep?Array(field.length).fill(null):s.visibleParts||duelBodyParts(s);
   const hp=s.hp.map((n,i)=>`<div class="duel-hp">${avatar(state.roles[i])}<div><b>${player(i)}</b><span>${n}/${duelGrid.maxHP}</span><meter min="0" max="${duelGrid.maxHP}" value="${n}" aria-label="${player(i)}耐久"></meter></div></div>`).join('');
   const cells=field.map((cover,i)=>{
     const part=parts[i];
@@ -2864,25 +3857,23 @@ function renderDuel(s,can){
     const classes=`duel-cell ${cover?'duel-cover':part?'duel-body '+part:'duel-empty'} ${effect?'duel-'+effect+'-flash':''}`;
     const label=cover?'掩体':part?duelPartNames[part]:'空位';
     const shown=cover?'▧':part?duelPartIcons[part]:'·';
-    return can?`<button class="${classes}" data-choice="${i}" aria-label="第 ${i+1} 格，${label}" ${pending?'disabled':''}>${shown}</button>`
+    return can?`<button class="${classes}" data-choice="${i}" aria-label="第 ${i+1} 格，${label}" ${pending||prep?'disabled':''}>${shown}</button>`
       :`<span class="${classes}" aria-label="第 ${i+1} 格，${label}">${shown}</span>`;
   }).join('');
   const text=f?.type==='cover'?'击碎一块掩体':f?.type==='hit'?`命中${duelPartNames[f.part]} −${f.damage}`:f?.type==='miss'?'这一发落空了':can?'滑动或点选目标，再点「点射」。':'拖动可以查看两面墙。';
   const near=s.turn===0?'蓝墙':'橙墙',far=s.turn===0?'橙墙':'蓝墙';
-  return `<section class="panel play duel-panel"><div class="duel-hps">${hp}</div><div class="duel-caption"><h2>${can?'你的进攻回合':'守住你的掩体'}</h2><span>剩余 <b>${duelGrid.shotsPerTurn-s.shots} / ${duelGrid.shotsPerTurn}</b> 发</span></div><div class="duel-arena" data-duel-scene data-renderer="fallback"><span class="duel-camera-label" id="duel-camera-label">${can?'正面瞄准':'场地全景'}</span><span class="duel-wall-order">${can?`己方 ${near} · 对方 ${far}`:`你的掩体 · ${far}`}</span></div><div class="duel-aim-controls"><span id="duel-target" aria-live="polite">${can?'未瞄准':'拖动查看两面墙'}</span>${can?`<div class="actions">${btn('duel-view','看全景')}${btn('duel-fire','点射',true,true)}</div>`:''}</div><p class="duel-feedback ${f?.type||''}" role="status">${text}</p>${defend?`<div class="duel-defense"><span>${player(defender)} · ${pose.label}</span><div class="actions">${duelPoses.map((p,i)=>`<button class="btn duel-pose" data-pose="${i}" aria-pressed="${s.pose===i}" ${pending||s.pose===i?'disabled':''}>${p.icon} ${p.label}</button>`).join('')}</div><small>每秒可换一次姿势</small></div>`:''}<div class="duel-legend"><span>头部 100</span><span>躯干 30</span><span>四肢 10</span></div><details class="duel-fallback"><summary>备用平面瞄准</summary><div class="duel-grid" aria-label="积木掩体及露出区域">${cells}</div></details></section>`;
+  return `<section class="panel play duel-panel"><div class="duel-hps">${hp}</div><div class="duel-caption"><h2>${can?'你的进攻回合':'守住你的掩体'}</h2><span id="duel-preparation">${prep?`准备 ${prep} 秒`:`剩余 ${duelGrid.shotsPerTurn-s.shots} / ${duelGrid.shotsPerTurn} 发`}</span></div><div class="duel-arena" data-duel-scene data-renderer="fallback"><span class="duel-camera-label" id="duel-camera-label">${can?'正面瞄准':'场地全景'}</span><span class="duel-wall-order">${can?`己方 ${near} · 对方 ${far}`:`你的掩体 · ${far}`}</span></div><div class="duel-aim-controls"><span id="duel-target" aria-live="polite">${can?'未瞄准':'拖动查看两面墙'}</span>${can?`<div class="actions">${btn('duel-view','看全景')}${btn('duel-fire','点射',true,true)}</div>`:''}</div><p class="duel-feedback ${f?.type||''}" role="status">${text}</p>${defend?`<div class="duel-defense"><span>${player(defender)} · ${pose.label}</span><div class="actions">${[-1,0,1].map((side,i)=>`<button class="btn duel-pose" data-side="${side}" aria-pressed="${s.position===side}" ${pending||s.position===side?'disabled':''}>${['← 左移','居中','右移 →'][i]}</button>`).join('')}</div><div class="actions">${duelPoses.map((p,i)=>`<button class="btn duel-pose" data-pose="${i}" aria-pressed="${s.pose===i}" ${pending||s.pose===i?'disabled':''}>${p.icon} ${p.label}</button>`).join('')}</div><small>每秒可换一次站位或姿势</small></div>`:''}<div class="duel-legend"><span>头部 100</span><span>躯干 30</span><span>四肢 10</span></div><details class="duel-fallback"><summary>备用平面瞄准</summary><div class="duel-grid" aria-label="积木掩体及露出区域">${cells}</div></details></section>`;
 }
 function renderGame(){
   const s=state.play;
   if(s.done)return resultGame();
   const can=mode==='solo'||seat===s.turn;
   const id=state.game;
-  if(id==='hide')return shellGame(renderHide(s,can&&!(mode==='solo'&&s.phase==='guess'&&localHideOwner)),`第 ${s.round+1} / 2 轮`);
-  if(id==='shoot')return shellGame(renderShoot(s,can),`剩余 ${10-s.shot} / 10 发`);
-  if(id==='toy')return shellGame(renderToy(s,can),`第 ${s.round+1} / 2 轮 · 障碍 ${s.step+1} / 3`);
-  if(id==='memory')return shellGame(renderMemory(s,can),`已配对 ${s.matched.length/2} / 4`);
-  if(id==='signal')return shellGame(renderSignal(s,can),`第 ${s.round+1} / 3 轮`);
+  if(id==='hide')return shellGame(renderHide(s,s.phase!=='prepare'&&can&&!(mode==='solo'&&s.phase==='guess'&&localHideOwner)),`第 ${s.round+1} / 2 轮`);
   if(id==='duel')return shellGame(renderDuel(s,can),`第 ${s.round+1} 回合`);
-  return shellGame(renderPuzzle(s,can),`第 ${s.round+1} / 5 关`);
+  if(handoff)return shellGame(handoffPanel(),'');
+  const badge=id==='shoot'?`剩余 ${s.maxShots-s.shot} / ${s.maxShots} 发`:id==='toy'?`赛道 ${s.completed+1} / ${s.stages.length}`:id==='memory'?'8 对立体牌':`第 ${s.round+1} / 3 关`;
+  return shellGame(renderArcadeGame(id,s,can),badge);
 }
 function patchScenePanel(scene,markup,selector){
   const scratch=document.createElement('div');
@@ -2915,34 +3906,43 @@ function render(){
   const screens={home:renderHome,rooms:renderRooms,lobby:renderLobby,hub:renderHub,game:renderGame};
   const listOpen=app.querySelector('.hide-list')?.open;
   const duelBackup=app.querySelector('.duel-fallback')?.open;
+  const arcadeBackup=app.querySelector('.arcade-backup')?.open;
+  scheduleArcade();
   const markup=screens[view]();
-  const preserve=view==='game'&&!state.play.done&&((state.game==='hide'&&state.play.phase==='guess'&&!handoff)||(state.game==='duel'));
+  const priorHideFrame=app.querySelector('[data-hide-scene]');
+  const changingHideRole=priorHideFrame&&priorHideFrame.querySelector('.hide-view-label')?.textContent!==
+    (state.play?.phase==='guess'&&(mode==='solo'?!localHideOwner:seat===state.play.turn)?'第一人称':'藏身视角');
+  const preserve=view==='game'&&!state.play.done&&((state.game==='hide'&&['prepare','guess'].includes(state.play.phase)&&!handoff&&!changingHideRole&&
+    (state.play.phase!=='prepare'||mode==='solo'||seat===state.play.hider))||(state.game==='duel'));
   const selector=state.game==='duel'?'[data-duel-scene]':'[data-hide-scene]';
   const existing=preserve&&app.querySelector(selector);
   if(existing)patchScenePanel(existing,markup,selector);
   else app.innerHTML=markup;
   const frame=app.querySelector('[data-hide-scene]');
   if(frame){
-    const play=state.play, can=mode==='solo'?!localHideOwner:seat===play.turn;
-    const runner=play.position&&(mode!=='solo'||!can||play.moving)&&{...play.position,shape:play.shape};
+    const play=state.play, can=play.phase==='guess'&&(mode==='solo'?!localHideOwner:seat===play.turn);
+    const runner=play.position&&(mode!=='solo'||!can||play.moving)&&{...play.position,shape:play.shape,y:hideJumpHeight(play),jumpAt:play.jumpAt,jumpUntil:play.jumpUntil};
     if(listOpen)app.querySelector('.hide-list').open=true;
-    toyRoom.sync(frame,{key:state.session+'-'+play.round,board:play.board,can,pending,guesses:play.guesses,runner,own:!can,shots:play.shots,feedback:play.feedback,revealUntil:play.revealUntil},(index,empty)=>{
+    toyRoom.sync(frame,{key:state.session+'-'+play.round+(can?'-seek':'-hide'),board:play.board,can,pending,guesses:play.guesses,runner,own:!can,shots:play.shots,feedback:play.feedback,revealUntil:play.revealUntil},(index,empty)=>{
       hideAim=index;
       const status=app.querySelector('#hide-aim');
       if(status&&can)status.textContent=index<0?(empty?'准心没对着玩具':'未瞄准'):'瞄准：'+(index===play.board.length?'移动的玩具':miniGameData.hideProps[play.board[index]].label);
     },(index,at)=>dispatch({type:'game-action',input:{type:'shoot',index,at}}));
     if(app.querySelector('[data-hide-move]'))hideMovement.bind(app,(dx,dz)=>dispatch({type:'game-action',input:{type:'move',dx,dz}},play.hider));
+    else if(app.querySelector('[data-hide-seek]'))hideMovement.bind(app,(dx,dz)=>toyRoom.walk(dx,-dz),'data-hide-seek');
     else hideMovement.stop();
   }else{toyRoom.sync(null);hideMovement.stop();hideAim=-1;}
   const duelFrame=app.querySelector('[data-duel-scene]');
   if(duelFrame){
     const play=state.play,can=mode==='solo'||seat===play.turn;
     if(duelBackup)app.querySelector('.duel-fallback').open=true;
-    duelRoom.sync(duelFrame,{key:state.session,turn:play.turn,covers:play.covers,parts:play.visibleParts||duelPoses[play.pose].parts,pose:play.pose,feedback:play.feedback,can,pending},{
+    const prep=Date.now()<play.prepareUntil;
+    const parts=can&&prep?Array(duelGrid.cols*duelGrid.rows).fill(null):play.visibleParts||duelBodyParts(play);
+    duelRoom.sync(duelFrame,{key:state.session,turn:play.turn,covers:play.covers,parts,pose:play.pose,position:play.position,feedback:play.feedback,can,pending:pending||prep},{
       aim(index){
         const aiming=duelFrame.dataset.duelMode==='aim';
         const action=app.querySelector('#duel-fire'),viewButton=app.querySelector('#duel-view');
-        if(action)action.disabled=!aiming||index<0||pending;
+        if(action)action.disabled=!aiming||index<0||pending||prep;
         if(viewButton)viewButton.textContent=aiming?'看全景':'回到瞄准';
         app.querySelector('#duel-camera-label').textContent=aiming?'正面瞄准':'场地全景';
         app.querySelector('#duel-target').textContent=aiming?(index<0?'未瞄准':`瞄准 · ${duelCellName(play,index)}`):'拖动查看两面墙';
@@ -2950,6 +3950,9 @@ function render(){
       fire(index){dispatch({type:'game-action',input:{type:'shoot',index}});}
     });
   }else duelRoom.sync(null);
+  const arcadeFrame=app.querySelector('[data-arcade-scene]');
+  if(arcadeFrame&&arcadeBackup)app.querySelector('.arcade-backup').open=true;
+  syncArcade(arcadeFrame);
   walkOrigin=null;
 }
 function gameID(){
@@ -2991,9 +3994,8 @@ function applyState(next){
   if(next.stage!=='game'||next.game!=='hide'||next.play.phase!=='guess')localHideOwner=false;
   if(next.stage==='hub'&&previous.stage==='hub')walkOrigin=previous.positions;
   if(mode==='solo'&&next.stage==='game'&&previous.stage==='game'&&previous.session===next.session){
-    if(next.game==='hide'&&next.play.phase==='guess'&&previous.play.phase==='reveal')handoff=true;
+    if(next.game==='hide'&&next.play.phase==='guess'&&previous.play.phase==='prepare')handoff=true;
     if(next.game==='hide'&&next.play.phase==='hide'&&previous.play.round!==next.play.round)handoff=true;
-    if(next.game==='puzzle'&&next.play.turn!==previous.play.turn&&!next.play.result)handoff=true;
     if(next.game==='signal'&&next.play.turn!==previous.play.turn&&next.play.phase==='repeat')handoff=true;
   }
   if(next.stage!=='game'||next.session!==previous.session)handoff=false;
@@ -3005,6 +4007,7 @@ function applyState(next){
   if(next.stage==='game'&&next.play.done&&!archive.records.some(r=>r.id===next.session)){
     archive.records.unshift({id:next.session,game:next.game,when:Date.now(),result:summary(next)});
     archive.records.splice(50);
+    archive.wardrobe=wardrobe.earn(archive.wardrobe,next.game);
     savedOk=saveLocal();
   }
   go(next.stage);
@@ -3039,18 +4042,22 @@ async function pollLan(){
 }
 function publishInternet(){
   let shared=state;
-  if(state.game==='hide'&&state.play.hider===0&&['reveal','guess'].includes(state.play.phase)){
+  if(state.game==='hide'&&state.play.hider===0&&['reveal','prepare','guess'].includes(state.play.phase)){
     const play=state.play;
     const visible=play.phase==='guess'&&play.moving;
-    shared={...state,play:{...play,spot:null,decoy:null,position:visible?play.position:null,shape:visible?play.shape:null}};
+    shared={...state,play:{...play,spot:null,decoy:null,position:visible?play.position:null,shape:visible?play.shape:null,jumpAt:visible?play.jumpAt:0,jumpUntil:visible?play.jumpUntil:0}};
   }
   if(state.game==='signal'&&state.play.phase!=='result'&&state.play.reader===0){
     shared={...state,play:{...state.play,sequence:[]}};
   }
+  if(state.game==='memory'){
+    const play=state.play;
+    shared={...state,play:{...play,deck:play.deck.map((symbol,i)=>play.open.includes(i)||play.matched.includes(i)?symbol:null)}};
+  }
   if(state.game==='duel'&&state.play.turn===1&&!state.play.done){
     const play=state.play;
-    const viewParts=duelPoses[play.pose].parts.map((part,i)=>play.covers[0][i]?null:part);
-    shared={...state,play:{...play,pose:null,visibleParts:viewParts}};
+    const viewParts=duelBodyParts(play).map((part,i)=>play.covers[0][i]?null:part);
+    shared={...state,play:{...play,pose:null,position:null,visibleParts:viewParts}};
   }
   if(joined&&room&&!room.send({kind:'snapshot',version,state:shared}))notify('同步暂时中断。');
 }
@@ -3156,7 +4163,7 @@ async function dispatch(action,actor=mode==='solo'?(view==='lobby'?roleCursor:vi
   }catch(e){if(room===here){pending=false;notify(e.message);}}
 }
 function leaveRoom(){
-  epoch++;clearInterval(pollTimer);clearTimeout(shotTimer);
+  epoch++;clearInterval(pollTimer);
   if(mode==='internet'&&room)room.close();
   room=null;mode='solo';joined=false;seat=0;version=0;pending=false;roomBusy=false;roomError='';roomDraft='';handoff=false;
   state=fresh();go('home');
@@ -3173,6 +4180,17 @@ function showRules(id){
 function showRecords(){
   ruleContent.innerHTML=`<h2>本机存档</h2>${archive.records.length?`<ul>${archive.records.slice(0,12).map(r=>`<li><b>${games[r.game].name}</b>　${safe(r.result||'已完成')} <small>${safe(new Date(r.when).toLocaleDateString('zh-CN'))}</small></li>`).join('')}</ul>`:'<p>目前还没有完成的游戏。每次通关后会自动记录。</p>'}<p>此设备当前浏览器保留最近 50 局记录和选角。</p>`;
   dialog.showModal();
+}
+function showWardrobe(){
+  const wallet=archive.wardrobe;
+  const cards=wardrobe.catalog.map(item=>{
+    const unlocked=wallet.unlocked.includes(item.id);
+    const active=wallet.active===item.id;
+    const name=active?'使用中':unlocked?'使用':`${item.cost} 星币`;
+    return `<button class="wardrobe-card" style="--skin:${item.color}" data-skin="${item.id}" aria-pressed="${active}" ${active||!unlocked&&wallet.coins<item.cost?'disabled':''}><span aria-hidden="true">${item.icon}</span><strong>${item.name}</strong><small>${name}</small></button>`;
+  }).join('');
+  ruleContent.innerHTML=`<h2>本机衣柜</h2><p class="wardrobe-wallet">✦ ${wallet.coins} 星币</p><div class="wardrobe-grid">${cards}</div><p>完成一局获得 3 星币。</p>`;
+  if(!dialog.open)dialog.showModal();
 }
 function showCopyText(value,label){
   ruleContent.innerHTML=`<h2>${label}</h2><p>长按下方内容，选择复制后发给搭档。</p><input class="field copy-field" aria-label="${label}" type="text" readonly>`;
@@ -3203,6 +4221,16 @@ function copyInvite(){
 }
 document.addEventListener('click',e=>{
   const b=e.target.closest('button');
+  if(b?.dataset.skin){
+    const id=b.dataset.skin;
+    const wallet=archive.wardrobe;
+    const unlocked=wallet.unlocked.includes(id);
+    const next=unlocked?wardrobe.equip(wallet,id):wardrobe.buy(wallet,id);
+    if(!unlocked&&!next.unlocked.includes(id))return;
+    archive.wardrobe=unlocked?next:wardrobe.equip(next,id);
+    if(!saveLocal())notify('当前浏览器无法保存。');
+    render();showWardrobe();return;
+  }
   if(b?.matches('[data-rules]'))return showRules();
   if(b?.matches('[data-info]'))return showRules(b.dataset.info);
   if(!b){
@@ -3230,12 +4258,18 @@ document.addEventListener('click',e=>{
   if(b.dataset.choice!==undefined){
     const type=['shoot','hide','duel'].includes(state.game)?'shoot':state.game==='memory'?'flip':'pick';
     const index=Number(b.dataset.choice);
+    if(Object.hasOwn(arcadeAccent,state.game)){arcadeChoice(index);return;}
     if(state.game==='hide'&&toyRoom.shootSelection(index))return;
     dispatch({type:'game-action',input:{type,index}});return;
   }
   if(b.dataset.pose!==undefined){
     const actor=mode==='solo'?1-state.play.turn:seat;
     dispatch({type:'game-action',input:{type:'pose',index:Number(b.dataset.pose)}},actor);
+    return;
+  }
+  if(b.dataset.side!==undefined){
+    const actor=mode==='solo'?1-state.play.turn:seat;
+    dispatch({type:'game-action',input:{type:'sidestep',index:Number(b.dataset.side)}},actor);
     return;
   }
   if(b.dataset.hideGrid!==undefined){
@@ -3260,7 +4294,7 @@ document.addEventListener('click',e=>{
   if(b.id==='reveal-turn'){handoff=false;render();}
   if(b.id==='transform-hide')dispatch({type:'game-action',input:{type:'transform'}});
   if(b.id==='start-hide')dispatch({type:'game-action',input:{type:'ready'}});
-  if(b.id==='signal-ready')dispatch({type:'game-action',input:{type:'ready'}});
+  if(b.id==='signal-ready'||b.id==='arcade-start-shot')dispatch({type:'game-action',input:{type:'ready'}});
   if(b.id==='duel-view')duelRoom.toggle();
   if(b.id==='duel-fire')duelRoom.fire();
   if(b.id==='hide-scan')dispatch({type:'game-action',input:{type:'scan'}});
@@ -3270,9 +4304,11 @@ document.addEventListener('click',e=>{
   }
   if(b.id==='hide-decoy')dispatch({type:'game-action',input:{type:'decoy'}},state.play.hider);
   if(b.id==='hide-morph')dispatch({type:'game-action',input:{type:'morph'}},state.play.hider);
+  if(b.id==='hide-jump')dispatch({type:'game-action',input:{type:'jump'}},state.play.hider);
   if(['hide-fire','hide-reset','hide-zoom-in','hide-zoom-out'].includes(b.id))toyRoom.action(b.id);
   if(b.id==='continue-game')dispatch({type:'game-action',input:{type:'continue'}});
   if(b.id==='records')showRecords();
+  if(b.id==='wardrobe')showWardrobe();
 });
 document.addEventListener('submit',e=>{
   if(e.target.id!=='join-form')return;
@@ -3314,10 +4350,32 @@ async function startPage(){
 }
 startPage();
 setInterval(()=>{
+  const prep=app.querySelector('#duel-preparation');
+  if(!prep||state.game!=='duel')return;
+  const remaining=Math.max(0,Math.ceil((state.play.prepareUntil-Date.now())/1000));
+  const text=remaining?`准备 ${remaining} 秒`:`剩余 ${duelGrid.shotsPerTurn-state.play.shots} / ${duelGrid.shotsPerTurn} 发`;
+  if(text!==prep.textContent){
+    if(remaining)prep.textContent=text;else render();
+  }
+},200);
+setInterval(()=>{
   const button=app.querySelector('#hide-morph');
-  if(!button||state.game!=='hide')return;
+  if(state.game!=='hide')return;
+  const round=state.play;
+  const prep=app.querySelector('#hide-prep-status');
+  if(prep&&round.phase==='prepare'){
+    const left=Math.max(0,Math.ceil((round.prepareUntil-Date.now())/1000));
+    const text=`${mode!=='solo'&&seat!==round.hider?'搭档正在躲藏':'躲藏时间'} · ${left} 秒`;
+    if(prep.textContent!==text)prep.textContent=text;
+    if(!left&&!pending&&(mode==='solo'||seat===round.hider||(mode==='internet'&&seat===0))){
+      dispatch({type:'game-action',input:{type:'hunt'}},round.hider);
+    }
+  }
+  const jump=app.querySelector('#hide-jump');
+  if(jump)jump.disabled=Date.now()<round.jumpUntil+240||pending;
+  if(!button)return;
   const left=Math.max(0,Math.ceil((state.play.changedAt+10_000-Date.now())/1000));
-  const text=left?`变身冷却 ${left} 秒`:'随机变身';
+  const text=left?`变身 ${left} 秒`:'随机变身';
   if(button.textContent!==text)button.textContent=text;
   button.disabled=left>0||pending;
 },200);
