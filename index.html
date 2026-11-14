@@ -139,6 +139,23 @@ button.hide-prop:hover:not(:disabled){border-color:var(--gold)}
 .hide-prop.my-prop{border-color:var(--gold);background:#583d50}
 .hide-prop.my-prop small{position:static}
 @media(max-width:560px){.hide-board{grid-template-columns:repeat(4,minmax(0,1fr))}.hide-prop{min-height:58px}}
+.hide-stage{position:relative;min-height:340px;height:min(49svh,490px);isolation:isolate;overflow:hidden;border:1px solid #735f8b;border-radius:15px;background:#271d42}
+.hide-stage canvas{position:absolute;inset:0;width:100%;height:100%;display:block;touch-action:none;cursor:grab;outline-offset:-4px}
+.hide-stage canvas:active{cursor:grabbing}
+.hide-crosshair,.hide-view-label{pointer-events:none;position:absolute;z-index:1;text-shadow:0 2px 6px #24142b}
+.hide-crosshair{top:50%;left:50%;transform:translate(-50%,-50%);font:28px/1 monospace;color:#fff7e9b5}
+.hide-view-label{top:12px;left:12px;border-radius:100px;padding:5px 9px;color:#fff0dc;background:#281b46b5;font-size:11px}
+.hide-camera{position:absolute;z-index:1;right:9px;bottom:9px;display:flex;gap:5px}
+.hide-camera .btn{min-width:40px;min-height:40px;padding:5px 9px;background:#2e214de6}
+.hide-toolbar{display:flex;gap:9px;flex-wrap:wrap;align-items:center;justify-content:space-between;margin:10px 0}
+#hide-aim{font-size:13px;color:#ffe5c7}
+.hide-help{font-size:12px!important;margin:4px 0 9px!important}
+.hide-list{color:#e6d6ec;font-size:13px}
+.hide-list summary{padding:7px 0;cursor:pointer}
+.scan-clue{display:flex;align-items:center;gap:9px;margin:8px 0;padding:9px 11px;border-left:3px solid var(--mint);border-radius:7px;background:#38304b;color:#eff7ed;font-size:13px;animation:pop .28s ease both}
+.scan-clue b{color:var(--mint)}
+.hide-stage[data-renderer=fallback],.hide-stage[data-renderer=fallback]+.hide-toolbar #hide-fire,.hide-stage[data-renderer=fallback]+.hide-toolbar #hide-aim{display:none}
+@media(max-width:480px){.hide-stage{min-height:290px;height:44svh}.hide-scene{padding:13px}.hide-camera .btn{font-size:12px}.hide-toolbar .actions>.btn{min-height:44px}}
 .memory{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin:16px 0}
 .memory .option{font-size:25px;min-height:62px}
 .memory .matched{background:#2e453e;border-color:#597f70;opacity:1}
@@ -162,6 +179,253 @@ dialog::backdrop{background:#0b0815b8}
 @media(max-width:760px){.wrap{width:calc(100% - 32px)}.bar{height:67px}.hero{min-height:510px;align-items:flex-end;background-image:linear-gradient(0deg,#19132cf9 0%,#1d142cdb 37%,#1b142715 68%),var(--hero);background-position:63% center}.hero-content{padding:30px 23px}.hero h1{font-size:clamp(48px,10vw,66px);margin-bottom:12px}.hero .subtitle{margin-bottom:20px;font-size:14px}.section-head{margin-top:25px}.tiles{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.tile{padding:12px}.hub-board{min-height:412px}.panel{padding:17px}.play{padding:18px}.map-controls{gap:8px}}
 @media(max-width:390px){.wrap{width:calc(100% - 22px)}.hero{min-height:465px}.hero-content{padding:24px 16px}.btn{padding:10px 12px}.role strong{font-size:12px}.rooms-grid{grid-template-columns:1fr}.section-head p{display:none}.stall .game-icon{width:50px;height:50px;font-size:25px}.stall b{font-size:11px}.hub-board{min-height:390px}}
 @media(prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms!important;transition-duration:.01ms!important}}
+
+.stars-progress span {
+  display: inline-block;
+  transform-origin: 50% 58%;
+  transition: color 180ms ease, text-shadow 180ms ease;
+}
+
+.stars-progress .newly-lit {
+  color: var(--gold);
+  animation: puzzle-star-light 550ms cubic-bezier(.17, .8, .24, 1) both;
+}
+
+@keyframes puzzle-star-light {
+  0% { transform: scale(.62) rotate(-13deg); text-shadow: 0 0 0 #ffc37d00; }
+  52% { transform: scale(1.29) rotate(7deg); text-shadow: 0 0 16px #ffd490c9; }
+  100% { transform: scale(1); text-shadow: 0 0 12px #ffc37d75; }
+}
+
+.shoot-targets .star-on {
+  border-color: var(--gold);
+  color: #fff3c7;
+  background: radial-gradient(ellipse at 50% 38%, #79525b, #33213e 69%);
+  box-shadow: inset 0 0 0 1px #ffd39f66, 0 0 19px #ffd39f2f;
+  animation: shooting-target-flash 460ms ease-out both;
+}
+
+.shoot-targets .star-on .option-icon {
+  text-shadow: 0 0 12px #ffc774db;
+  animation: shooting-star-pop 390ms cubic-bezier(.19, .8, .2, 1) both;
+}
+
+#shoot-feedback {
+  border-inline-start: 2px solid var(--gold);
+  padding: 5px 0 5px 11px;
+  margin-block: 9px 0;
+  animation: shooting-feedback-appear 270ms ease-out both;
+}
+
+#shoot-feedback.miss {
+  border-color: var(--rose);
+  color: #f3bec9 !important;
+}
+
+@keyframes shooting-target-flash {
+  0% { box-shadow: inset 0 0 0 1px #ffd39f38, 0 0 0 #ffd39f00; }
+  36% { box-shadow: inset 0 0 0 2px #ffe6b7, 0 0 27px #ffd39f76; }
+  100% { box-shadow: inset 0 0 0 1px #ffd39f66, 0 0 19px #ffd39f2f; }
+}
+
+@keyframes shooting-star-pop {
+  0% { transform: scale(.64); }
+  58% { transform: scale(1.33); }
+  100% { transform: scale(1); }
+}
+
+@keyframes shooting-feedback-appear {
+  from { opacity: .35; transform: translateY(4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.toy-course {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: minmax(0, 1fr);
+  gap: 8px;
+  list-style: none;
+  padding: 10px 7px 8px;
+  margin: 15px 0;
+  border-radius: 15px;
+  background: linear-gradient(180deg, #372844, #261c37);
+}
+
+.toy-route-step {
+  position: relative;
+  isolation: isolate;
+  display: grid;
+  justify-items: center;
+  align-content: start;
+  gap: 5px;
+  min-width: 0;
+  min-height: 45px;
+  text-align: center;
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.2;
+}
+
+.toy-route-step:not(:last-child)::after {
+  content: '';
+  position: absolute;
+  z-index: -1;
+  top: 16px;
+  inset-inline-start: 50%;
+  width: calc(100% + 8px);
+  border-top: 1px dashed #836491;
+  pointer-events: none;
+}
+
+.toy-route-icon {
+  display: grid;
+  place-items: center;
+  width: 31px;
+  height: 31px;
+  font-size: 17px;
+  border: 1px solid #705783;
+  border-radius: 50%;
+  background: #332346;
+}
+
+.toy-route-label {
+  overflow-wrap: anywhere;
+}
+
+.toy-route-step.passed {
+  color: var(--mint);
+}
+
+.toy-route-step.passed .toy-route-icon {
+  border-color: #91b79e;
+  background: #354b45;
+}
+
+.toy-route-step.passed:not(:last-child)::after {
+  border-color: #91b79e;
+}
+
+.toy-route-step.active {
+  color: var(--gold);
+}
+
+.toy-route-step.active .toy-route-icon {
+  border-color: var(--gold);
+  background: #594053;
+  box-shadow: 0 0 0 2px #ffcd9125;
+}
+
+.toy-token {
+  position: absolute;
+  z-index: 1;
+  top: -11px;
+  inset-inline-start: calc(50% + 8px);
+  line-height: 1;
+  font-size: 19px;
+  pointer-events: none;
+  animation: toy-route-hop 440ms ease-out both;
+}
+
+@keyframes toy-route-hop {
+  0% { transform: translate(-6px, 0) rotate(-10deg); }
+  44% { transform: translate(-2px, -6px) rotate(4deg); }
+  100% { transform: translate(0, 0); }
+}
+
+.memory .option {
+  backface-visibility: hidden;
+  transform-origin: center;
+}
+
+.memory .revealed {
+  box-shadow: inset 0 0 0 1px #d7b7ed4c;
+  animation: memory-card-flip 310ms cubic-bezier(.17, .72, .23, 1) both;
+}
+
+.memory .matched {
+  box-shadow: inset 0 0 0 1px #b3dbc849;
+  animation: memory-card-pair 320ms ease-out both;
+}
+
+@keyframes memory-card-flip {
+  from { transform: perspective(360px) rotateY(-85deg); }
+  to { transform: perspective(360px) rotateY(0); }
+}
+
+@keyframes memory-card-pair {
+  0% { transform: scale(.95); }
+  45% { transform: scale(1.045); }
+  100% { transform: scale(1); }
+}
+
+@media (max-width: 430px) {
+  .toy-course {
+    gap: 5px;
+    padding-inline: 4px;
+  }
+
+  .toy-route-step:not(:last-child)::after {
+    width: calc(100% + 5px);
+  }
+
+  .toy-route-step {
+    font-size: 11px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .stars-progress span {
+    transition: none;
+  }
+
+  .stars-progress .newly-lit,
+  .shoot-targets .star-on,
+  .shoot-targets .star-on .option-icon,
+  #shoot-feedback,
+  .toy-token,
+  .memory .revealed,
+  .memory .matched {
+    animation: none;
+  }
+}
+.signal-panel{position:relative;background:radial-gradient(ellipse at 60% 0,#323f59,#241b36 70%)}
+.signal-energy{display:block;margin-bottom:10px;color:#ff9fbd;font-size:22px;letter-spacing:.25em}
+.signal-sequence{display:flex;gap:8px;margin:14px 0 19px}
+.signal-tile{display:grid;place-items:center;min-width:42px;width:58px;aspect-ratio:1;border:1px solid #7a7f9c;border-radius:12px;background:#444267;font-size:clamp(20px,5vw,30px);animation:pop .24s ease both}
+.signal-tile.dim{border-style:dashed;color:#b6a8c7;background:#342c48}
+.signal-choices{grid-template-columns:repeat(4,minmax(0,1fr))}
+.duel-panel{background:radial-gradient(ellipse at 50% 0,#503d53,#281e37 75%)}
+.duel-hps{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin:0 0 14px}
+.duel-hp{display:flex;align-items:center;min-width:0;gap:8px;border:1px solid #755b74;border-radius:10px;background:#382941;padding:7px}
+.duel-hp .avatar{width:34px;height:34px;font-size:19px}
+.duel-hp div{min-width:0;flex:1}
+.duel-hp b,.duel-hp span{display:inline-block;font-size:12px;line-height:1.3}
+.duel-hp span{float:right;color:#ffd2a5}
+.duel-hp meter{display:block;width:100%;height:8px;margin-top:5px}
+.duel-hp meter::-webkit-meter-bar{border:0;background:#1e192a;border-radius:12px}
+.duel-hp meter::-webkit-meter-optimum-value{background:#89c8aa;border-radius:12px}
+.duel-caption{display:flex;justify-content:space-between;gap:8px;align-items:baseline;margin-bottom:9px}
+.duel-caption h2{margin:0}.duel-caption span{font-size:13px;white-space:nowrap;color:var(--gold)}
+.duel-grid{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:5px;border:1px solid #725a73;border-radius:13px;padding:9px;background:#211a31}
+.duel-cell{display:grid;place-items:center;min-height:46px;height:clamp(46px,9vmin,82px);font-size:23px;font-weight:bold;border-radius:8px;border:1px solid #60506f;color:#b7a3c8;background:#322744}
+.duel-cover{color:#ffe09f;border:1px solid #ab797b;background:repeating-linear-gradient(35deg,#724e69 0 6px,#78536c 6px 12px);box-shadow:inset 0 -4px #3b273851}
+.duel-body{color:#303542;border-color:#a7cbbd;background:#a9d8b8}
+.duel-body.head{color:#422738;background:#ffbc9a}
+.duel-body.limb{background:#b4bdeb}
+button.duel-cell:hover:not(:disabled){outline:2px solid #ffdd9c;outline-offset:-2px}
+.duel-cover-flash,.duel-hit-flash,.duel-miss-flash{animation:duel-impact .36s ease both}
+@keyframes duel-impact{0%{transform:scale(.86);filter:brightness(2)}100%{transform:scale(1);filter:brightness(1)}}
+.duel-feedback{margin:10px 0!important;color:#e1cfeb!important;font-size:13px!important}
+.duel-feedback.hit{color:#ffbfa0!important}
+.duel-feedback.cover{color:#ffe0a5!important}
+.duel-defense{border-top:1px solid #76566d;padding-top:10px;margin-top:10px}
+.duel-defense .actions{margin:7px 0}
+.duel-defense small{color:#cfbbd7}
+.duel-pose{padding:6px 8px;min-height:42px;font-size:12px}
+.duel-pose[aria-pressed=true]{border-color:#e0ad8b}
+.duel-legend{display:flex;gap:10px;font-size:11px;color:#d6b8cf;margin-top:12px}
+@media(max-width:420px){.duel-hps{gap:5px}.duel-hp{gap:4px;padding:5px}.duel-hp .avatar{width:27px;height:27px}.duel-cell{font-size:18px}.signal-tile{min-width:36px}}
+
 
 </style>
 </head>
@@ -207,12 +471,13 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 
 </script>
+<script src="./assets/three.min.js" defer></script>
 <script>
 window.arcadeStatic=true;
 window.arcadeArt={"hero":"./assets/hero.webp","map":"./assets/map.webp","avatars":["./assets/role-0.webp","./assets/role-1.webp","./assets/role-2.webp","./assets/role-3.webp"]};
 const internetRooms = (() => {
-  const roomPrefix = 'starlight-arcade-v2-';
-  const channelLabel = 'starlight-arcade-v2';
+  const roomPrefix = 'starlight-arcade-v3-';
+  const channelLabel = 'starlight-arcade-v3';
   const codeAlphabet = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
   const roomTimeout = 15_000;
 
@@ -559,7 +824,12 @@ function randomMiniGameOrder(items) {
 function startHideRound(round, results = []) {
   const props = miniGameData.hideProps.map((_, index) => index);
   const board = randomMiniGameOrder(props);
-  return { turn: round, done: false, round, phase: 'hide', hider: round, board, spot: null, guesses: [], results };
+  return { turn: round, done: false, round, phase: 'hide', hider: round, board, spot: null, guesses: [], scans: 0, clue: null, decoy: null, decoyUsed:false, results };
+}
+
+function hideZone(index, dimension) {
+  if(dimension==='side')return ['左侧','中间','右侧'][Math.floor((index%6)/2)];
+  return ['前排','中排','后排'][Math.floor(index/6)];
 }
 
 function shootTargetsFor(target) {
@@ -572,6 +842,10 @@ const miniGames = {
       return startHideRound(0);
     },
     act(state, action, seat) {
+      if(state.phase==='guess'&&!state.done&&seat===state.hider&&action?.type==='decoy'&&!state.decoyUsed){
+        const choices=state.board.map((_, i)=>i).filter(i=>hideZone(i,'depth')!==hideZone(state.spot,'depth')&&!state.guesses.includes(i));
+        if(choices.length)return {...state,decoy:choices[Math.floor(Math.random()*choices.length)],decoyUsed:true};
+      }
       if (!canPlayMiniGame(state, seat)) return state;
       if (state.phase === 'result') {
         if (action?.type !== 'continue') return state;
@@ -586,12 +860,18 @@ const miniGames = {
         if (action?.type !== 'ready') return state;
         return { ...state, phase: 'guess', turn: 1 - state.hider };
       }
+      if(state.phase==='guess'&&action?.type==='scan'&&state.scans<2){
+        const dimension=state.scans===0?'side':'depth';
+        let zone=hideZone(state.spot,dimension);
+        if(state.scans===1&&state.decoy!==null)zone=hideZone(state.decoy,dimension);
+        return {...state,scans:state.scans+1,clue:{zone,dimension,interference:state.scans===1&&state.decoy!==null},decoy:state.scans===0?state.decoy:null};
+      }
       if (state.phase !== 'guess' || !isMiniGameChoice(action, 'shoot', state.board.length)) return state;
       const { index } = action;
       if (state.guesses.includes(index)) return state;
       const guesses = [...state.guesses, index];
       const found = index === state.spot;
-      if (!found && guesses.length < miniGameData.hideShotLimit) return { ...state, guesses };
+      if (!found && guesses.length < miniGameData.hideShotLimit) return { ...state, guesses, decoy:state.decoy===index?null:state.decoy };
       const result = { hider: state.hider, board: state.board, spot: state.spot, guesses, found };
       return { ...state, phase: 'result', guesses, results: [...state.results, result] };
     }
@@ -662,6 +942,819 @@ const miniGames = {
   }
 };
 
+const signalSymbols = [
+  { icon: '🌙', label: '月亮' },
+  { icon: '🔔', label: '铃铛' },
+  { icon: '🍓', label: '草莓' },
+  { icon: '💎', label: '宝石' }
+];
+
+function nextSignalSequence(length, previous) {
+  const sequence = Array.from({ length }, () => Math.floor(Math.random() * signalSymbols.length));
+  if (previous?.length === length && sequence.every((symbol, index) => symbol === previous[index])) {
+    const last = length - 1;
+    sequence[last] = (sequence[last] + 1 + Math.floor(Math.random() * (signalSymbols.length - 1))) % signalSymbols.length;
+  }
+  return sequence;
+}
+
+function startSignalRound(round, energy, history, previous) {
+  const reader = round % 2;
+  return {
+    turn: reader,
+    done: false,
+    round,
+    phase: 'read',
+    reader,
+    sequence: nextSignalSequence(round + 3, previous),
+    picks: [],
+    energy,
+    history,
+    outcome: null,
+    cleared: round
+  };
+}
+
+const signalGame = {
+  init() {
+    return startSignalRound(0, 3, []);
+  },
+  act(state, action, seat) {
+    if (state.done || seat !== state.turn) return state;
+
+    if (state.phase === 'read') {
+      if (action?.type !== 'ready') return state;
+      return { ...state, phase: 'repeat', turn: 1 - state.reader };
+    }
+
+    if (state.phase === 'result') {
+      if (action?.type !== 'continue') return state;
+      if (state.energy === 0 || state.cleared === 3) return { ...state, done: true };
+      return startSignalRound(state.cleared, state.energy, state.history, state.sequence);
+    }
+
+    if (state.phase !== 'repeat' || action?.type !== 'pick' || !Number.isInteger(action.index) ||
+        action.index < 0 || action.index >= signalSymbols.length) return state;
+
+    const picks = [...state.picks, action.index];
+    const correct = action.index === state.sequence[state.picks.length];
+    if (correct && picks.length < state.sequence.length) return { ...state, picks };
+
+    return {
+      ...state,
+      phase: 'result',
+      picks,
+      energy: state.energy - Number(!correct),
+      history: [...state.history, { round: state.round, success: correct, picks }],
+      outcome: correct ? 'success' : 'miss',
+      cleared: state.cleared + Number(correct)
+    };
+  }
+};
+
+const duelGrid = {
+  cols: 5,
+  rows: 4,
+  shotsPerTurn: 3,
+  maxHP: 150,
+  poseCooldown: 1_000,
+};
+
+const duelPoses = [
+  {
+    label: '站直', icon: '🧍', parts: [
+      null, null,   'head',  null,   null,
+      null, 'limb', 'torso', 'limb', null,
+      null, null,   'torso', null,   null,
+      null, 'limb', null,    'limb', null,
+    ],
+  },
+  {
+    label: '探左', icon: '↖', parts: [
+      null,   'head',  null,   null,   null,
+      'limb', 'torso', 'limb', null,   null,
+      null,   'limb',  'torso', null,  null,
+      null,   null,    'limb', 'limb', null,
+    ],
+  },
+  {
+    label: '探右', icon: '↗', parts: [
+      null, null, null,    'head',  null,
+      null, null, 'limb',  'torso', 'limb',
+      null, null, 'torso', 'limb',  null,
+      null, 'limb', 'limb', null,   null,
+    ],
+  },
+  {
+    label: '蹲下', icon: '↓', parts: [
+      null, null,   null,    null,   null,
+      null, null,   'head',  null,   null,
+      null, 'limb', 'torso', 'limb', null,
+      null, 'limb', 'torso', 'limb', null,
+    ],
+  },
+  {
+    label: '伏低', icon: '↔', parts: [
+      null,   null,   null,    null,    null,
+      null,   null,   null,    null,    null,
+      null,   'limb', 'torso', null,    null,
+      'limb', 'limb', 'torso', 'limb',  'head',
+    ],
+  },
+];
+
+const duelInitialCover = [
+  false, true,  true,  true,  false,
+  true,  true,  true,  true,  false,
+  true,  true,  false, true,  true,
+  false, true,  true,  false, true,
+];
+
+const duelDamage = { head: 100, torso: 30, limb: 10 };
+
+function randomDuelPose() {
+  return Math.floor(Math.random() * duelPoses.length);
+}
+
+const duelGame = {
+  init() {
+    return {
+      turn: 0,
+      done: false,
+      hp: [duelGrid.maxHP, duelGrid.maxHP],
+      covers: [[...duelInitialCover], [...duelInitialCover]],
+      round: 0,
+      shots: 0,
+      pose: randomDuelPose(),
+      poseChangedAt: Date.now(),
+      feedback: null,
+      winner: null,
+    };
+  },
+
+  act(state, action, seat) {
+    if (state.done || (seat !== 0 && seat !== 1) || !Number.isInteger(action?.index)) return state;
+
+    const attacker = state.turn;
+    const target = 1 - attacker;
+    const index = action.index;
+
+    if (action.type === 'pose') {
+      if (seat !== target || !duelPoses[index] || state.pose === index) return state;
+      const now = Date.now();
+      if (now - state.poseChangedAt < duelGrid.poseCooldown) return state;
+      return { ...state, pose: index, poseChangedAt: now };
+    }
+
+    if (action.type !== 'shoot' || seat !== attacker || index < 0 || index >= duelInitialCover.length || state.shots >= duelGrid.shotsPerTurn) {
+      return state;
+    }
+
+    const blocked = state.covers[target][index];
+    const part = blocked ? null : duelPoses[state.pose].parts[index];
+    const damage = part ? duelDamage[part] : 0;
+    const shots = state.shots + 1;
+    const feedback = {
+      type: blocked ? 'cover' : part ? 'hit' : 'miss',
+      attacker,
+      target,
+      index,
+      hex: index,
+      round: state.round,
+      shot: shots,
+      damage,
+      part,
+    };
+
+    let covers = state.covers;
+    if (blocked) {
+      covers = [...state.covers];
+      covers[target] = [...covers[target]];
+      covers[target][index] = false;
+    }
+
+    let hp = state.hp;
+    if (damage) {
+      hp = [...state.hp];
+      hp[target] = Math.max(0, hp[target] - damage);
+    }
+
+    const next = { ...state, shots, covers, hp, feedback };
+    if (hp[target] === 0) return { ...next, done: true, winner: attacker };
+    if (shots < duelGrid.shotsPerTurn) return next;
+
+    return {
+      ...next,
+      turn: target,
+      round: state.round + 1,
+      shots: 0,
+      pose: randomDuelPose(),
+      poseChangedAt: Date.now(),
+    };
+  },
+};
+
+(function () {
+  'use strict';
+
+  const modelLibraries = new WeakMap();
+  const ink = '#322840';
+  const ivory = '#fff2d5';
+  const gold = '#ffcc76';
+  const tire = '#332e4a';
+
+  function library(THREE) {
+    if (modelLibraries.has(THREE)) return modelLibraries.get(THREE);
+    const geometry = {
+      sphere: new THREE.SphereGeometry(0.5, 16, 10),
+      box: new THREE.BoxGeometry(1, 1, 1),
+      cylinder: new THREE.CylinderGeometry(0.5, 0.5, 1, 16),
+      cone: new THREE.ConeGeometry(0.5, 1, 12),
+      disc: new THREE.CylinderGeometry(0.5, 0.5, 1, 24),
+      torus: new THREE.TorusGeometry(0.5, 0.024, 6, 24),
+      seam: new THREE.TorusGeometry(0.5, 0.009, 6, 28),
+      horn: new THREE.CylinderGeometry(0.24, 0.07, 1, 20, 1, true)
+    };
+    const materials = new Map();
+    function material(color) {
+      if (!materials.has(color)) {
+        materials.set(color, new THREE.MeshStandardMaterial({
+          color, roughness: 0.68, metalness: 0.02, side: THREE.DoubleSide
+        }));
+      }
+      return materials.get(color);
+    }
+    const data = { geometry, material };
+    modelLibraries.set(THREE, data);
+    return data;
+  }
+
+  function extrude(THREE, points, depth) {
+    const shape = new THREE.Shape();
+    shape.moveTo(...points[0]);
+    for (const point of points.slice(1)) shape.lineTo(...point);
+    shape.closePath();
+    const result = new THREE.ExtrudeGeometry(shape, {
+      depth, bevelEnabled: true, bevelThickness: 0.025, bevelSize: 0.022, bevelSegments: 2
+    });
+    result.translate(0, 0, -depth / 2);
+    return result;
+  }
+
+  function pieceBuilder(THREE, group) {
+    const { geometry, material } = library(THREE);
+    return function add(type, color, position, scale, rotation = [0, 0, 0]) {
+      const mesh = new THREE.Mesh(geometry[type] ?? type, material(color));
+      mesh.position.set(...position);
+      mesh.scale.set(...scale);
+      mesh.rotation.set(...rotation);
+      mesh.castShadow = true;
+      mesh.receiveShadow = true;
+      group.add(mesh);
+      return mesh;
+    };
+  }
+
+  function bear(add) {
+    const fur = '#ce895d';
+    add('sphere', fur, [0, 0.37, 0], [0.6, 0.68, 0.44]);
+    add('sphere', '#f2c693', [0, 0.34, 0.185], [0.36, 0.42, 0.14]);
+    add('sphere', fur, [0, 0.83, 0.01], [0.65, 0.58, 0.5]);
+    for (const side of [-1, 1]) {
+      const x = side * 0.235;
+      add('sphere', fur, [x, 1.05, 0], [0.25, 0.27, 0.2]);
+      add('sphere', '#efb382', [x, 1.058, 0.073], [0.16, 0.17, 0.07]);
+      add('sphere', fur, [side * 0.33, 0.43, 0.02], [0.19, 0.42, 0.22], [0, 0, side * 0.4]);
+      add('sphere', fur, [side * 0.17, 0.13, 0.15], [0.24, 0.21, 0.33]);
+      add('sphere', ink, [side * 0.12, 0.875, 0.235], [0.056, 0.072, 0.043]);
+    }
+    add('sphere', '#ffdcac', [0, 0.75, 0.24], [0.29, 0.18, 0.15]);
+    add('sphere', '#664039', [0, 0.79, 0.312], [0.085, 0.057, 0.035]);
+  }
+
+  function dinosaur(add) {
+    const green = '#64d29b';
+    add('sphere', green, [-0.04, 0.43, 0], [0.71, 0.58, 0.42], [0, 0, 0.12]);
+    add('sphere', '#abeb92', [0.03, 0.39, 0.15], [0.48, 0.43, 0.19]);
+    add('sphere', green, [0.26, 0.77, 0], [0.54, 0.46, 0.4]);
+    add('sphere', '#94e5a5', [0.42, 0.7, 0.025], [0.44, 0.22, 0.34]);
+    add('cone', green, [-0.47, 0.35, 0], [0.30, 0.56, 0.29], [0, 0, 1.2]);
+    for (const x of [-0.24, 0.15]) add('sphere', green, [x, 0.15, 0.13], [0.28, 0.32, 0.3]);
+    for (const [x, y] of [[-0.45, 0.55], [-0.24, 0.71], [-0.02, 0.76]]) {
+      add('cone', '#db8af7', [x, y, -0.02], [0.15, 0.21, 0.17]);
+    }
+    add('sphere', ivory, [0.31, 0.82, 0.172], [0.13, 0.14, 0.06]);
+    add('sphere', ink, [0.34, 0.825, 0.203], [0.047, 0.062, 0.027]);
+  }
+
+  function duck(add) {
+    const yellow = '#ffce52';
+    add('sphere', yellow, [-0.08, 0.34, 0], [0.82, 0.57, 0.65]);
+    add('sphere', yellow, [0.2, 0.69, 0], [0.52, 0.53, 0.52]);
+    add('sphere', '#ff9957', [0.43, 0.62, 0], [0.36, 0.16, 0.3]);
+    add('cone', yellow, [-0.42, 0.43, 0], [0.33, 0.32, 0.28], [0, 0, 0.95]);
+    add('sphere', '#f3ab40', [-0.13, 0.37, 0.28], [0.45, 0.23, 0.12], [0, 0, 0.18]);
+    add('sphere', ink, [0.295, 0.735, 0.215], [0.075, 0.079, 0.048]);
+  }
+
+  function wheel(add, x, y, z, radius, hub) {
+    const rotation = [Math.PI / 2, 0, 0];
+    add('cylinder', tire, [x, y, z], [radius, 0.13, radius], rotation);
+    add('cylinder', hub, [x, y, z + Math.sign(z) * 0.07], [radius * 0.43, 0.025, radius * 0.43], rotation);
+  }
+
+  function train(add) {
+    const blue = '#60afe9';
+    add('box', '#ec655f', [0, 0.27, 0], [1.03, 0.17, 0.48]);
+    add('box', blue, [-0.29, 0.55, 0], [0.37, 0.5, 0.45]);
+    add('box', ivory, [-0.29, 0.62, 0.234], [0.19, 0.2, 0.03]);
+    add('box', '#394875', [-0.29, 0.825, 0], [0.47, 0.1, 0.56]);
+    add('cylinder', blue, [0.18, 0.49, 0], [0.4, 0.56, 0.4], [0, 0, Math.PI / 2]);
+    add('cylinder', gold, [0.465, 0.49, 0], [0.21, 0.04, 0.21], [0, 0, Math.PI / 2]);
+    add('cylinder', '#394875', [0.25, 0.74, 0], [0.15, 0.26, 0.15]);
+    for (const z of [-0.25, 0.25]) for (const x of [-0.33, 0, 0.31]) wheel(add, x, 0.15, z, 0.29, gold);
+  }
+
+  function raceCar(add) {
+    const pink = '#fb6385';
+    add('sphere', pink, [0, 0.29, 0], [1.1, 0.34, 0.58]);
+    add('sphere', '#a8d5f7', [-0.07, 0.43, 0], [0.57, 0.38, 0.5]);
+    add('box', ivory, [0.18, 0.365, 0.027], [0.62, 0.12, 0.075], [0, 0, -0.07]);
+    add('box', pink, [-0.4, 0.53, 0], [0.16, 0.08, 0.62]);
+    add('box', pink, [-0.42, 0.41, 0], [0.065, 0.24, 0.18]);
+    for (const z of [-0.28, 0.28]) {
+      for (const x of [-0.331, 0.34]) wheel(add, x, 0.15, z, 0.29, ivory);
+    }
+  }
+
+  function rocket(add) {
+    const red = '#f37481';
+    add('sphere', ivory, [0, 0.61, 0], [0.42, 0.81, 0.42]);
+    add('cone', red, [0, 1.035, 0], [0.42, 0.36, 0.42]);
+    add('disc', '#48649a', [0, 0.71, 0.189], [0.23, 0.045, 0.23], [Math.PI / 2, 0, 0]);
+    add('disc', '#a3e0fa', [0, 0.71, 0.217], [0.153, 0.025, 0.153], [Math.PI / 2, 0, 0]);
+    for (const side of [-1, 1]) {
+      add('sphere', red, [side * 0.21, 0.24, 0], [0.16, 0.41, 0.22], [0, 0, side * -0.32]);
+    }
+    add('cylinder', '#7885b2', [0, 0.12, 0], [0.35, 0.2, 0.35]);
+  }
+
+  function robot(add) {
+    const lavender = '#a898e7';
+    add('box', lavender, [0, 0.44, 0], [0.49, 0.43, 0.34]);
+    add('box', '#bdc6f6', [0, 0.82, 0], [0.59, 0.37, 0.38]);
+    add('box', '#52467d', [0, 0.831, 0.193], [0.46, 0.19, 0.036]);
+    add('cylinder', '#6874ab', [0, 1.035, 0], [0.043, 0.21, 0.043]);
+    add('sphere', '#f477a2', [0, 1.146, 0], [0.14, 0.14, 0.14]);
+    add('box', '#e1d9f7', [0, 0.467, 0.179], [0.32, 0.194, 0.034]);
+    for (const side of [-1, 1]) {
+      add('sphere', '#86e8db', [side * 0.12, 0.834, 0.219], [0.086, 0.078, 0.031]);
+      add('cylinder', '#879bc7', [side * 0.29, 0.836, 0], [0.15, 0.14, 0.15], [0, 0, Math.PI / 2]);
+      add('box', '#98b6df', [side * 0.34, 0.49, 0], [0.16, 0.36, 0.18], [0, 0, side * 0.24]);
+      add('box', '#7789b6', [side * 0.15, 0.14, 0.045], [0.2, 0.29, 0.27]);
+    }
+    add('sphere', '#ef96a5', [0, 0.469, 0.206], [0.09, 0.09, 0.032]);
+  }
+
+  function yoyo(add) {
+    const tilt = [Math.PI / 2, 0, 0];
+    add('disc', '#7062b8', [0, 0.43, 0], [0.52, 0.3, 0.52], tilt);
+    for (const z of [-0.16, 0.16]) {
+      add('disc', '#9b8eed', [0, 0.43, z], [0.87, 0.13, 0.87], tilt);
+      add('torus', '#f6c4fc', [0, 0.43, z + Math.sign(z) * 0.07], [0.68, 0.68, 0.68]);
+      add('disc', '#ded3fc', [0, 0.43, z + Math.sign(z) * 0.078], [0.34, 0.04, 0.34], tilt);
+    }
+    add('torus', '#ffda81', [0.34, 0.34, 0.075], [0.4, 0.19, 0.4], [Math.PI / 2.7, 0, 0.45]);
+  }
+
+  function kite(add, THREE) {
+    const { geometry } = library(THREE);
+    geometry.kiteWing ??= extrude(THREE, [[0, 1.12], [0.42, 0.79], [0, 0.46]], 0.045);
+    add('kiteWing', '#ffb46c', [0, 0, 0], [1, 1, 1]);
+    add('kiteWing', '#f4809e', [0, 0, 0], [-1, 1, 1]);
+    add('box', '#ffe6bb', [0, 0.8, 0.028], [0.035, 0.67, 0.025]);
+    add('box', gold, [0, 0.79, 0.034], [0.84, 0.026, 0.025]);
+    add('box', ivory, [0, 0.23, 0], [0.025, 0.49, 0.019]);
+    for (const [y, side] of [[0.39, -1], [0.245, 1], [0.105, -1]]) {
+      add('sphere', '#c399ea', [0.073, y, 0], [0.19, 0.075, 0.048], [0, 0, side * 0.3]);
+      add('sphere', '#c399ea', [-0.073, y, 0], [0.19, 0.075, 0.048], [0, 0, -side * 0.3]);
+    }
+  }
+
+  function die(add) {
+    const width = 0.65;
+    add('box', '#ffd9e7', [0, 0.327, 0], [width, width, width]);
+    for (const [x, y] of [[-0.18, 0.15], [0.18, 0.5], [0, 0.325], [-0.18, 0.5], [0.18, 0.15]]) {
+      add('sphere', '#a45387', [x, y, 0.328], [0.093, 0.093, 0.027]);
+    }
+    for (const [x, z] of [[-0.16, -0.15], [0.16, 0.15]]) {
+      add('sphere', '#a45387', [x, 0.654, z], [0.093, 0.027, 0.093]);
+    }
+    for (const y of [0.155, 0.32, 0.485]) {
+      add('sphere', '#a45387', [0.329, y, 0], [0.027, 0.093, 0.093]);
+    }
+  }
+
+  function puzzle(add, THREE) {
+    const { geometry } = library(THREE);
+    geometry.puzzle ??= extrude(THREE, [
+      [-0.42, 0], [0.42, 0], [0.42, 0.28], [0.51, 0.26], [0.58, 0.32], [0.58, 0.42],
+      [0.51, 0.48], [0.42, 0.46], [0.42, 0.76], [0.09, 0.76], [0.11, 0.85], [0.05, 0.91],
+      [-0.05, 0.91], [-0.11, 0.85], [-0.09, 0.76], [-0.42, 0.76], [-0.42, 0.48], [-0.34, 0.48],
+      [-0.27, 0.42], [-0.27, 0.32], [-0.34, 0.26], [-0.42, 0.26]
+    ], 0.22);
+    add('puzzle', '#70d8a4', [0, 0, 0], [1, 1, 1]);
+    add('sphere', '#a8efd1', [-0.025, 0.47, 0.122], [0.27, 0.28, 0.04]);
+    add('sphere', '#8ae1bd', [-0.15, 0.16, 0.117], [0.085, 0.085, 0.03]);
+  }
+
+  function balloon(add) {
+    add('sphere', '#f382a6', [0, 0.86, 0], [0.69, 0.74, 0.59]);
+    add('sphere', '#ffb3cc', [-0.148, 0.995, 0.23], [0.105, 0.24, 0.042], [0, 0, -0.45]);
+    add('cone', '#df608a', [0, 0.49, 0], [0.16, 0.11, 0.16]);
+    add('cylinder', '#e5badb', [0, 0.27, 0], [0.026, 0.45, 0.026]);
+    add('cylinder', '#d7a4d7', [0, 0.043, 0], [0.28, 0.086, 0.28]);
+  }
+
+  function palette(add, THREE) {
+    const { geometry } = library(THREE);
+    if (!geometry.palette) {
+      const outline = new THREE.Shape();
+      outline.moveTo(-0.47, 0.16);
+      outline.bezierCurveTo(-0.72, 0.57, -0.28, 0.97, 0.18, 0.82);
+      outline.bezierCurveTo(0.69, 0.68, 0.24, 0.48, 0.42, 0.37);
+      outline.bezierCurveTo(0.74, 0.09, -0.22, -0.16, -0.47, 0.16);
+      const hole = new THREE.Path();
+      hole.absellipse(0.21, 0.29, 0.085, 0.10, 0, Math.PI * 2, true);
+      outline.holes.push(hole);
+      geometry.palette = new THREE.ExtrudeGeometry(outline, {
+        depth: 0.13, bevelEnabled: true, bevelSize: 0.025, bevelThickness: 0.02, bevelSegments: 2
+      });
+    }
+    add('palette', '#f0bf88', [0, 0, -0.08], [1, 1, 1]);
+    for (const [x, y, color] of [
+      [-0.33, 0.38, '#ff7d94'], [-0.25, 0.59, '#f9d670'], [-0.03, 0.67, '#8bce9a'],
+      [0.2, 0.64, '#83bbec'], [-0.13, 0.21, '#aa8adf']
+    ]) add('sphere', color, [x, y, 0.071], [0.16, 0.145, 0.065]);
+  }
+
+  function drum(add) {
+    const coral = '#f9818c';
+    add('cylinder', coral, [0, 0.31, 0], [0.77, 0.57, 0.77]);
+    add('disc', ivory, [0, 0.61, 0], [0.8, 0.09, 0.8]);
+    add('disc', '#ffd498', [0, 0.06, 0], [0.8, 0.09, 0.8]);
+    for (let index = 0; index < 8; index++) {
+      const angle = index * Math.PI / 4;
+      add('box', '#ffd498', [Math.cos(angle) * 0.38, 0.31, Math.sin(angle) * 0.38], [0.048, 0.48, 0.052], [0, 0, index % 2 ? 0.09 : -0.09]);
+    }
+    for (const side of [-1, 1]) {
+      add('cylinder', '#c68b5e', [side * 0.17, 0.66, 0.035], [0.05, 0.70, 0.05], [0.44, 0, side * 1.12]);
+      add('sphere', '#f293b1', [side * 0.46, 0.77, -0.024], [0.11, 0.11, 0.11]);
+    }
+  }
+
+  function trumpet(add) {
+    const brass = '#f7bf66';
+    add('horn', brass, [0.17, 0.36, 0.015], [1.32, 0.64, 1.32], [0, 0, -Math.PI / 2]);
+    add('torus', '#ffe4a0', [0.494, 0.36, 0.015], [0.63, 0.63, 0.63], [0, Math.PI / 2, 0]);
+    add('cylinder', brass, [-0.22, 0.40, 0.015], [0.12, 0.46, 0.12], [0, 0, Math.PI / 2]);
+    add('disc', '#ffe4a0', [-0.47, 0.40, 0.015], [0.19, 0.083, 0.19], [0, 0, Math.PI / 2]);
+    add('torus', brass, [-0.16, 0.257, 0.015], [0.43, 0.31, 0.43]);
+    for (const x of [-0.25, -0.12, 0.01]) {
+      add('cylinder', '#e7a34f', [x, 0.49, 0.095], [0.064, 0.22, 0.064]);
+      add('disc', '#fff1b8', [x, 0.60, 0.095], [0.108, 0.038, 0.108]);
+    }
+  }
+
+  function basketball(add) {
+    add('sphere', '#ef9557', [0, 0.38, 0], [0.76, 0.76, 0.76]);
+    for (const rotation of [[0.37, 0, 0], [0, Math.PI / 2, 0], [Math.PI / 2, 0, 0]]) {
+      add('seam', '#69455b', [0, 0.38, 0], [0.757, 0.757, 0.757], rotation);
+    }
+  }
+
+  function pawn(add) {
+    const purple = '#7763bb';
+    add('disc', '#5e4a9e', [0, 0.105, 0], [0.63, 0.18, 0.63]);
+    add('sphere', purple, [0, 0.23, 0], [0.52, 0.28, 0.52]);
+    add('sphere', purple, [0, 0.47, 0], [0.31, 0.47, 0.31]);
+    add('disc', '#a293e3', [0, 0.64, 0], [0.49, 0.11, 0.49]);
+    add('sphere', purple, [0, 0.83, 0], [0.41, 0.41, 0.41]);
+    add('sphere', '#9f8ddd', [-0.11, 0.928, 0.151], [0.11, 0.11, 0.027]);
+  }
+
+  function carousel(add) {
+    const mauve = '#ca82b9';
+    add('disc', '#a971ae', [0, 0.085, 0], [0.95, 0.16, 0.95]);
+    add('disc', gold, [0, 0.185, 0], [0.87, 0.06, 0.87]);
+    add('cylinder', '#dbb479', [0, 0.55, 0], [0.12, 0.77, 0.12]);
+    add('cone', mauve, [0, 0.96, 0], [0.99, 0.42, 0.99]);
+    add('disc', ivory, [0, 0.75, 0], [0.99, 0.075, 0.99]);
+    add('sphere', gold, [0, 1.175, 0], [0.13, 0.14, 0.13]);
+    for (const [x, z, side, color] of [[-0.27, 0.17, -1, ivory], [0.27, 0.17, 1, '#f4b0cc'], [0.01, -0.28, 1, '#aeb9ed']]) {
+      add('cylinder', '#dbc58b', [x, 0.47, z], [0.045, 0.58, 0.045]);
+      add('sphere', color, [x, 0.433, z], [0.29, 0.14, 0.14]);
+      add('sphere', color, [x + side * 0.12, 0.53, z], [0.15, 0.21, 0.135], [0, 0, side * -0.27]);
+      for (const leg of [-1, 1]) add('sphere', color, [x + leg * 0.075, 0.34, z], [0.053, 0.17, 0.06], [0, 0, leg * 0.52]);
+    }
+  }
+
+  const models = [
+    bear, dinosaur, duck, train, raceCar, rocket, robot, yoyo, kite,
+    die, puzzle, balloon, palette, drum, trumpet, basketball, pawn, carousel
+  ];
+
+  window.buildHideToy = function buildHideToy(THREE, propId) {
+    const root = new THREE.Group();
+    const pieces = new THREE.Group();
+    const model = models[propId];
+    if (!model) return root;
+    model(pieceBuilder(THREE, pieces), THREE);
+    const bounds = new THREE.Box3().setFromObject(pieces, true);
+    const center = bounds.getCenter(new THREE.Vector3());
+    const size = bounds.getSize(new THREE.Vector3());
+    const scale = Math.min(1.14 / Math.max(size.x, size.z), 1.18 / size.y, 1.32);
+    pieces.scale.setScalar(scale);
+    pieces.position.set(-center.x * scale, -bounds.min.y * scale, -center.z * scale);
+    root.add(pieces);
+    return root;
+  };
+})();
+
+const toyRoom = (() => {
+  let current;
+  const reducedMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  function makeRoom(onAim, onFire){
+    const T=window.THREE;
+    if(!T||!window.buildHideToy)return null;
+    const canvas=document.createElement('canvas');
+    let gl, renderer;
+    try{
+      gl=canvas.getContext('webgl2',{antialias:true,alpha:false})||canvas.getContext('webgl',{antialias:true,alpha:false});
+      if(!gl)return null;
+      renderer=new T.WebGLRenderer({canvas,context:gl,antialias:true});
+    }catch{return null;}
+    canvas.setAttribute('aria-label','玩具房三维视角，拖动观察，点玩具瞄准');
+    canvas.tabIndex=0;
+    renderer.setPixelRatio(Math.min(devicePixelRatio||1,1.65));
+    renderer.outputColorSpace=T.SRGBColorSpace;
+    renderer.toneMapping=T.ACESFilmicToneMapping;
+    renderer.toneMappingExposure=1.18;
+    const scene=new T.Scene();
+    scene.background=new T.Color(0x271d42);
+    scene.fog=new T.Fog(0x271d42,16,29);
+    const camera=new T.PerspectiveCamera(46,1,.1,60);
+    const direct=new T.DirectionalLight(0xffd8b0,3.1);direct.position.set(-4,8,7);
+    const fill=new T.HemisphereLight(0xf5edff,0x4f305f,2.1);
+    const rim=new T.DirectionalLight(0xc6a5ff,1.7);rim.position.set(6,3,-4);
+    scene.add(direct,fill,rim);
+    const room=new T.Group();scene.add(room);
+    const pickables=[];
+    const owned=new Set();
+    const mesh=(geometry,color,position,materialOptions={})=>{
+      const material=new T.MeshStandardMaterial({color,roughness:.72,...materialOptions});
+      const item=new T.Mesh(geometry,material);
+      item.position.set(...position);
+      owned.add(geometry);owned.add(material);
+      room.add(item);
+      return item;
+    };
+    const block=(width,height,depth,color,x,y,z)=>mesh(new T.BoxGeometry(width,height,depth),color,[x,y,z]);
+    const round=(radius,height,color,x,y,z)=>mesh(new T.CylinderGeometry(radius,radius,height,20),color,[x,y,z]);
+    block(34,.24,33,0x5b4979,0,-.15,0);
+    block(30,13,.25,0x4e3969,0,5,-9);
+    block(.25,13,19,0x3d325b,-13,5,-2);
+    block(.25,13,19,0x3d325b,13,5,-2);
+    for(let i=-6;i<=6;i++){
+      block(.025,.008,24,0x7a659d,i*2,.004,-2);
+      block(28,.008,.025,0x7a659d,0,.004,i*2);
+    }
+    for(let i=-5;i<=5;i++){
+      block(.043,10,.09,0x675181,i*2.1,4,-8.82);
+      if(i%2===0)mesh(new T.OctahedronGeometry(.15),0xffd395,[i*2.1,4.95+(i%4)*.18,-8.64],{emissive:0xdc8762,emissiveIntensity:.4});
+    }
+    block(27,.12,.15,0xb894be,0,1.15,-8.72);
+    const ring=mesh(new T.TorusGeometry(.66,.028,8,44),0xffe4a6,[0,0,0],{emissive:0xfba454,emissiveIntensity:1.0});
+    ring.rotation.x=Math.PI/2;ring.visible=false;
+    const ray=new T.Raycaster(),pointer=new T.Vector2();
+    const s={yaw:0,look:0,zoom:1,options:null,selected:-1,props:[],top:null,raf:0,down:null,hadDrag:false,pulse:null,rendered:false};
+    const target=new T.Vector3();
+    const center=new T.Vector3();
+    const cast=(x,y)=>{
+      if(!s.options||!s.rendered)return -1;
+      ray.setFromCamera(pointer.set(x,y),camera);
+      const hit=ray.intersectObjects(pickables,false).find(({object})=>!s.options.guesses.includes(object.userData.slot));
+      return hit?hit.object.userData.slot:-1;
+    };
+    const valid=index=>{
+      const options=s.options;
+      return options?.can&&!options.pending&&!options.guesses.includes(index)&&index>=0&&index<s.props.length;
+    };
+    const pick=(index,fire=false)=>{
+      if(!valid(index))return false;
+      s.selected=index;
+      onAim(index);
+      draw();
+      if(fire)onFire(index);
+      return true;
+    };
+    function draw(){
+      const zoom=s.zoom;
+      const fit=Math.max(1, .97/camera.aspect);
+      const distance=(10.5+(fit-1)*5.7)/zoom;
+      camera.position.set(Math.sin(s.yaw)*distance,5.1+(fit-1)*1.7,Math.cos(s.yaw)*distance);
+      camera.lookAt(target.set(Math.sin(s.yaw)*1.8,s.look+1.07,-1.30));
+      camera.updateMatrixWorld();
+      const focus=s.options?.spectate>=0?s.options.spectate:s.selected;
+      ring.visible=focus>=0&&Boolean(s.props[focus]);
+      if(ring.visible){
+        ring.position.copy(s.props[focus].position);
+        ring.position.y+=.029;
+      }
+      renderer.render(scene,camera);
+      s.rendered=true;
+    }
+    function resized(){
+      if(!s.top?.isConnected)return;
+      const {width,height}=s.top.getBoundingClientRect();
+      if(width<=0||height<=0)return;
+      camera.aspect=width/height;
+      camera.updateProjectionMatrix();
+      renderer.setSize(Math.round(width),Math.round(height),false);
+      draw();
+    }
+    const resize=new ResizeObserver(resized);
+    function populate(identifiers){
+      for(const prop of s.props)scene.remove(prop);
+      for(const item of pickables){scene.remove(item);item.geometry.dispose();item.material.dispose();}
+      pickables.length=0;
+      s.props=identifiers.map((id,index)=>{
+        const row=Math.floor(index/6), col=index%6;
+        const x=(col-2.5)*1.78+(row%2)*.30;
+        const y=[0,.50,1.0][row];
+        const z=[3.05,.30,-2.56][row];
+        const prop=window.buildHideToy(T,id);
+        prop.position.set(x,y+.12,z);
+        prop.userData.baseY=prop.position.y;
+        prop.rotation.y=(col-2.5)*.065+(row===1?.17:-.07);
+        scene.add(prop);
+        round(.68,.10,0x8470a7,x,y+.044,z);
+        if(row>0)round(.56,y,0x54416b,x,y/2,z);
+        const box=new T.Box3().setFromObject(prop);
+        const size=box.getSize(new T.Vector3());
+        const clickable=new T.Mesh(
+          new T.BoxGeometry(Math.max(.78,size.x+.17),Math.max(.73,size.y+.12),Math.max(.68,size.z+.18)),
+          new T.MeshBasicMaterial({visible:false})
+        );
+        box.getCenter(clickable.position);
+        clickable.userData.slot=index;
+        scene.add(clickable);
+        pickables.push(clickable);
+        return prop;
+      });
+    }
+    function animateShot(index,hit){
+      if(!s.props[index]||reducedMotion)return;
+      if(s.pulse){s.pulse.prop.scale.setScalar(1); cancelAnimationFrame(s.raf);}
+      const p=s.props[index], start=performance.now();
+      s.pulse={prop:p};
+      const tick=now=>{
+        const progress=Math.min(1,(now-start)/480);
+        const kick=Math.sin(progress*Math.PI);
+        p.scale.set(1+kick*.16,1-kick*.12,1+kick*.16);
+        if(hit)p.rotation.y+=.065*kick;
+        draw();
+        if(progress<1)s.raf=requestAnimationFrame(tick);
+        else{s.pulse=null;p.scale.setScalar(1);draw();}
+      };
+      s.raf=requestAnimationFrame(tick);
+    }
+    function selectAt(clientX,clientY){
+      const b=canvas.getBoundingClientRect();
+      const x=(clientX-b.left)/b.width*2-1,y=1-(clientY-b.top)/b.height*2;
+      return pick(cast(x,y));
+    }
+    function drag(dx,dy){
+      s.yaw=T.MathUtils.clamp(s.yaw-dx*.008,-.82,.82);
+      s.look=T.MathUtils.clamp(s.look+dy*.018,-1.1,2.8);
+      draw();
+    }
+    canvas.addEventListener('pointerdown',event=>{
+      if(!event.isPrimary||event.button>0)return;
+      s.down={id:event.pointerId,x:event.clientX,y:event.clientY,previousX:event.clientX,previousY:event.clientY};
+      s.hadDrag=false;
+      canvas.setPointerCapture(event.pointerId);
+    });
+    canvas.addEventListener('pointermove',event=>{
+      if(!s.down||event.pointerId!==s.down.id)return;
+      if(Math.hypot(event.clientX-s.down.x,event.clientY-s.down.y)>6)s.hadDrag=true;
+      if(s.hadDrag)drag(event.clientX-s.down.previousX,event.clientY-s.down.previousY);
+      s.down.previousX=event.clientX;s.down.previousY=event.clientY;
+    });
+    canvas.addEventListener('pointerup',event=>{
+      if(!s.down||event.pointerId!==s.down.id)return;
+      if(!s.hadDrag)selectAt(event.clientX,event.clientY);
+      s.down=null;
+    });
+    canvas.addEventListener('pointercancel',()=>{s.down=null;});
+    canvas.addEventListener('keydown',event=>{
+      const steps={ArrowLeft:[22,0],ArrowRight:[-22,0],ArrowUp:[0,-22],ArrowDown:[0,22]};
+      if(steps[event.key]){event.preventDefault();drag(...steps[event.key]);}
+      if(event.key==='Enter'||event.code==='Space'){
+        event.preventDefault();
+        if(valid(s.selected))onFire(s.selected);else pick(cast(0,0));
+      }
+    });
+    function aimCenter(){
+      if(valid(s.selected)){onFire(s.selected);return;}
+      if(!pick(cast(0,0),true))onAim(-1,true);
+    }
+    function clearAim(){
+      s.selected=-1;
+      onAim(-1);
+      draw();
+    }
+    function reset(){
+      s.yaw=0;s.look=0;s.zoom=1;
+      clearAim();
+    }
+    function setZoom(delta){
+      s.zoom=T.MathUtils.clamp(s.zoom+delta,.84,1.40);
+      clearAim();
+    }
+    function attach(frame,options){
+      const previous=s.options;
+      s.options=options;
+      if(!s.props.length)populate(options.board);
+      if(s.selected>=0&&!valid(s.selected)&&!options.pending)s.selected=-1;
+      for(const [i,prop] of s.props.entries()){
+        prop.visible=true;
+        prop.position.y=prop.userData.baseY-(options.guesses.includes(i)&&options.revealed!==i?.24:0);
+      }
+      if(s.top!==frame){
+        resize.disconnect();s.top=frame;
+        frame.prepend(canvas);resize.observe(frame);
+      }
+      frame.dataset.renderer='webgl';
+      resized();
+      onAim(valid(s.selected)?s.selected:-1);
+      const shot=options.guesses.at(-1);
+      if(previous&&options.guesses.length>previous.guesses.length&&shot>=0)animateShot(shot,shot===options.revealed);
+    }
+    function destroy(){
+      cancelAnimationFrame(s.raf);resize.disconnect();
+      for(const item of pickables){item.geometry.dispose();item.material.dispose();}
+      for(const item of owned)item.dispose();
+      renderer.dispose();renderer.forceContextLoss();
+    }
+    function getTargetPosition(index){
+      if(!s.props[index]||!s.rendered)return null;
+      pickables[index].getWorldPosition(center).project(camera);
+      const b=canvas.getBoundingClientRect();
+      return {x:b.left+(center.x+1)*b.width/2,y:b.top+(1-center.y)*b.height/2};
+    }
+    return {attach,aimCenter,clearAim,reset,setZoom,pick,destroy,getTargetPosition,canvas};
+  }
+
+  return {
+    sync(frame,options,onAim,onFire){
+      if(!frame||!options){
+        if(current){current.room?.destroy();current=null;}
+        return;
+      }
+      if(current?.key!==options.key){
+        current?.room?.destroy();
+        current={key:options.key,room:makeRoom(onAim,onFire)};
+      }
+      if(current.room){
+        current.room.attach(frame,options);
+        current.room.canvas.onwebglcontextlost=()=>{
+          if(current?.key!==options.key||!current.room)return;
+          const lost=current.room;
+          current.room=null;lost.destroy();
+          frame.dataset.renderer='fallback';
+          const choices=frame.parentElement?.querySelector('.hide-list');
+          if(choices)choices.open=true;
+        };
+      }else{
+        frame.dataset.renderer='fallback';
+        const choices=frame.parentElement?.querySelector('.hide-list');
+        if(choices)choices.open=true;
+      }
+    },
+    action(id){
+      const room=current?.room;
+      if(!room)return;
+      if(id==='hide-fire')room.aimCenter();
+      if(id==='hide-reset')room.reset();
+      if(id==='hide-zoom-in')room.setZoom(.16);
+      if(id==='hide-zoom-out')room.setZoom(-.16);
+    },
+    targetPosition(index){return current?.room?.getTargetPosition(index)??null;}
+  };
+})();
+
 const app = document.querySelector('#app');
 const dialog = document.querySelector('#rules-dialog');
 const ruleContent = document.querySelector('#rule-content');
@@ -673,11 +1766,13 @@ const roles = [
   {name:'糖豆熊',detail:'围小领巾的熊',icon:'🐻',color:'#715650'}
 ];
 const games = {
-  hide:{name:'星光捉迷藏',icon:'☾',accent:'#c5adff',brief:'随机变玩具 · 十次点射',rules:'一人随机变成玩具架上的一件小玩具，另一人有十次机会点射，猜哪个是搭档。猜中过关，猜错的玩具会标记出来。命中或用完十次后，交换角色。',x:22,y:25},
+  hide:{name:'星光捉迷藏',icon:'☾',accent:'#c5adff',brief:'3D 玩具房 · 扫描、干扰、十发',rules:'一人随机变成玩具，另一人拖动 3D 视角，点玩具瞄准，再按「点射」。有十发和两次扫描。第一次提示左右位置，第二次提示前后位置。躲藏者可放一次干扰，干扰第二次扫描。命中或用完十发后，交换角色。',x:22,y:25},
   shoot:{name:'十发打星星',icon:'✸',accent:'#ffcf8e',brief:'每人五发 · 合计十发',rules:'看清闪亮的星星在哪一格。两人轮流点击，每人五次，加起来十次。每次点中亮星就得一分。',x:74,y:24},
   toy:{name:'玩具搬运',icon:'♟',accent:'#ffa6a7',brief:'一人变玩具 · 搭档护送',rules:'一人变成小玩具，先选怎么移动。搭档从三种方法里选怎么帮忙。一起过三道障碍后交换角色，选错可以重试。',x:79,y:62},
   memory:{name:'记忆翻牌',icon:'▦',accent:'#b3dbc8',brief:'八张牌 · 四对图案',rules:'每回合翻两张牌，找出相同的图案。配对成功的牌留在桌上，确认后由搭档继续。',x:52,y:79},
-  puzzle:{name:'双星解谜',icon:'✦',accent:'#ffc4ac',brief:'两条线索 · 点亮五颗星',rules:'一人猜图案，另一人猜颜色。两个答案都答对就点亮一颗星，答错可以回到这一关重来。',x:21,y:65}
+  puzzle:{name:'双星解谜',icon:'✦',accent:'#ffc4ac',brief:'两条线索 · 点亮五颗星',rules:'一人猜图案，另一人猜颜色。两个答案都答对就点亮一颗星，答错可以回到这一关重来。',x:19,y:57},
+  signal:{name:'双人信号接力',icon:'♫',accent:'#a8ddf2',brief:'传暗号 · 三轮合作',rules:'一人看暗号并用语音告诉搭档，另一人按顺序点图案。三轮暗号会从三个变成五个，两人轮流读暗号。共有三次失误机会。',x:28,y:82},
+  duel:{name:'积木对决',icon:'▤',accent:'#f3ac80',brief:'三发一轮 · 击破掩体',rules:'每人起始 150 点耐久。两人轮流进攻，每轮三发。先打掉掩体，露出的头部、躯干、四肢分别扣 100、30、10 点。防守者每轮随机起始姿势，每秒可主动更换一次。',x:51,y:18}
 };
 const puzzles = [
   {name:'初遇之星',clues:['我像夜空里弯弯的小船。','我像一盏温暖的夜灯。'],icons:['☁️','🌙','⭐'],shapes:['云朵','月牙','星星'],colors:['夜蓝','暖黄','樱粉'],hues:['#4d6eaa','#ffd184','#ef9bb3'],answer:[1,1]},
@@ -704,8 +1799,8 @@ const puzzleGame = {
     return s;
   }
 };
-const engines={...miniGames,puzzle:puzzleGame};
-const buttons=['hide','shoot','toy','memory','puzzle'];
+const engines={...miniGames,puzzle:puzzleGame,signal:signalGame,duel:duelGame};
+const buttons=['hide','shoot','toy','memory','puzzle','signal','duel'];
 const saveKey='twin-stars-arcade-v1';
 function loadSave(){
   try{
@@ -739,6 +1834,7 @@ function expectedCode(code,network=roomTab){
 const defaultNetwork=()=>window.arcadeRelay?'relay':'internet';
 let shotKey='', shotTimer=0, flashShot=true;
 let walkOrigin=null;
+let hideAim=-1;
 function notify(message){
   clearTimeout(toastTimer);toast.textContent=message;toast.hidden=false;
   toastTimer=setTimeout(()=>{toast.hidden=true;},3000);
@@ -819,7 +1915,7 @@ function handoffPanel(){
 function resultGame(){
   const s=state.play,id=state.game;
   const desc=summary(state);
-  return shellGame(`<section class="panel play result"><div class="big-star" aria-hidden="true">✦</div><h2>${id==='puzzle'?'五颗星全部点亮！':'这局完成！'}</h2><p>${desc}</p><p class="local-save-state">${savedOk?'已保存到这台设备。':'本局结果暂存在当前页面。'}</p><div class="actions">${btn('rematch','再玩一局',true,pending)}${btn('result-map','逛别的摊位')}</div></section>`,'');
+  return shellGame(`<section class="panel play result"><div class="big-star" aria-hidden="true">✦</div><h2>${id==='puzzle'?'五颗星全部点亮！':id==='duel'?'积木对决结束！':'这局完成！'}</h2><p>${desc}</p><p class="local-save-state">${savedOk?'已保存到这台设备。':'本局结果暂存在当前页面。'}</p><div class="actions">${btn('rematch','再玩一局',true,pending)}${btn('result-map','逛别的摊位')}</div></section>`,'');
 }
 function summary(st){
   const a=st.play;
@@ -827,11 +1923,13 @@ function summary(st){
   if(st.game==='shoot')return `一共点亮 ${a.scores[0]+a.scores[1]} / 10 颗星。`;
   if(st.game==='toy')return `两位小玩具都已经通过障碍。`;
   if(st.game==='memory')return `找齐了四对图案。两人分别找到 ${a.scores[0]} 对和 ${a.scores[1]} 对。`;
+  if(st.game==='signal')return `合作传对了 ${a.cleared} / 3 轮暗号。`;
+  if(st.game==='duel')return `${player(a.winner)}获胜！双方剩余耐久 ${a.hp.join(' / ')}。`;
   return '两个人一起解开了五组星星谜题。';
 }
 function renderPuzzle(s,can){
   const r=puzzles[s.round];
-  const stars=`<div class="stars-progress" aria-label="已点亮 ${s.round+(s.result==='hit'?1:0)} 颗星">${puzzles.map((_,i)=>`<span class="${i<s.round+(s.result==='hit'?1:0)?'lit':''}">★</span>`).join('')}</div>`;
+  const stars=`<div class="stars-progress" aria-label="已点亮 ${s.round+(s.result==='hit'?1:0)} 颗星">${puzzles.map((_,i)=>`<span class="${i<s.round?'lit':i===s.round&&s.result==='hit'?'lit newly-lit':''}">★</span>`).join('')}</div>`;
   if(s.result){
     const hit=s.result==='hit';
     return `<section class="panel play">${stars}<h2>${hit?`点亮${r.name}`:'这颗星还没亮'}</h2><p>你们选了 ${r.shapes[s.picks[0]]} 和 ${r.colors[s.picks[1]]}。</p>${can?continued(hit?(s.round===4?'查看星图':'下一颗星'):'再猜一次'):`<p>${waitText()}</p>`}</section>`;
@@ -865,7 +1963,12 @@ function renderHide(s,can){
     if(!can)return `<div class="hide-prop ${mine?'my-prop':''} ${miss?'shot-prop':''}"><span class="option-icon" aria-hidden="true">${toy.icon}</span><span>${toy.label}</span>${mine?'<small>你的伪装</small>':miss?'<small>已猜过</small>':''}</div>`;
     return `<button class="hide-prop ${miss?'shot-prop':''}" data-choice="${i}" aria-label="${toy.label}${miss?'，已猜过':''}" ${miss||pending?'disabled':''}><span class="option-icon" aria-hidden="true">${toy.icon}</span><span>${toy.label}</span>${miss?'<small>×</small>':''}</button>`;
   }).join('');
-  return `<section class="panel play hide-scene"><h2>${can?'哪件玩具是搭档？':'看看搭档能不能找到你'}</h2><p>${can?'点一件玩具来猜。每次猜测用掉一发。':'搭档正在玩具架上找你。'}</p><div class="hide-shots"><span>剩余 <strong>${remaining} / ${limit}</strong> 发</span><div class="shot-row">${shots}</div></div><div class="hide-board" aria-label="玩具架">${props}</div></section>`;
+  const tools=can
+    ?btn('hide-scan',s.scans<2?`扫描 · ${2-s.scans} 次`:'扫描已用完',false,pending||s.scans>=2)
+    :btn('hide-decoy',s.decoyUsed?'干扰已用':'放一次假信号',false,pending||s.decoyUsed||s.scans>=2);
+  const clue=s.clue?`<div class="scan-clue" role="status"><b>${s.clue.interference?'信号受到干扰':'扫描结果'}</b><span>${s.clue.interference?'可能在':'搭档在'}${s.clue.zone}</span></div>`:'';
+  const instruction=can?'拖动视角，点玩具瞄准，再按「点射」。':'拖动视角观战。你可以放假信号来干扰搭档的第二次扫描。';
+  return `<section class="panel play hide-scene"><h2>${can?'哪件玩具是搭档？':'守住你的伪装'}</h2><div class="hide-shots"><span>剩余 <strong>${remaining} / ${limit}</strong> 发</span><div class="shot-row">${shots}</div></div><div class="hide-stage" data-hide-scene data-renderer="fallback"><div class="hide-crosshair" aria-hidden="true">+</div><span class="hide-view-label" aria-hidden="true">玩具房</span><div class="hide-camera">${btn('hide-zoom-out','−')}${btn('hide-zoom-in','＋')}${btn('hide-reset','复位')}</div></div><div class="hide-toolbar"><span id="hide-aim" role="status">${can?'未瞄准':'观看搭档寻找'}</span><div class="actions">${tools}${can?btn('hide-fire','点射',true,pending):''}</div></div>${clue}<p class="hide-help">${instruction}</p><details class="hide-list"><summary>${can?'展开玩具列表':'展开观战列表'}</summary><div class="hide-board" aria-label="玩具架">${props}</div></details></section>`;
 }
 function renderShoot(s,can){
   const key=`${state.session}-${s.shot}`;
@@ -885,11 +1988,13 @@ function renderShoot(s,can){
   }
   const last=s.history.at(-1);
   const dots=Array.from({length:10},(_,i)=>{const log=s.history[i];return `<span class="shot-dot ${log?log.hit?'hit':'miss':''}">${log?log.hit?'✦':'×':''}</span>`;}).join('');
-  return `<section class="panel play shoot-panel"><div class="shot-row" aria-label="已用 ${s.shot} 发">${dots}</div><h2>第 ${s.shot+1} 发</h2><p>${can?'记住刚刚闪亮的格子，再点它。':waitText()}</p>${can?`<div class="options shoot-targets">${s.targets.map((lit,i)=>option(i,{icon:lit&&flashShot?'✸':'✧',label:['左','中','右'][i]},pending,lit&&flashShot?'star-on':'star-off')).join('')}</div>`:''}${last?`<p class="feedback">上一发${last.hit?'命中':'落空'} · 累计点亮 ${s.scores[0]+s.scores[1]} 颗星</p>`:''}</section>`;
+  let streak=0;for(let i=s.history.length-1;i>=0&&s.history[i].hit;i--)streak++;
+  return `<section class="panel play shoot-panel"><div class="shot-row" aria-label="已用 ${s.shot} 发">${dots}</div><h2>第 ${s.shot+1} 发</h2><p>${can?'记住刚刚闪亮的格子，再点它。':waitText()}</p>${can?`<div class="options shoot-targets">${s.targets.map((lit,i)=>option(i,{icon:lit&&flashShot?'✸':'✧',label:['左','中','右'][i]},pending,lit&&flashShot?'star-on':'star-off')).join('')}</div>`:''}${last?`<p class="feedback ${last.hit?'hit':'miss'}" id="shoot-feedback">${streak>1?`${streak} 连中！`:last.hit?'命中！':'这一发落空了'} · 累计点亮 ${s.scores[0]+s.scores[1]} 颗星</p>`:''}</section>`;
 }
 function renderToy(s,can){
   const d=miniGameData.toySteps[s.round*3+s.step],part=d[s.phase];
-  return `<section class="panel play"><div class="toy-line"><div class="turn-pill"><span class="avatar toy-avatar" aria-hidden="true">🧸</span> ${player(s.toySeat)}变成小玩具</div><span class="toy-helper">${avatar(state.roles[1-s.toySeat])} 搭档</span></div><h2 style="margin-top:12px">${d.icon} ${d.title}</h2><p>${can?part.prompt:waitText()}</p>${can?`<div class="options">${part.options.map((o,i)=>option(i,o,pending)).join('')}</div>`:''}${s.feedback?`<p class="feedback">${s.feedback.correct?'配合成功。':'这样过不去，再试一种。'}</p>`:''}</section>`;
+  const route=miniGameData.toySteps.slice(s.round*3,s.round*3+3).map((step,i)=>`<li class="toy-route-step ${i<s.step?'passed':i===s.step?'active':''}"><span class="toy-route-icon" aria-hidden="true">${step.icon}</span><span class="toy-route-label">${step.title}</span>${i===s.step?'<span class="toy-token" aria-hidden="true">🧸</span>':''}</li>`).join('');
+  return `<section class="panel play"><div class="toy-line"><div class="turn-pill"><span class="avatar toy-avatar" aria-hidden="true">🧸</span> ${player(s.toySeat)}变成小玩具</div><span class="toy-helper">${avatar(state.roles[1-s.toySeat])} 搭档</span></div><ol class="toy-course" aria-label="障碍路线">${route}</ol><h2 style="margin-top:12px">${d.icon} ${d.title}</h2><p>${can?part.prompt:waitText()}</p>${can?`<div class="options">${part.options.map((o,i)=>option(i,o,pending)).join('')}</div>`:''}${s.feedback?`<p class="feedback">${s.feedback.correct?'配合成功。':'这样过不去，再试一种。'}</p>`:''}</section>`;
 }
 function renderMemory(s,can){
   return `<section class="panel play"><h2>找到一样的图案</h2><p>${s.result?s.result==='match'?'找对了一组！':'两张图案不一样。':can?(s.open.length?'再翻一张牌。':'翻开任意一张牌。'):waitText()}</p><div class="memory">${s.deck.map((id,i)=>{
@@ -897,6 +2002,39 @@ function renderMemory(s,can){
     const symbol=miniGameData.memorySymbols[id];
     return `<button class="option ${s.matched.includes(i)?'matched':known?'revealed':''}" data-choice="${i}" aria-label="${known?symbol.label:`翻开第 ${i+1} 张`}" ${!can||pending||known||s.result?'disabled':''}>${known?symbol.icon:'✧'}</button>`;
   }).join('')}</div>${s.result&&can?continued(s.matched.length===8?'查看结果':'轮到搭档'):''}</section>`;
+}
+function renderSignal(s,can){
+  if(handoff)return handoffPanel();
+  const hearts='♥'.repeat(s.energy)+'♡'.repeat(3-s.energy);
+  const symbols=sequence=>`<div class="signal-sequence">${sequence.map(i=>i==null?'<span class="signal-tile dim">·</span>':`<span class="signal-tile" aria-label="${signalSymbols[i].label}">${signalSymbols[i].icon}</span>`).join('')}</div>`;
+  if(s.phase==='result'){
+    const solved=s.outcome==='success';
+    return `<section class="panel play signal-panel"><span class="signal-energy" aria-label="剩余 ${s.energy} 次失误机会">${hearts}</span><h2>${solved?'暗号传对了！':'这组暗号对不上'}</h2>${symbols(s.sequence)}${can?continued(s.cleared===3||!s.energy?'查看结果':solved?'交换角色':'换一组暗号'):`<p>${waitText()}</p>`}</section>`;
+  }
+  if(s.phase==='read'){
+    return `<section class="panel play signal-panel"><span class="signal-energy" aria-label="剩余 ${s.energy} 次失误机会">${hearts}</span><h2>${can?'把暗号念给搭档':'听搭档的暗号'}</h2><p>${can?'从左到右读。准备好后，交给搭档复现。':'这组暗号显示在搭档的屏幕上。'}</p>${can?symbols(s.sequence)+btn('signal-ready','搭档来复现',true,pending):''}</section>`;
+  }
+  const slots=Array.from({length:s.round+3},(_,i)=>s.picks[i]);
+  return `<section class="panel play signal-panel"><span class="signal-energy" aria-label="剩余 ${s.energy} 次失误机会">${hearts}</span><h2>${can?'按顺序点出暗号':'搭档正在复现暗号'}</h2>${symbols(slots)}${can?`<div class="options signal-choices">${signalSymbols.map((symbol,i)=>option(i,symbol,pending)).join('')}</div>`:''}</section>`;
+}
+const duelPartNames={head:'头部',torso:'躯干',limb:'四肢'};
+const duelPartIcons={head:'◉',torso:'◆',limb:'●'};
+function renderDuel(s,can){
+  const defender=1-s.turn, f=s.feedback;
+  const defend=mode==='solo'||seat===defender;
+  const pose=duelPoses[s.pose], parts=s.visibleParts||pose.parts, field=s.covers[defender];
+  const hp=s.hp.map((n,i)=>`<div class="duel-hp">${avatar(state.roles[i])}<div><b>${player(i)}</b><span>${n}/${duelGrid.maxHP}</span><meter min="0" max="${duelGrid.maxHP}" value="${n}" aria-label="${player(i)}耐久"></meter></div></div>`).join('');
+  const cells=field.map((cover,i)=>{
+    const part=parts[i];
+    const effect=f?.round===s.round&&f?.index===i?f.type:'';
+    const classes=`duel-cell ${cover?'duel-cover':part?'duel-body '+part:'duel-empty'} ${effect?'duel-'+effect+'-flash':''}`;
+    const label=cover?'掩体':part?duelPartNames[part]:'空位';
+    const shown=cover?'▧':part?duelPartIcons[part]:'·';
+    return can?`<button class="${classes}" data-choice="${i}" aria-label="第 ${i+1} 格，${label}" ${pending?'disabled':''}>${shown}</button>`
+      :`<span class="${classes}" aria-label="第 ${i+1} 格，${label}">${shown}</span>`;
+  }).join('');
+  const text=f?.type==='cover'?'击碎一块掩体':f?.type==='hit'?`命中${duelPartNames[f.part]} −${f.damage}`:f?.type==='miss'?'这一发落空了':'寻找已经露出的部位，或打掉一块掩体。';
+  return `<section class="panel play duel-panel"><div class="duel-hps">${hp}</div><div class="duel-caption"><h2>${can?'对准积木格点射':'守住你的掩体'}</h2><span>剩余 <b>${duelGrid.shotsPerTurn-s.shots} / ${duelGrid.shotsPerTurn}</b> 发</span></div><div class="duel-grid" aria-label="积木掩体及露出区域">${cells}</div><p class="duel-feedback ${f?.type||''}" role="status">${text}</p>${defend?`<div class="duel-defense"><span>${player(defender)} · ${pose.label}</span><div class="actions">${duelPoses.map((p,i)=>`<button class="btn duel-pose" data-pose="${i}" aria-pressed="${s.pose===i}" ${pending||s.pose===i?'disabled':''}>${p.icon} ${p.label}</button>`).join('')}</div><small>每秒可换一次姿势</small></div>`:''}<div class="duel-legend"><span>头部 100</span><span>躯干 30</span><span>四肢 10</span></div></section>`;
 }
 function renderGame(){
   const s=state.play;
@@ -907,11 +2045,24 @@ function renderGame(){
   if(id==='shoot')return shellGame(renderShoot(s,can),`剩余 ${10-s.shot} / 10 发`);
   if(id==='toy')return shellGame(renderToy(s,can),`第 ${s.round+1} / 2 轮 · 障碍 ${s.step+1} / 3`);
   if(id==='memory')return shellGame(renderMemory(s,can),`已配对 ${s.matched.length/2} / 4`);
+  if(id==='signal')return shellGame(renderSignal(s,can),`第 ${s.round+1} / 3 轮`);
+  if(id==='duel')return shellGame(renderDuel(s,can),`第 ${s.round+1} 回合`);
   return shellGame(renderPuzzle(s,can),`第 ${s.round+1} / 5 关`);
 }
 function render(){
   const screens={home:renderHome,rooms:renderRooms,lobby:renderLobby,hub:renderHub,game:renderGame};
+  const listOpen=app.querySelector('.hide-list')?.open;
   app.innerHTML=screens[view]();
+  const frame=app.querySelector('[data-hide-scene]');
+  if(frame){
+    const play=state.play, can=mode==='solo'||seat===play.turn;
+    if(listOpen)app.querySelector('.hide-list').open=true;
+    toyRoom.sync(frame,{key:state.session+'-'+play.round,board:play.board,can,pending,guesses:play.guesses,spectate:can?-1:play.spot},(index,empty)=>{
+      hideAim=index;
+      const status=app.querySelector('#hide-aim');
+      if(status&&can)status.textContent=index<0?(empty?'准心没对着玩具':'未瞄准'):'瞄准：'+miniGameData.hideProps[play.board[index]].label;
+    },index=>dispatch({type:'game-action',input:{type:'shoot',index}}));
+  }else{toyRoom.sync(null);hideAim=-1;}
   walkOrigin=null;
 }
 function gameID(){
@@ -955,6 +2106,7 @@ function applyState(next){
     if(next.game==='hide'&&next.play.phase==='guess'&&previous.play.phase==='reveal')handoff=true;
     if(next.game==='hide'&&next.play.phase==='hide'&&previous.play.round!==next.play.round)handoff=true;
     if(next.game==='puzzle'&&next.play.turn!==previous.play.turn&&!next.play.result)handoff=true;
+    if(next.game==='signal'&&next.play.turn!==previous.play.turn&&next.play.phase==='repeat')handoff=true;
   }
   if(next.stage!=='game'||next.session!==previous.session)handoff=false;
   if(next.roles[0]!==previous.roles[0]||next.roles[1]!==previous.roles[1]){
@@ -1000,7 +2152,15 @@ async function pollLan(){
 function publishInternet(){
   let shared=state;
   if(state.game==='hide'&&state.play.hider===0&&['reveal','guess'].includes(state.play.phase)){
-    shared={...state,play:{...state.play,spot:null}};
+    shared={...state,play:{...state.play,spot:null,decoy:null}};
+  }
+  if(state.game==='signal'&&state.play.phase!=='result'&&state.play.reader===0){
+    shared={...state,play:{...state.play,sequence:[]}};
+  }
+  if(state.game==='duel'&&state.play.turn===1&&!state.play.done){
+    const play=state.play;
+    const viewParts=duelPoses[play.pose].parts.map((part,i)=>play.covers[0][i]?null:part);
+    shared={...state,play:{...play,pose:null,visibleParts:viewParts}};
   }
   if(joined&&room&&!room.send({kind:'snapshot',version,state:shared}))notify('同步暂时中断。');
 }
@@ -1020,7 +2180,9 @@ function peerEvent(event,connectionEpoch){
   if(event.type!=='message'||!event.message||typeof event.message!=='object')return;
   const incoming=event.message;
   if(seat===0&&incoming.kind==='action'&&incoming.action&&typeof incoming.action==='object'){
-    if(incoming.version===version){
+    const duelInput=incoming.action.type==='game-action'&&state.game==='duel'&&incoming.session===state.session&&
+      incoming.round===state.play.round&&incoming.shots===state.play.shots;
+    if(incoming.version===version||duelInput){
       const next=reduce(state,incoming.action,1);
       if(next!==state){version++;applyState(next);}
     }
@@ -1075,7 +2237,7 @@ async function dispatch(action,actor=mode==='solo'?(view==='lobby'?roleCursor:vi
   if(mode==='internet'&&seat===1){
     if(!joined){notify('搭档已断开，请重新加入。');return;}
     pending=true;
-    if(!room.send({kind:'action',version,action})){pending=false;notify('消息发送失败，请再试一次。');}
+    if(!room.send({kind:'action',version,action,session:state.session,round:state.play?.round,shots:state.play?.shots})){pending=false;notify('消息发送失败，请再试一次。');}
     else{
       const sentVersion=version;
       setTimeout(()=>{
@@ -1173,8 +2335,13 @@ document.addEventListener('click',e=>{
   }
   if(b.dataset.enter){dispatch({type:'enter',game:b.dataset.enter});return;}
   if(b.dataset.choice!==undefined){
-    const type=state.game==='shoot'||state.game==='hide'?'shoot':state.game==='memory'?'flip':'pick';
+    const type=['shoot','hide','duel'].includes(state.game)?'shoot':state.game==='memory'?'flip':'pick';
     dispatch({type:'game-action',input:{type,index:Number(b.dataset.choice)}});return;
+  }
+  if(b.dataset.pose!==undefined){
+    const actor=mode==='solo'?1-state.play.turn:seat;
+    dispatch({type:'game-action',input:{type:'pose',index:Number(b.dataset.pose)}},actor);
+    return;
   }
   if(b.id==='join-room')return;
   if(b.id==='local-start'){mode='solo';seat=0;roleCursor=0;mapCursor=0;state=fresh(true);go('lobby');}
@@ -1194,6 +2361,10 @@ document.addEventListener('click',e=>{
   if(b.id==='reveal-turn'){handoff=false;render();}
   if(b.id==='transform-hide')dispatch({type:'game-action',input:{type:'transform'}});
   if(b.id==='start-hide')dispatch({type:'game-action',input:{type:'ready'}});
+  if(b.id==='signal-ready')dispatch({type:'game-action',input:{type:'ready'}});
+  if(b.id==='hide-scan')dispatch({type:'game-action',input:{type:'scan'}});
+  if(b.id==='hide-decoy')dispatch({type:'game-action',input:{type:'decoy'}});
+  if(['hide-fire','hide-reset','hide-zoom-in','hide-zoom-out'].includes(b.id))toyRoom.action(b.id);
   if(b.id==='continue-game')dispatch({type:'game-action',input:{type:'continue'}});
   if(b.id==='records')showRecords();
 });
