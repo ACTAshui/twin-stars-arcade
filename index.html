@@ -437,6 +437,18 @@ button.duel-cell:hover:not(:disabled){outline:2px solid #ffdd9c;outline-offset:-
 .duel-pose{padding:6px 8px;min-height:42px;font-size:12px}
 .duel-pose[aria-pressed=true]{border-color:#e0ad8b}
 .duel-legend{display:flex;gap:10px;font-size:11px;color:#d6b8cf;margin-top:12px}
+.duel-arena{position:relative;isolation:isolate;overflow:hidden;border:1px solid #7a6984;border-radius:14px;background:#181b34;height:clamp(310px,49svh,480px)}
+.duel-arena canvas{position:absolute;inset:0;width:100%;height:100%;display:block;touch-action:none;cursor:crosshair;outline-offset:-4px}
+.duel-arena[data-duel-mode=overview] canvas{cursor:grab}
+.duel-camera-label,.duel-wall-order{position:absolute;z-index:1;pointer-events:none;font-size:11px;color:#ffeddc;background:#1f1935d9;border:1px solid #68617b;border-radius:99px;padding:5px 8px}
+.duel-camera-label{left:9px;top:9px}
+.duel-wall-order{right:9px;bottom:9px}
+.duel-aim-controls{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:9px;flex-wrap:wrap}
+.duel-aim-controls>span{font-size:13px;color:#ffdec0}
+.duel-fallback{margin-top:11px;font-size:12px;color:#cdbdd8}
+.duel-fallback summary{cursor:pointer;margin:0 0 7px}
+.duel-arena[data-renderer=fallback],.duel-arena[data-renderer=fallback]+.duel-aim-controls{display:none}
+@media(max-width:420px){.duel-arena{height:clamp(284px,42svh,355px)}}
 @media(max-width:420px){.duel-hps{gap:5px}.duel-hp{gap:4px;padding:5px}.duel-hp .avatar{width:27px;height:27px}.duel-cell{font-size:18px}.signal-tile{min-width:36px}}
 
 
@@ -703,8 +715,8 @@ const internetRooms = (() => {
 })();
 
 const hideMap = {
-  bounds: { minX: -10.5, maxX: 10.5, minZ: -8.6, maxZ: 7.7 },
-  zones: { left: -3.4, right: 3.4, front: 2.6, back: -2.2 },
+  bounds: { minX: -15, maxX: 15, minZ: -12.5, maxZ: 11.2 },
+  zones: { left: -4.8, right: 4.8, front: 3.75, back: -3.2 },
   palette: {
     floor: 0x453454,
     trim: 0xcc8d79,
@@ -720,46 +732,55 @@ const hideMap = {
     backPad: 0xc59b8c,
   },
   tiers: [
-    { x: 0, z: -0.67, w: 10.6, d: 3.24, y: 0.48, color: 0x55597c },
-    { x: 0, z: -6.28, w: 15.6, d: 4, y: 1.05, color: 0x6f536a },
+    { x: 0, z: -0.96, w: 15.2, d: 4.56, y: 0.48, color: 0x55597c },
+    { x: 0, z: -9.04, w: 22.2, d: 5.68, y: 1.05, color: 0x6f536a },
   ],
   ramps: [
-    { x: 0, z: 2.2, w: 3.2, d: 2.5, yFrom: 0, yTo: 0.48, color: 0x737694 },
-    { x: -1.65, z: -3.285, w: 3.15, d: 1.99, yFrom: 0.48, yTo: 1.05, color: 0x826c82 },
+    { x: 0, z: 3.14, w: 4.55, d: 3.64, yFrom: 0, yTo: 0.48, color: 0x737694 },
+    { x: -2.35, z: -4.72, w: 4.55, d: 2.96, yFrom: 0.48, yTo: 1.05, color: 0x826c82 },
+  ],
+  mats: [
+    { x: -8.42, z: 7.75, w: 6.15, d: 3.40, color: 0x8d5277, accent: 0xd28c9e },
+    { x: 8.6, z: 7.7, w: 6.32, d: 3.60, color: 0x4d797a, accent: 0x81b7ac },
+    { x: 0, z: -0.9, w: 10.5, d: 3.30, color: 0x647498, accent: 0x9ea9d1 },
+    { x: 0, z: -8.95, w: 16.7, d: 3.95, color: 0x906677, accent: 0xd4a391 },
   ],
   obstacles: [
-    { kind: 'crate', x: -5.66, z: 4.82, w: 1.1, d: 1.1, h: 0.93, color: 0xa9666d, accent: 0xf7b38c },
-    { kind: 'crate', x: 5.4, z: 4.9, w: 1.36, d: 1.05, h: 0.78, color: 0x6e829e, accent: 0xabc8db },
-    { kind: 'column', x: -9.38, z: 3.0, w: 0.95, d: 0.95, h: 2.75, color: 0x685173, accent: 0xffc899 },
-    { kind: 'column', x: 9.36, z: 3.0, w: 0.95, d: 0.95, h: 2.75, color: 0x665476, accent: 0xffc899 },
-    { kind: 'shelf', x: -9.43, z: -1.63, w: 0.94, d: 2.62, h: 2.42, color: 0x775579, accent: 0xbfa3c3 },
-    { kind: 'shelf', x: 9.38, z: -1.78, w: 0.94, d: 2.56, h: 2.48, color: 0x535478, accent: 0xb5b1d6 },
-    { kind: 'crate', x: 5.98, z: -2.5, w: 1.26, d: 1.08, h: 1.13, color: 0x9a6e81, accent: 0xe7aaa6 },
-    { kind: 'crate', x: -5.96, z: -2.85, w: 1.15, d: 1.2, h: 0.85, color: 0x638d88, accent: 0x9ec1a4 },
-    { kind: 'shelf', x: -5.15, z: -7.46, w: 2.25, d: 0.72, h: 1.7, color: 0x805c69, accent: 0xdd9b87 },
-    { kind: 'shelf', x: 4.88, z: -7.44, w: 2.27, d: 0.78, h: 1.7, color: 0x805c69, accent: 0xdd9b87 },
-    { kind: 'pot', x: -9.35, z: -7.29, w: 1.28, d: 1.22, h: 1.33, color: 0xad7780, accent: 0x83bfa0 },
-    { kind: 'pot', x: 9.32, z: -7.37, w: 1.28, d: 1.22, h: 1.34, color: 0xc28f80, accent: 0x9bbd8e },
+    { kind: 'crate', x: -8.04, z: 6.89, w: 1.53, d: 1.48, h: 1.02, color: 0xa9666d, accent: 0xf7b38c },
+    { kind: 'crate', x: 7.68, z: 7.0, w: 1.70, d: 1.45, h: 0.85, color: 0x6e829e, accent: 0xabc8db },
+    { kind: 'column', x: -13.34, z: 4.31, w: 1.22, d: 1.22, h: 3.05, color: 0x685173, accent: 0xffc899 },
+    { kind: 'column', x: 13.33, z: 4.28, w: 1.22, d: 1.22, h: 3.05, color: 0x665476, accent: 0xffc899 },
+    { kind: 'shelf', x: -13.41, z: -2.43, w: 1.25, d: 3.72, h: 2.56, color: 0x775579, accent: 0xbfa3c3 },
+    { kind: 'shelf', x: 13.38, z: -2.56, w: 1.25, d: 3.61, h: 2.62, color: 0x535478, accent: 0xb5b1d6 },
+    { kind: 'crate', x: 8.53, z: -3.60, w: 1.46, d: 1.32, h: 1.19, color: 0x9a6e81, accent: 0xe7aaa6 },
+    { kind: 'crate', x: -8.49, z: -4.15, w: 1.43, d: 1.48, h: 0.91, color: 0x638d88, accent: 0x9ec1a4 },
+    { kind: 'shelf', x: -7.41, z: -10.76, w: 3.3, d: 0.96, h: 1.95, color: 0x805c69, accent: 0xdd9b87 },
+    { kind: 'shelf', x: 7.15, z: -10.76, w: 3.3, d: 0.96, h: 1.95, color: 0x805c69, accent: 0xdd9b87 },
+    { kind: 'pot', x: -13.39, z: -10.52, w: 1.58, d: 1.47, h: 1.5, color: 0xad7780, accent: 0x83bfa0 },
+    { kind: 'pot', x: 13.34, z: -10.65, w: 1.58, d: 1.47, h: 1.5, color: 0xc28f80, accent: 0x9bbd8e },
+    { kind: 'pot', x: 10.68, z: 2.23, w: 1.19, d: 1.15, h: 0.92, color: 0x67908c, accent: 0xafd09f },
+    { kind: 'crate', x: -5.05, z: 2.53, w: 1.52, d: 1.13, h: 0.83, color: 0xb77e71, accent: 0xeeb698 },
+    { kind: 'bench', x: 5.25, z: -4.95, w: 2.62, d: 1.03, h: 0.69, color: 0x64668c, accent: 0xa3a3cb },
   ],
   slots: [
-    { x: -8.12, z: 5.12, radius: 0.68, side: '左侧', depth: '前排' },
-    { x: -4.51, z: 3.78, radius: 0.68, side: '左侧', depth: '前排' },
-    { x: -1.87, z: 5.62, radius: 0.68, side: '中间', depth: '前排' },
-    { x: 1.84, z: 4.32, radius: 0.68, side: '中间', depth: '前排' },
-    { x: 4.4, z: 3.62, radius: 0.68, side: '右侧', depth: '前排' },
-    { x: 8.23, z: 5.28, radius: 0.68, side: '右侧', depth: '前排' },
-    { x: -8.21, z: 0.14, radius: 0.65, side: '左侧', depth: '中排' },
-    { x: -4.42, z: 0.02, radius: 0.65, side: '左侧', depth: '中排' },
-    { x: -1.5, z: -0.97, radius: 0.65, side: '中间', depth: '中排' },
-    { x: 1.53, z: -0.64, radius: 0.65, side: '中间', depth: '中排' },
-    { x: 4.26, z: 0.04, radius: 0.65, side: '右侧', depth: '中排' },
-    { x: 8.15, z: 0.13, radius: 0.65, side: '右侧', depth: '中排' },
-    { x: -8.14, z: -4.88, radius: 0.68, side: '左侧', depth: '后排' },
-    { x: -5.05, z: -5.75, radius: 0.68, side: '左侧', depth: '后排' },
-    { x: -1.63, z: -6.61, radius: 0.68, side: '中间', depth: '后排' },
-    { x: 1.65, z: -5.42, radius: 0.68, side: '中间', depth: '后排' },
-    { x: 5.28, z: -5.67, radius: 0.68, side: '右侧', depth: '后排' },
-    { x: 8.26, z: -4.96, radius: 0.68, side: '右侧', depth: '后排' },
+    { x: -11.61, z: 7.43, radius: 0.74, side: '左侧', depth: '前排' },
+    { x: -6.59, z: 5.44, radius: 0.74, side: '左侧', depth: '前排' },
+    { x: -2.66, z: 8.10, radius: 0.74, side: '中间', depth: '前排' },
+    { x: 2.64, z: 6.48, radius: 0.74, side: '中间', depth: '前排' },
+    { x: 6.33, z: 5.13, radius: 0.74, side: '右侧', depth: '前排' },
+    { x: 11.71, z: 7.52, radius: 0.74, side: '右侧', depth: '前排' },
+    { x: -11.77, z: 0.20, radius: 0.73, side: '左侧', depth: '中排' },
+    { x: -6.31, z: 0.05, radius: 0.73, side: '左侧', depth: '中排' },
+    { x: -2.15, z: -1.39, radius: 0.73, side: '中间', depth: '中排' },
+    { x: 2.19, z: -0.91, radius: 0.73, side: '中间', depth: '中排' },
+    { x: 6.08, z: 0.07, radius: 0.73, side: '右侧', depth: '中排' },
+    { x: 11.65, z: 0.21, radius: 0.73, side: '右侧', depth: '中排' },
+    { x: -11.63, z: -7.07, radius: 0.74, side: '左侧', depth: '后排' },
+    { x: -7.24, z: -8.27, radius: 0.74, side: '左侧', depth: '后排' },
+    { x: -2.35, z: -9.52, radius: 0.74, side: '中间', depth: '后排' },
+    { x: 2.34, z: -7.83, radius: 0.74, side: '中间', depth: '后排' },
+    { x: 7.53, z: -8.18, radius: 0.74, side: '右侧', depth: '后排' },
+    { x: 11.81, z: -7.15, radius: 0.74, side: '右侧', depth: '后排' },
   ],
 };
 
@@ -1324,6 +1345,340 @@ const duelGame = {
   },
 };
 
+const duelRoom=(()=>{
+  let current=null;
+  const reducedMotion=matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const cellSize=1.05;
+  const baseY=.30;
+  const wallZ=[3.25,-3.25];
+  const palettes=[
+    {shell:0x97cedd,bright:0xb5e8f9,dark:0x3c728d,light:0x76ebee,player:0xccf0c2},
+    {shell:0xe5a899,bright:0xffcab3,dark:0x975870,light:0xffb897,player:0xdbbcfc}
+  ];
+  function cellPoint(i,z){
+    return [(i%duelGrid.cols-2)*cellSize,baseY+(duelGrid.rows-.5-Math.floor(i/duelGrid.cols))*cellSize,z];
+  }
+  function newArena(){
+    const T=window.THREE;
+    if(!T||typeof ResizeObserver==='undefined')return null;
+    const canvas=document.createElement('canvas');
+    canvas.tabIndex=0;
+    canvas.setAttribute('aria-label','3D 积木对决。瞄准时点选格子或滑动移动准心，按空格点射。');
+    let renderer;
+    try{
+      const context=canvas.getContext('webgl2',{antialias:true,alpha:false})||canvas.getContext('webgl',{antialias:true,alpha:false});
+      if(!context)return null;
+      renderer=new T.WebGLRenderer({canvas,context});
+    }catch{return null;}
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio||1,1.5));
+    renderer.outputColorSpace=T.SRGBColorSpace;
+    renderer.toneMapping=T.ACESFilmicToneMapping;
+    renderer.toneMappingExposure=1.12;
+    const scene=new T.Scene();
+    scene.background=new T.Color(0x181b34);
+    const camera=new T.PerspectiveCamera(44,1,.1,100);
+    const direct=new T.DirectionalLight(0xffe1cb,2.50);
+    direct.position.set(4,12,5);
+    const rim=new T.DirectionalLight(0xc3c8ff,2.2);
+    rim.position.set(-6,7,-7);
+    scene.add(new T.HemisphereLight(0xdee1ff,0x604466,2.0),direct,rim);
+    const resources=new Set();
+    const box=(w,h,d)=>{
+      const geometry=new T.BoxGeometry(w,h,d);resources.add(geometry);return geometry;
+    };
+    const sphere=(r,segments=16)=>{
+      const geometry=new T.SphereGeometry(r,segments,12);resources.add(geometry);return geometry;
+    };
+    function material(color,extra={}){
+      const value=new T.MeshStandardMaterial({color,roughness:.68,...extra});resources.add(value);return value;
+    }
+    function add(parent,geometry,finish,x=0,y=0,z=0){
+      const item=new T.Mesh(geometry,finish);item.position.set(x,y,z);parent.add(item);return item;
+    }
+    const floor=material(0x303354), line=material(0x485271), glass=material(0x576786);
+    const neon=material(0xa0dfea,{emissive:0x3286ae,emissiveIntensity:.5});
+    const stage=new T.Group();scene.add(stage);
+    const base=add(stage,box(13,.22,14),floor,0,-.12,0);
+    base.receiveShadow=true;
+    for(let i=-6;i<=6;i++){
+      add(stage,box(.025,.014,13.8),line,i,0,0);
+      add(stage,box(12.8,.014,.025),line,0,0,i);
+    }
+    for(const side of [-1,1]){
+      add(stage,box(.24,.38,13.8),glass,side*6.3,.15,0);
+      add(stage,box(.045,.02,13.55),neon,side*6.3,.35,0);
+      for(let j=-2;j<=2;j++){
+        add(stage,box(.48,.66,.74),glass,side*5.9,.3,j*2.7);
+        add(stage,box(.13,.045,.6),neon,side*5.9,.647,j*2.7);
+      }
+    }
+    add(stage,box(10,.025,.095),neon,0,.023,0);
+    scene.fog=new T.Fog(0x181b34,43,90);
+    const blockGeo=box(.97,.96,.47), trimGeo=box(.75,.68,.05), pickGeo=box(1.05,1.05,.035);
+    const headGeo=sphere(.37),eyeGeo=sphere(.06,10),antennaGeo=sphere(.083,10);
+    const chestGeo=box(.80,.83,.47),limbGeo=sphere(.31);
+    const eyes=material(0x232642);
+    const pickMat=new T.MeshBasicMaterial({visible:false});resources.add(pickMat);
+    const boardSize=duelGrid.cols*duelGrid.rows;
+    function makeWall(seat){
+      const root=new T.Group();scene.add(root);
+      root.position.z=wallZ[seat];
+      const palette=palettes[seat], face=seat===0?-1:1;
+      const solid=material(palette.shell), trim=material(palette.bright), frame=material(palette.dark);
+      const body=material(palette.player), lamp=material(palette.light,{emissive:palette.light,emissiveIntensity:.54});
+      add(root,box(5.86,.37,1.02),frame,0,.13,0);
+      add(root,box(5.76,.08,.68),lamp,0,.30,.02);
+      for(const side of [-1,1]){
+        add(root,box(.20,4.7,.37),frame,side*2.84,2.40,0);
+        add(root,box(.07,4.44,.05),lamp,side*2.84,2.43,face*.22);
+      }
+      const cells=Array.from({length:boardSize},(_,index)=>{
+        const [x,y]=cellPoint(index,0);
+        const panel=new T.Group();panel.position.set(x,y,0);root.add(panel);
+        add(panel,blockGeo,solid);
+        add(panel,trimGeo,trim,0,.008,face*.255);
+        add(panel,box(.13,.045,.053),frame,-.245*face,-.229,face*.283);
+        const behind=-face*.61;
+        const head=new T.Group();head.position.set(x,y+.015,behind);root.add(head);
+        const skull=add(head,headGeo,body);skull.scale.set(1,.92,.75);
+        add(head,eyeGeo,eyes,-.122,.032,face*.252);
+        add(head,eyeGeo,eyes,.122,.032,face*.252);
+        add(head,antennaGeo,lamp,.19,.33,0);
+        const torso=add(root,chestGeo,body,x,y,behind);
+        const limb=add(root,limbGeo,body,x,y,behind);limb.scale.set(.86,1.25,.70);
+        const pick=add(root,pickGeo,pickMat,x,y,face*.31);pick.userData.cell=index;
+        const mark=add(root,box(.98,.98,.03),material(palette.light,{emissive:palette.light,emissiveIntensity:.46,transparent:true,opacity:.32}),x,y,face*.327);
+        mark.visible=false;
+        return {panel,head,torso,limb,pick,mark};
+      });
+      const pilot=new T.Group();pilot.position.set(0,.75,-face*1.03);root.add(pilot);
+      add(pilot,headGeo,body,0,1.42,0);
+      add(pilot,eyeGeo,eyes,-.122,1.45,face*.315);
+      add(pilot,eyeGeo,eyes,.122,1.45,face*.315);
+      add(pilot,chestGeo,frame,0,.72,0);
+      add(pilot,limbGeo,body,-.48,.68,0);
+      add(pilot,limbGeo,body,.48,.68,0);
+      add(pilot,limbGeo,body,-.25,.16,0);
+      add(pilot,limbGeo,body,.25,.16,0);
+      add(pilot,antennaGeo,lamp,.16,1.79,0);
+      return {root,cells,pilot};
+    }
+    const walls=palettes.map((_,seat)=>makeWall(seat));
+    const beam=add(scene,box(.055,1,.055),neon);beam.visible=false;
+    const orb=add(scene,sphere(.15,14),material(0xffd8a1,{emissive:0xff9768,emissiveIntensity:1.7}));orb.visible=false;
+    const flakes=Array.from({length:8},()=>add(scene,box(.105,.12,.1),material(0xffbd86,{emissive:0xd86551,emissiveIntensity:.48})));
+    flakes.forEach(piece=>{piece.visible=false;});
+    const ray=new T.Raycaster(), pointer=new T.Vector2();
+    const s={frame:null,data:null,mode:null,lastShot:'',selected:-1,transition:null,effect:null,animation:0,pointerId:null,lastX:0,yaw:.86};
+    let onAim=()=>{},onFire=()=>{};
+    const pos=new T.Vector3(), aim=new T.Vector3(), center=new T.Vector3(), up=new T.Vector3(0,1,0);
+    const cameraState={location:new T.Vector3(),look:new T.Vector3(),fov:44};
+    const resize=new ResizeObserver(()=>{
+      if(!s.frame?.isConnected)return;
+      const bounds=s.frame.getBoundingClientRect();
+      if(!bounds.width||!bounds.height)return;
+      camera.aspect=bounds.width/bounds.height;
+      camera.updateProjectionMatrix();
+      renderer.setSize(Math.round(bounds.width),Math.round(bounds.height),false);
+      draw();
+    });
+    function cameraTarget(mode){
+      const target=1-s.data.turn;
+      const span=Math.max(5.7,6.25/camera.aspect);
+      if(mode==='aim'){
+        const z=wallZ[target], facing=target===0?-1:1;
+        return {location:new T.Vector3(0,2.45,z+facing*39),look:new T.Vector3(0,2.45,z),fov:2*Math.atan(span/78)*180/Math.PI};
+      }
+      const sign=s.data.turn===0?1:-1;
+      const distance=Math.max(15.5,15/camera.aspect);
+      return {location:new T.Vector3(Math.sin(s.yaw)*distance*sign,11.6,Math.cos(s.yaw)*distance*sign),look:new T.Vector3(0,1.25,0),fov:49};
+    }
+    function setCamera(mode,instant=false){
+      const before={location:cameraState.location.clone(),look:cameraState.look.clone(),fov:cameraState.fov};
+      s.mode=mode;
+      if(s.frame)s.frame.dataset.duelMode=mode;
+      s.transition=instant||reducedMotion?null:{before,start:performance.now()};
+      draw();
+    }
+    function effectFor(feedback){
+      const stamp=feedback&&[feedback.round,feedback.shot,feedback.attacker].join('-');
+      if(!stamp||stamp===s.lastShot)return;
+      s.lastShot=stamp;
+      const from=new T.Vector3(0,1.65,wallZ[feedback.attacker]*.56);
+      const to=new T.Vector3(...cellPoint(feedback.index,wallZ[feedback.target]));
+      s.effect={start:performance.now(),from,to,feedback};
+    }
+    function draw(now=performance.now()){
+      cancelAnimationFrame(s.animation);
+      if(!s.data||!s.frame?.isConnected)return;
+      const desired=cameraTarget(s.mode);
+      const t=s.transition?Math.min(1,(now-s.transition.start)/330):1;
+      const eased=1-Math.pow(1-t,3);
+      if(s.transition&&t<1){
+        cameraState.location.lerpVectors(s.transition.before.location,desired.location,eased);
+        cameraState.look.lerpVectors(s.transition.before.look,desired.look,eased);
+        cameraState.fov=T.MathUtils.lerp(s.transition.before.fov,desired.fov,eased);
+      }else{
+        s.transition=null;
+        cameraState.location.copy(desired.location);cameraState.look.copy(desired.look);cameraState.fov=desired.fov;
+      }
+      camera.position.copy(cameraState.location);
+      camera.lookAt(cameraState.look);
+      camera.fov=cameraState.fov;camera.updateProjectionMatrix();camera.updateMatrixWorld();
+      const target=1-s.data.turn;
+      walls.forEach((wall,i)=>{wall.root.visible=s.mode!=='aim'||i===target;});
+      orb.visible=false;beam.visible=false;flakes.forEach(piece=>{piece.visible=false;});
+      if(s.effect){
+        const duration=now-s.effect.start;
+        const {from,to,feedback}=s.effect;
+        if(duration>640)s.effect=null;
+        else if(duration<240&&!reducedMotion){
+          orb.visible=true;beam.visible=true;
+          orb.position.lerpVectors(from,to,Math.max(0,duration/240));
+          pos.subVectors(orb.position,from);
+          beam.position.copy(from).addScaledVector(pos,.5);
+          beam.scale.y=pos.length();
+          if(pos.lengthSq()>0)beam.quaternion.setFromUnitVectors(up,pos.normalize());
+        }else if(feedback.type!=='miss'){
+          for(const [i,piece] of flakes.entries()){
+            const time=reducedMotion?.13:Math.max(0,(duration-240)/600);
+            piece.visible=true;piece.position.copy(to);
+            piece.position.x+=Math.cos(i*2.40)*time*2;
+            piece.position.y+=Math.sin(i*1.80)*time*2;
+            piece.position.z+=(i%2?1:-1)*time*.5;
+            piece.rotation.set(time*7+i,time*4,0);
+          }
+        }
+      }
+      renderer.render(scene,camera);
+      if(s.transition||s.effect)s.animation=requestAnimationFrame(draw);
+    }
+    function updateMarks(){
+      walls.forEach(({cells},seat)=>cells.forEach((cell,i)=>{
+        cell.mark.visible=seat!==s.data.turn&&i===s.selected&&s.mode==='aim';
+      }));
+    }
+    function selectIndex(index){
+      if(!s.data?.can||s.data.pending||s.mode!=='aim'||!Number.isInteger(index)||index<0||index>=boardSize)return false;
+      s.selected=index;updateMarks();draw();onAim(index);return true;
+    }
+    function selectFromPointer(event){
+      const bounds=canvas.getBoundingClientRect();
+      pointer.set((event.clientX-bounds.left)/bounds.width*2-1,1-(event.clientY-bounds.top)/bounds.height*2);
+      ray.setFromCamera(pointer,camera);
+      const hit=ray.intersectObjects(walls[1-s.data.turn].cells.map(cell=>cell.pick),false)[0];
+      if(hit)selectIndex(hit.object.userData.cell);
+    }
+    canvas.addEventListener('pointerdown',event=>{
+      if(!s.data||!event.isPrimary||event.button>0)return;
+      s.pointerId=event.pointerId;
+      s.lastX=event.clientX;
+      canvas.setPointerCapture(event.pointerId);
+      if(s.mode==='aim')selectFromPointer(event);
+    });
+    canvas.addEventListener('pointermove',event=>{
+      if(event.pointerId!==s.pointerId)return;
+      if(s.mode==='aim')selectFromPointer(event);
+      else{s.yaw=T.MathUtils.clamp(s.yaw-(event.clientX-s.lastX)*.009,-1.17,1.17);draw();}
+      s.lastX=event.clientX;
+    });
+    const release=event=>{if(event.pointerId===s.pointerId)s.pointerId=null;};
+    canvas.addEventListener('pointerup',release);
+    canvas.addEventListener('pointercancel',release);
+    canvas.addEventListener('keydown',event=>{
+      const directions={ArrowUp:-duelGrid.cols,ArrowDown:duelGrid.cols,ArrowLeft:s.data.turn===0?-1:1,ArrowRight:s.data.turn===0?1:-1};
+      if(Object.hasOwn(directions,event.key)){
+        event.preventDefault();selectIndex(T.MathUtils.clamp((s.selected<0?7:s.selected)+directions[event.key],0,boardSize-1));
+      }
+      if(event.code==='Space'||event.key==='Enter'){event.preventDefault();fire();}
+    });
+    function fire(){
+      if(s.data?.can&&!s.data.pending&&s.mode==='aim'&&s.selected>=0)onFire(s.selected);
+    }
+    function attach(frame,data,handlers){
+      const previous=s.data;
+      s.data=data;onAim=handlers.aim;onFire=handlers.fire;
+      const changedTurn=previous&&previous.turn!==data.turn;
+      if(changedTurn){s.selected=-1;}
+      if(frame!==s.frame){
+        resize.disconnect();s.frame=frame;frame.prepend(canvas);resize.observe(frame);
+      }
+      frame.dataset.renderer='webgl';
+      const defender=1-data.turn;
+      walls.forEach(({cells,pilot},seat)=>{
+        pilot.visible=seat===data.turn||!data.can;
+        pilot.rotation.y=seat===0?Math.PI:0;
+        const posture=seat!==data.turn?data.pose:null;
+        pilot.position.y=posture===3||posture===4?.44:.75;
+        pilot.rotation.z=posture===1?.18:posture===2?-.18:posture===4?-.72:0;
+        cells.forEach((cell,index)=>{
+          const covered=data.covers[seat][index];
+          const part=seat===defender?data.parts[index]:null;
+          cell.panel.visible=covered;
+          cell.head.visible=part==='head'&&!covered;
+          cell.torso.visible=part==='torso'&&!covered;
+          cell.limb.visible=part==='limb'&&!covered;
+        });
+      });
+      if(!previous){
+        const start=cameraTarget('overview');
+        cameraState.location.copy(start.location);cameraState.look.copy(start.look);
+        cameraState.fov=start.fov;
+        setCamera(data.can?'aim':'overview',!data.can);
+      }else if(changedTurn)setCamera(data.can?'aim':'overview');
+      else frame.dataset.duelMode=s.mode;
+      effectFor(data.feedback);
+      updateMarks();
+      draw();
+      onAim(s.selected);
+    }
+    function toggle(){
+      if(!s.data?.can)return;
+      setCamera(s.mode==='aim'?'overview':'aim');
+      updateMarks();draw();onAim(s.selected);
+    }
+    function targetPosition(index){
+      const item=walls[1-s.data.turn]?.cells[index]?.pick;
+      if(!item)return null;
+      const point=item.getWorldPosition(center).project(camera);
+      const bounds=canvas.getBoundingClientRect();
+      return {x:bounds.left+(point.x+1)*bounds.width/2,y:bounds.top+(1-point.y)*bounds.height/2};
+    }
+    function stop(){
+      cancelAnimationFrame(s.animation);resize.disconnect();
+      for(const resource of resources)resource.dispose();
+      renderer.dispose();renderer.forceContextLoss();canvas.remove();
+    }
+    return {attach,toggle,fire,targetPosition,stop,canvas};
+  }
+  return {
+    sync(frame,settings,handlers){
+      if(!frame){current?.arena?.stop();current=null;return;}
+      if(current?.key!==settings.key){
+        current?.arena?.stop();
+        current={key:settings.key,arena:newArena()};
+      }
+      if(!current.arena){
+        frame.dataset.renderer='fallback';
+        const backup=frame.parentElement?.querySelector('.duel-fallback');
+        if(backup)backup.open=true;
+        return;
+      }
+      current.arena.attach(frame,settings,handlers);
+      current.arena.canvas.onwebglcontextlost=()=>{
+        if(current?.key!==settings.key||!current.arena)return;
+        const lost=current.arena;current.arena=null;lost.stop();
+        frame.dataset.renderer='fallback';
+        const backup=frame.parentElement?.querySelector('.duel-fallback');
+        if(backup)backup.open=true;
+      };
+    },
+    toggle(){current?.arena?.toggle();},
+    fire(){current?.arena?.fire();},
+    targetPosition(index){return current?.arena?.targetPosition(index)??null;}
+  };
+})();
+
 (function () {
   'use strict';
 
@@ -1672,10 +2027,10 @@ const toyRoom = (() => {
     renderer.toneMapping=T.ACESFilmicToneMapping;
     renderer.toneMappingExposure=1.18;
     const scene=new T.Scene();
-    scene.background=new T.Color(0x271d42);
-    scene.fog=new T.Fog(0x271d42,16,29);
-    const camera=new T.PerspectiveCamera(46,1,.1,60);
-    const direct=new T.DirectionalLight(0xffd8b0,3.1);direct.position.set(-4,8,7);
+    scene.background=new T.Color(hideMap.palette.fog);
+    scene.fog=new T.Fog(hideMap.palette.fog,28,58);
+    const camera=new T.PerspectiveCamera(53,1,.1,85);
+    const direct=new T.DirectionalLight(0xffd8b0,3.1);direct.position.set(-7,12,9);
     const fill=new T.HemisphereLight(0xf5edff,0x4f305f,2.1);
     const rim=new T.DirectionalLight(0xc6a5ff,1.7);rim.position.set(6,3,-4);
     scene.add(direct,fill,rim);
@@ -1692,19 +2047,34 @@ const toyRoom = (() => {
     };
     const block=(width,height,depth,color,x,y,z)=>mesh(new T.BoxGeometry(width,height,depth),color,[x,y,z]);
     const round=(radius,height,color,x,y,z)=>mesh(new T.CylinderGeometry(radius,radius,height,20),color,[x,y,z]);
-    block(34,.24,33,hideMap.palette.floor,0,-.15,0);
-    block(30,13,.25,hideMap.palette.wall,0,5,-9.4);
-    block(.25,13,19,hideMap.palette.wallLeft,-11.3,5,-2);
-    block(.25,13,19,hideMap.palette.wallRight,11.3,5,-2);
-    for(let i=-6;i<=6;i++){
-      block(.025,.008,24,0x7a659d,i*2,.004,-2);
-      block(28,.008,.025,0x7a659d,0,.004,i*2);
+    const {minX,maxX,minZ,maxZ}=hideMap.bounds;
+    const width=maxX-minX, depth=maxZ-minZ, midZ=(minZ+maxZ)/2;
+    const wallZ=minZ-.7, sideDepth=depth-1.5;
+    block(width+1.7,.24,depth+2.3,hideMap.palette.floor,0,-.12,midZ);
+    block(width+1.7,10.6,.34,hideMap.palette.wall,0,5.27,wallZ);
+    const leftWall=block(.26,5.15,sideDepth,hideMap.palette.wallLeft,minX-.52,2.56,wallZ+sideDepth/2);
+    const rightWall=block(.26,5.15,sideDepth,hideMap.palette.wallRight,maxX+.52,2.56,wallZ+sideDepth/2);
+    for(let x=minX+1.25;x<maxX;x+=2.5)block(.022,.006,depth,hideMap.palette.grid,x,.006,midZ);
+    for(let z=minZ+1.25;z<maxZ;z+=2.5)block(width,.006,.022,hideMap.palette.grid,0,.006,z);
+    block(width,.11,.12,hideMap.palette.trim,0,.054,maxZ);
+    block(.10,.10,depth,hideMap.palette.trim,minX,.05,midZ);
+    block(.10,.10,depth,hideMap.palette.trim,maxX,.05,midZ);
+    block(width+1.1,.17,.15,0x8f698b,0,1.85,wallZ+.25);
+    block(width+1.1,.12,.10,0x655275,0,4.52,wallZ+.25);
+    for(const [x,color,glow] of [[-9.9,0x65425b,0xf39b86],[0,0x514165,0xc4b3ff],[9.9,0x3f5264,0x81d1ba]]){
+      block(7.8,2.1,.12,color,x,3.2,wallZ+.25);
+      block(7.28,.045,.10,glow,x,4.05,wallZ+.35);
+      block(7.28,.045,.10,glow,x,2.35,wallZ+.35);
+      for(let i=-2;i<=2;i++){
+        const light=mesh(new T.OctahedronGeometry(i===0?.34:.17),glow,[x+i*1.12,3.21,wallZ+.39],{emissive:glow,emissiveIntensity:.30});
+        light.rotation.z=Math.PI/4;
+      }
     }
     for(let i=-5;i<=5;i++){
-      block(.043,10,.09,0x675181,i*2.1,4,-8.82);
-      if(i%2===0)mesh(new T.OctahedronGeometry(.15),0xffd395,[i*2.1,4.95+(i%4)*.18,-8.64],{emissive:0xdc8762,emissiveIntensity:.4});
+      const x=i*2.65, height=5.62+.075*i*i;
+      block(.035,Math.max(.5,8.25-height),.05,0x755a78,x,(8.25+height)/2,wallZ+.54);
+      mesh(new T.OctahedronGeometry(.20),0xffd395,[x,height,wallZ+.55],{emissive:0xfda84f,emissiveIntensity:.48});
     }
-    block(27,.12,.15,0xb894be,0,1.15,-8.72);
     for(const tier of hideMap.tiers)block(tier.w,tier.y,tier.d,tier.color,tier.x,tier.y/2,tier.z);
     for(const ramp of hideMap.ramps){
       const diff=ramp.yTo-ramp.yFrom;
@@ -1725,15 +2095,28 @@ const toyRoom = (() => {
         block(o.w*1.025,.10,o.d*1.025,o.accent,o.x,floor+o.h-.06,o.z);
         if(o.kind==='shelf'){
           for(let i=-1;i<=1;i++){
-            const deco=mesh(new T.BoxGeometry(.3,.36,.22),i===0?0xffc890:o.accent,[o.x+i*.38,floor+o.h+.20,o.z]);
+            const deco=mesh(new T.BoxGeometry(.38,.43,.29),i===0?0xffc890:o.accent,[o.x+i*.44,floor+o.h+.22,o.z]);
             deco.rotation.z=i*.13;
           }
+          block(o.w*1.008,.08,.07,o.accent,o.x,floor+o.h*.52,o.z+o.d*.5);
+        }else if(o.kind==='crate'){
+          const front=o.z+o.d*.501;
+          block(o.w*.22,o.h*.16,.026,o.accent,o.x,floor+o.h*.57,front);
+          for(const side of [-1,1])block(.071,o.h*.78,.024,o.accent,o.x+side*o.w*.37,floor+o.h*.49,front);
+        }else if(o.kind==='column'){
+          const lantern=mesh(new T.OctahedronGeometry(.19),o.accent,[o.x,floor+o.h+.19,o.z],{emissive:o.accent,emissiveIntensity:.4});
+          lantern.rotation.z=Math.PI/4;
         }
       }
     }
-    for(const [x,z,c] of [[-7,4,0xac6988],[6,-2,0x5a8c99],[1,6,0x9276bb],[-5,-6,0xa38864]]){
-      const rug=mesh(new T.CircleGeometry(1.65,34),c,[x,hideFloorY(x,z)+.014,z]);
-      rug.rotation.x=-Math.PI/2;rug.scale.set(1.32,.6,1);
+    for(const mat of hideMap.mats){
+      const y=hideFloorY(mat.x,mat.z)+.015;
+      block(mat.w,.018,mat.d,mat.accent,mat.x,y,mat.z);
+      block(mat.w-.16,.018,mat.d-.16,mat.color,mat.x,y+.004,mat.z);
+      for(let i=-1;i<=1;i++){
+        const motif=mesh(new T.RingGeometry(.095,.13,4),mat.accent,[mat.x+i*.42,y+.016,mat.z+mat.d*.37]);
+        motif.rotation.x=-Math.PI/2;
+      }
     }
     const ring=mesh(new T.TorusGeometry(.66,.028,8,44),0xffe4a6,[0,0,0],{emissive:0xfba454,emissiveIntensity:1.0});
     ring.rotation.x=Math.PI/2;ring.visible=false;
@@ -1765,12 +2148,16 @@ const toyRoom = (() => {
     };
     function draw(){
       const zoom=s.zoom;
-      const fit=Math.max(1, .97/camera.aspect);
-      const distance=(15.4+(fit-1)*6.7)/zoom;
+      const fit=Math.max(1,1.02/camera.aspect);
       const focus=s.options?.own?s.runner?.position:null;
-      const fx=focus?focus.x*.64:0, fz=focus?focus.z*.52:-1.4;
-      camera.position.set(fx+Math.sin(s.yaw)*distance,7.3+(fit-1)*2.35,Math.cos(s.yaw)*distance+fz);
-      camera.lookAt(target.set(fx+Math.sin(s.yaw)*2,s.look+1.05,fz));
+      const distance=((focus?24.7:28.7)+(fit-1)*16)/zoom;
+      const fx=focus?focus.x*.72:0, fz=focus?midZ+(focus.z-midZ)*.65:midZ;
+      const yaw=Math.sin(s.yaw);
+      const height=(focus?12:14)+(fit-1)*3.5+s.look*.7;
+      camera.position.set(fx+yaw*distance,height,Math.cos(s.yaw)*distance+fz);
+      camera.lookAt(target.set(fx+yaw*4,s.look*.47+1.08,fz-s.look*.75));
+      leftWall.visible=camera.position.x>minX-3.5;
+      rightWall.visible=camera.position.x<maxX+3.5;
       camera.updateMatrixWorld();
       const selectedModel=s.options?.own?s.runner:s.props[s.selected];
       const aim=s.selected===s.props.length&&s.aimAt?s.aimAt:selectedModel?.position;
@@ -1897,8 +2284,8 @@ const toyRoom = (() => {
     }
     function drag(dx,dy){
       s.selected=-1;onAim(-1);
-      s.yaw=T.MathUtils.clamp(s.yaw-dx*.008,-1.08,1.08);
-      s.look=T.MathUtils.clamp(s.look+dy*.018,-1.7,4.2);
+      s.yaw=T.MathUtils.clamp(s.yaw-dx*.007,-1.16,1.16);
+      s.look=T.MathUtils.clamp(s.look+dy*.027,-3.2,5.2);
       draw();
     }
     canvas.addEventListener('pointerdown',event=>{
@@ -1945,7 +2332,7 @@ const toyRoom = (() => {
       clearAim();
     }
     function setZoom(delta){
-      s.zoom=T.MathUtils.clamp(s.zoom+delta,.84,1.40);
+      s.zoom=T.MathUtils.clamp(s.zoom+delta,.72,1.64);
       clearAim();
     }
     function attach(frame,options){
@@ -2203,7 +2590,7 @@ const games = {
   memory:{name:'记忆翻牌',icon:'▦',accent:'#b3dbc8',brief:'八张牌 · 四对图案',rules:'每回合翻两张牌，找出相同的图案。配对成功的牌留在桌上，确认后由搭档继续。',x:52,y:79},
   puzzle:{name:'双星解谜',icon:'✦',accent:'#ffc4ac',brief:'两条线索 · 点亮五颗星',rules:'一人猜图案，另一人猜颜色。两个答案都答对就点亮一颗星，答错可以回到这一关重来。',x:19,y:57},
   signal:{name:'双人信号接力',icon:'♫',accent:'#a8ddf2',brief:'传暗号 · 三轮合作',rules:'一人看暗号并用语音告诉搭档，另一人按顺序点图案。三轮暗号会从三个变成五个，两人轮流读暗号。共有三次失误机会。',x:28,y:82},
-  duel:{name:'积木对决',icon:'▤',accent:'#f3ac80',brief:'三发一轮 · 击破掩体',rules:'每人起始 150 点耐久。两人轮流进攻，每轮三发。先打掉掩体，露出的头部、躯干、四肢分别扣 100、30、10 点。防守者每轮随机起始姿势，每秒可主动更换一次。',x:51,y:18}
+  duel:{name:'积木对决',icon:'▤',accent:'#f3ac80',brief:'3D 双墙 · 正面瞄准 · 三发换边',rules:'两只外星玩偶隔着各自的积木墙轮流进攻。到你进攻时，镜头切到正面。点或拖动准心，再按「点射」。每轮三发，对方的墙会留下打出的缺口。露出的头部、躯干、四肢分别扣 100、30、10 点，初始 150 点。防守时每秒可换一次姿势，每轮随机起始姿势。',x:51,y:18}
 };
 const puzzles = [
   {name:'初遇之星',clues:['我像夜空里弯弯的小船。','我像一盏温暖的夜灯。'],icons:['☁️','🌙','⭐'],shapes:['云朵','月牙','星星'],colors:['夜蓝','暖黄','樱粉'],hues:['#4d6eaa','#ffd184','#ef9bb3'],answer:[1,1]},
@@ -2462,6 +2849,10 @@ function renderSignal(s,can){
 }
 const duelPartNames={head:'头部',torso:'躯干',limb:'四肢'};
 const duelPartIcons={head:'◉',torso:'◆',limb:'●'};
+function duelCellName(s,i){
+  const part=(s.visibleParts||duelPoses[s.pose].parts)[i];
+  return s.covers[1-s.turn][i]?'掩体':part?duelPartNames[part]:'空位';
+}
 function renderDuel(s,can){
   const defender=1-s.turn, f=s.feedback;
   const defend=mode==='solo'||seat===defender;
@@ -2476,8 +2867,9 @@ function renderDuel(s,can){
     return can?`<button class="${classes}" data-choice="${i}" aria-label="第 ${i+1} 格，${label}" ${pending?'disabled':''}>${shown}</button>`
       :`<span class="${classes}" aria-label="第 ${i+1} 格，${label}">${shown}</span>`;
   }).join('');
-  const text=f?.type==='cover'?'击碎一块掩体':f?.type==='hit'?`命中${duelPartNames[f.part]} −${f.damage}`:f?.type==='miss'?'这一发落空了':'寻找已经露出的部位，或打掉一块掩体。';
-  return `<section class="panel play duel-panel"><div class="duel-hps">${hp}</div><div class="duel-caption"><h2>${can?'对准积木格点射':'守住你的掩体'}</h2><span>剩余 <b>${duelGrid.shotsPerTurn-s.shots} / ${duelGrid.shotsPerTurn}</b> 发</span></div><div class="duel-grid" aria-label="积木掩体及露出区域">${cells}</div><p class="duel-feedback ${f?.type||''}" role="status">${text}</p>${defend?`<div class="duel-defense"><span>${player(defender)} · ${pose.label}</span><div class="actions">${duelPoses.map((p,i)=>`<button class="btn duel-pose" data-pose="${i}" aria-pressed="${s.pose===i}" ${pending||s.pose===i?'disabled':''}>${p.icon} ${p.label}</button>`).join('')}</div><small>每秒可换一次姿势</small></div>`:''}<div class="duel-legend"><span>头部 100</span><span>躯干 30</span><span>四肢 10</span></div></section>`;
+  const text=f?.type==='cover'?'击碎一块掩体':f?.type==='hit'?`命中${duelPartNames[f.part]} −${f.damage}`:f?.type==='miss'?'这一发落空了':can?'滑动或点选目标，再点「点射」。':'拖动可以查看两面墙。';
+  const near=s.turn===0?'蓝墙':'橙墙',far=s.turn===0?'橙墙':'蓝墙';
+  return `<section class="panel play duel-panel"><div class="duel-hps">${hp}</div><div class="duel-caption"><h2>${can?'你的进攻回合':'守住你的掩体'}</h2><span>剩余 <b>${duelGrid.shotsPerTurn-s.shots} / ${duelGrid.shotsPerTurn}</b> 发</span></div><div class="duel-arena" data-duel-scene data-renderer="fallback"><span class="duel-camera-label" id="duel-camera-label">${can?'正面瞄准':'场地全景'}</span><span class="duel-wall-order">${can?`己方 ${near} · 对方 ${far}`:`你的掩体 · ${far}`}</span></div><div class="duel-aim-controls"><span id="duel-target" aria-live="polite">${can?'未瞄准':'拖动查看两面墙'}</span>${can?`<div class="actions">${btn('duel-view','看全景')}${btn('duel-fire','点射',true,true)}</div>`:''}</div><p class="duel-feedback ${f?.type||''}" role="status">${text}</p>${defend?`<div class="duel-defense"><span>${player(defender)} · ${pose.label}</span><div class="actions">${duelPoses.map((p,i)=>`<button class="btn duel-pose" data-pose="${i}" aria-pressed="${s.pose===i}" ${pending||s.pose===i?'disabled':''}>${p.icon} ${p.label}</button>`).join('')}</div><small>每秒可换一次姿势</small></div>`:''}<div class="duel-legend"><span>头部 100</span><span>躯干 30</span><span>四肢 10</span></div><details class="duel-fallback"><summary>备用平面瞄准</summary><div class="duel-grid" aria-label="积木掩体及露出区域">${cells}</div></details></section>`;
 }
 function renderGame(){
   const s=state.play;
@@ -2492,27 +2884,43 @@ function renderGame(){
   if(id==='duel')return shellGame(renderDuel(s,can),`第 ${s.round+1} 回合`);
   return shellGame(renderPuzzle(s,can),`第 ${s.round+1} / 5 关`);
 }
+function patchScenePanel(scene,markup,selector){
+  const scratch=document.createElement('div');
+  scratch.innerHTML=markup;
+  const next=scratch.querySelector(selector);
+  const panel=scene.parentElement,nextPanel=next.parentElement;
+  const available=Array.from(panel.children).filter(child=>child!==scene);
+  let cursor=panel.firstElementChild;
+  for(const incoming of Array.from(nextPanel.children)){
+    if(incoming===next){cursor=scene.nextElementSibling;continue;}
+    const prior=available.find(child=>child.tagName===incoming.tagName&&
+      child.classList.item(0)===incoming.classList.item(0));
+    const node=prior&&prior.outerHTML===incoming.outerHTML?prior:incoming;
+    if(prior){
+      available.splice(available.indexOf(prior),1);
+      if(prior!==node){prior.replaceWith(node);if(prior===cursor)cursor=node;}
+    }
+    if(node!==cursor)panel.insertBefore(node,cursor);
+    cursor=node.nextElementSibling;
+  }
+  for(const child of available)child.remove();
+  const nextMeta=scratch.querySelector('.game-meta'),meta=app.querySelector('.game-meta');
+  if(meta&&nextMeta&&meta.outerHTML!==nextMeta.outerHTML)meta.replaceWith(nextMeta);
+  for(const label of ['.duel-camera-label','.duel-wall-order']){
+    const existing=scene.querySelector(label),incoming=next.querySelector(label);
+    if(existing&&incoming&&existing.textContent!==incoming.textContent)existing.textContent=incoming.textContent;
+  }
+}
 function render(){
   const screens={home:renderHome,rooms:renderRooms,lobby:renderLobby,hub:renderHub,game:renderGame};
   const listOpen=app.querySelector('.hide-list')?.open;
-  const markup=screens[view](), existing=app.querySelector('[data-hide-scene]');
-  if(existing&&view==='game'&&state.game==='hide'&&state.play.phase==='guess'&&!handoff){
-    const scratch=document.createElement('div');
-    scratch.innerHTML=markup;
-    const next=scratch.querySelector('[data-hide-scene]');
-    const currentSection=existing.parentElement, nextSection=next.parentElement;
-    const stale=Array.from(currentSection.children);
-    for(const child of Array.from(nextSection.children)){
-      if(child===next)continue;
-      const prior=stale.find(item=>item!==existing&&item.tagName===child.tagName&&item.className===child.className);
-      if(prior){
-        if(prior.outerHTML!==child.outerHTML)prior.replaceWith(child);
-        stale.splice(stale.indexOf(prior),1);
-      }else if(child.compareDocumentPosition(next)&Node.DOCUMENT_POSITION_FOLLOWING)currentSection.insertBefore(child,existing);
-      else currentSection.append(child);
-    }
-    for(const item of stale)if(item!==existing)item.remove();
-  }else app.innerHTML=markup;
+  const duelBackup=app.querySelector('.duel-fallback')?.open;
+  const markup=screens[view]();
+  const preserve=view==='game'&&!state.play.done&&((state.game==='hide'&&state.play.phase==='guess'&&!handoff)||(state.game==='duel'));
+  const selector=state.game==='duel'?'[data-duel-scene]':'[data-hide-scene]';
+  const existing=preserve&&app.querySelector(selector);
+  if(existing)patchScenePanel(existing,markup,selector);
+  else app.innerHTML=markup;
   const frame=app.querySelector('[data-hide-scene]');
   if(frame){
     const play=state.play, can=mode==='solo'?!localHideOwner:seat===play.turn;
@@ -2526,6 +2934,22 @@ function render(){
     if(app.querySelector('[data-hide-move]'))hideMovement.bind(app,(dx,dz)=>dispatch({type:'game-action',input:{type:'move',dx,dz}},play.hider));
     else hideMovement.stop();
   }else{toyRoom.sync(null);hideMovement.stop();hideAim=-1;}
+  const duelFrame=app.querySelector('[data-duel-scene]');
+  if(duelFrame){
+    const play=state.play,can=mode==='solo'||seat===play.turn;
+    if(duelBackup)app.querySelector('.duel-fallback').open=true;
+    duelRoom.sync(duelFrame,{key:state.session,turn:play.turn,covers:play.covers,parts:play.visibleParts||duelPoses[play.pose].parts,pose:play.pose,feedback:play.feedback,can,pending},{
+      aim(index){
+        const aiming=duelFrame.dataset.duelMode==='aim';
+        const action=app.querySelector('#duel-fire'),viewButton=app.querySelector('#duel-view');
+        if(action)action.disabled=!aiming||index<0||pending;
+        if(viewButton)viewButton.textContent=aiming?'看全景':'回到瞄准';
+        app.querySelector('#duel-camera-label').textContent=aiming?'正面瞄准':'场地全景';
+        app.querySelector('#duel-target').textContent=aiming?(index<0?'未瞄准':`瞄准 · ${duelCellName(play,index)}`):'拖动查看两面墙';
+      },
+      fire(index){dispatch({type:'game-action',input:{type:'shoot',index}});}
+    });
+  }else duelRoom.sync(null);
   walkOrigin=null;
 }
 function gameID(){
@@ -2837,6 +3261,8 @@ document.addEventListener('click',e=>{
   if(b.id==='transform-hide')dispatch({type:'game-action',input:{type:'transform'}});
   if(b.id==='start-hide')dispatch({type:'game-action',input:{type:'ready'}});
   if(b.id==='signal-ready')dispatch({type:'game-action',input:{type:'ready'}});
+  if(b.id==='duel-view')duelRoom.toggle();
+  if(b.id==='duel-fire')duelRoom.fire();
   if(b.id==='hide-scan')dispatch({type:'game-action',input:{type:'scan'}});
   if(b.id==='hide-switch-view'){
     localHideOwner=!localHideOwner;
