@@ -503,7 +503,14 @@ button.duel-cell:hover:not(:disabled){outline:2px solid #ffdd9c;outline-offset:-
 .live-top{display:flex;justify-content:center;min-height:31px;color:var(--gold);font-size:14px}
 .live-top [data-live-connection]{color:var(--muted);padding-left:9px}
 .live-panel canvas{display:block;max-width:100%;width:auto;height:min(59svh,620px);margin:auto;border-radius:13px;touch-action:none;user-select:none;background:#161226}
-.live-panel[data-live-kind=tanks] canvas,.live-panel[data-live-kind=bubbles] canvas{height:auto;width:100%;max-height:57svh;object-fit:contain}
+.live-panel[data-live-kind=tanks] canvas,.live-panel[data-live-kind=tankDefense] canvas,.live-panel[data-live-kind=bubbles] canvas{height:auto;width:100%;max-height:57svh;object-fit:contain}
+.tank-levels{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px;margin:10px 0 15px}
+.tank-level{display:flex;flex-direction:column;align-items:flex-start;gap:5px;min-height:66px;text-align:left}
+.tank-level small{font-size:11px;color:#cdbed8}
+.tank-level[aria-pressed=true]{border-color:var(--gold);background:#473653}
+.tank-invite-row{margin:9px 0 15px}
+.tank-fieldset{padding:0;margin:0;border:0}
+.tank-fieldset legend{font-size:14px;font-weight:750;color:#e9dbf1}
 .live-controls{display:flex;justify-content:space-evenly;gap:10px;margin:10px 0}
 .live-pilot{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;align-items:center;color:#adf0db;min-width:0}
 .live-pilot.live-seat-1{color:#ffb1c5}
@@ -574,8 +581,8 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 window.arcadeStatic=true;
 window.arcadeArt={"hero":"./assets/hero.webp","map":"./assets/map.webp","avatars":["./assets/role-0.webp","./assets/role-1.webp","./assets/role-2.webp","./assets/role-3.webp"]};
 const internetRooms = (() => {
-  const roomPrefix = 'starlight-arcade-v6-';
-  const channelLabel = 'starlight-arcade-v6';
+  const roomPrefix = 'starlight-arcade-v7-';
+  const channelLabel = 'starlight-arcade-v7';
   const codeAlphabet = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
   const roomTimeout = 15_000;
 
@@ -1377,7 +1384,7 @@ const wardrobe = (() => {
     Object.freeze({ id: 'gold', name: '金色流星', color: '#ffcf76', cost: 18, icon: '★' }),
   ]);
   const initialSkin = catalog[0].id;
-  const rewardGames = new Set(['hide', 'shoot', 'toy', 'memory', 'signal', 'puzzle', 'duel', 'flight', 'tanks', 'bubbles', 'hockey']);
+  const rewardGames = new Set(['hide', 'shoot', 'toy', 'memory', 'signal', 'puzzle', 'duel', 'flight', 'tanks', 'tankDefense', 'bubbles', 'hockey']);
   const coinReward = 3;
 
   function normalize(value) {
@@ -4340,6 +4347,361 @@ const toyTanks = (() => {
   };
 })();
 
+const tankDefense = (() => {
+  const cell = 42;
+  const columns = 15;
+  const rows = 13;
+  const size = [columns * cell, rows * cell];
+  const [width, height] = size;
+  const radius = 14;
+  const maps = ['积木前哨', '星河长廊', '双桥仓库', '月影堡垒'];
+  const colors = ['#ffafbd', '#a0ebd0'];
+  const accents = ['#a385d4', '#80aee3', '#72c9bc', '#d59ab4'];
+  const layouts = [
+    { solid: [[4,3],[10,3],[6,6],[8,6],[4,9],[10,9]], foam: [[5,2],[9,2],[3,4],[11,4],[6,4],[8,4],[3,7],[11,7],[5,8],[9,8],[6,10],[7,10],[8,10]] },
+    { solid: [[5,2],[9,2],[5,3],[9,3],[5,5],[9,5],[5,7],[9,7],[5,9],[9,9]], foam: [[2,4],[12,4],[3,6],[11,6],[7,4],[7,8],[3,10],[11,10],[7,10]] },
+    { solid: [[1,4],[3,4],[11,4],[13,4],[5,5],[9,5],[5,7],[9,7],[3,8],[11,8]], foam: [[4,2],[10,2],[3,3],[11,3],[6,3],[8,3],[7,5],[2,7],[12,7],[4,9],[10,9],[6,10],[8,10]] },
+    { solid: [[4,3],[10,3],[3,5],[11,5],[5,5],[9,5],[2,7],[12,7],[5,8],[9,8],[4,10],[10,10]], foam: [[3,2],[11,2],[5,2],[9,2],[6,3],[8,3],[6,6],[8,6],[4,7],[10,7],[7,8],[6,10],[7,10],[8,10]] },
+  ];
+  const waves = [6, 9, 12];
+  const powerups = ['speed', 'reload', 'shield', 'repair'];
+  const powerColors = {speed:'#ffcf6c', reload:'#ffabd4', shield:'#9acaff', repair:'#9cebc3'};
+  const powerIcons = {speed:'↟', reload:'✦', shield:'⬡', repair:'+'};
+  const clamp = (v,lo,hi) => Math.max(lo,Math.min(hi,v));
+  const center = value => (value+.5)*cell;
+  const key = (x,y) => y*columns+x;
+  const dist = (a,b) => Math.hypot(a.x-b.x,a.y-b.y);
+  const exits = [[1,0],[-1,0],[0,1],[0,-1]];
+  const spawn = [2,7,12];
+  const baseY = center(11);
+  const baseX = center(7);
+
+  function newPlayer(seat) {
+    return {x:center(seat?9:5),y:center(11),angle:-Math.PI/2,hp:2,cool:0,speed:0,reload:0,shield:1.4,respawn:0};
+  }
+
+  function makeBlocks(level) {
+    return [...layouts[level].solid.map(([x,y])=>({x,y,soft:false})),
+      ...layouts[level].foam.map(([x,y])=>({x,y,soft:true}))];
+  }
+
+  function create(options = {}) {
+    const value = options?.level;
+    const level = Number.isInteger(value) && value >= 0 && value < maps.length ? value : 0;
+    return {level, players:[newPlayer(0),newPlayer(1)], blocks:makeBlocks(level), enemies:[], shots:[], drops:[],
+      base:{x:baseX,y:baseY,hp:5,maxHp:5}, wave:1, waves:waves.length, phase:'prepare', wait:1.5, remaining:waves[0],
+      clock:0, spawnIn:0, enemiesCreated:0, nextDrop:0, score:0, flash:0, done:false, won:null};
+  }
+
+  function checkpoint(state) {
+    if(!state||state.done||!['prepare','clear'].includes(state.phase))return null;
+    return {version:1,level:state.level,wave:state.wave+(state.phase==='clear'?1:0),baseHp:state.base.hp,
+      score:state.score,foam:state.blocks.filter(block=>block.soft).map(block=>key(block.x,block.y))};
+  }
+
+  function resume(value) {
+    if(value?.version!==1||!Number.isInteger(value.level)||value.level<0||value.level>=maps.length||
+      !Number.isInteger(value.wave)||value.wave<1||value.wave>waves.length||!Number.isInteger(value.baseHp)||
+      value.baseHp<1||value.baseHp>5||!Number.isInteger(value.score)||value.score<0||value.score>27||
+      !Array.isArray(value.foam)||value.foam.length>layouts[value.level].foam.length)return null;
+    const state=create({level:value.level});
+    state.wave=value.wave;
+    state.remaining=waves[value.wave-1];
+    state.base.hp=value.baseHp;
+    state.score=value.score;
+    state.enemiesCreated=value.score;
+    state.nextDrop=Math.floor(value.score/2);
+    const foam=new Set(value.foam);
+    state.blocks=state.blocks.filter(block=>!block.soft||foam.has(key(block.x,block.y)));
+    return state;
+  }
+
+  function overlaps(block,x,y,radii) {
+    const left=block.x*cell+3, top=block.y*cell+3;
+    const nearestX=clamp(x,left,left+cell-6), nearestY=clamp(y,top,top+cell-6);
+    return (x-nearestX)**2+(y-nearestY)**2<radii*radii;
+  }
+
+  function move(state, unit, dx, dy, speed, dt, units=[]) {
+    const clear=(x,y)=>!state.blocks.some(block=>overlaps(block,x,y,radius))&&
+      Math.hypot(x-state.base.x,y-state.base.y)>=radius+17&&
+      !units.some(other=>other!==unit&&other.hp>0&&Math.hypot(x-other.x,y-other.y)<radius*1.75);
+    const nextX=clamp(unit.x+dx*speed*dt,19,width-19);
+    const nextY=clamp(unit.y+dy*speed*dt,19,height-19);
+    if(clear(nextX,unit.y))unit.x=nextX;
+    if(clear(unit.x,nextY))unit.y=nextY;
+  }
+
+  function bubble(state,unit,owner) {
+    const dx=Math.cos(unit.angle),dy=Math.sin(unit.angle);
+    state.shots.push({x:unit.x+dx*11,y:unit.y+dy*11,dx,dy,owner,life:owner<0?1.65:1.15});
+  }
+
+  function updatePlayer(state,player,seat,input,dt) {
+    for(const power of ['cool','speed','reload','shield'])player[power]=Math.max(0,player[power]-dt);
+    if(player.hp<=0){
+      player.respawn-=dt;
+      if(player.respawn<=0)Object.assign(player,newPlayer(seat));
+      return;
+    }
+    const x=input?.active&&Number.isFinite(input.x)?clamp(input.x,-1,1):0;
+    const y=input?.active&&Number.isFinite(input.y)?clamp(input.y,-1,1):0;
+    const magnitude=Math.hypot(x,y);
+    if(magnitude>.12){
+      player.angle=Math.atan2(y,x);
+      const factor=Math.max(magnitude,1), speed=player.speed>0?210:152;
+      move(state,player,x/factor,y/factor,speed,dt,state.players);
+    }
+    if(input?.fire&&player.cool<=0){
+      player.cool=player.reload>0?.23:.41;
+      bubble(state,player,seat);
+    }
+  }
+
+  function route(state, enemy) {
+    const startX=Math.floor(enemy.x/cell),startY=Math.floor(enemy.y/cell);
+    const blocks=new Set(state.blocks.map(block=>key(block.x,block.y)));
+    const start=key(startX,startY);
+    const queue=[[startX,startY,null]];
+    const seen=new Set([start]);
+    for(let index=0;index<queue.length;index++){
+      const [x,y,first]=queue[index];
+      if ((y===11&&(x===6||x===8))||(y===10&&x===7))return first||[x,y];
+      for(const [dx,dy] of exits){
+        const ax=x+dx,ay=y+dy,cellKey=key(ax,ay);
+        if(ax<0||ax>=columns||ay<0||ay>=rows||blocks.has(cellKey)||seen.has(cellKey)||(ax===7&&ay===11))continue;
+        seen.add(cellKey);
+        queue.push([ax,ay,first||[ax,ay]]);
+      }
+    }
+    return [startX,startY];
+  }
+
+  function spawnEnemy(state) {
+    const count=state.enemiesCreated;
+    for(let i=0;i<spawn.length;i++){
+      const column=spawn[(count+i+state.level)%spawn.length];
+      const point={x:center(column),y:center(0)};
+      if(state.enemies.some(enemy=>dist(point,enemy)<cell*.8))continue;
+      const heavy=state.wave>=2&&count%(state.wave===2?4:3)===0;
+      const quick=state.wave>=2&&!heavy&&count%3===1;
+      state.enemies.push({...point,hp:heavy?2:1,maxHp:heavy?2:1,angle:Math.PI/2,cool:1.4+(count%5)*.34,
+        speed:heavy?42+state.wave*7:quick?94:52+state.wave*8,target:null,kind:heavy?'heavy':quick?'quick':'normal'});
+      state.enemiesCreated++;
+      state.remaining--;
+      return;
+    }
+  }
+
+  function updateEnemy(state,enemy,dt) {
+    const nearBase=dist(enemy,state.base)<cell*1.35;
+    let dx=state.base.x-enemy.x,dy=state.base.y-enemy.y;
+    if(!nearBase){
+      if(!enemy.target||dist(enemy,enemy.target)<2.2){
+        const [x,y]=route(state,enemy);
+        enemy.target={x:center(x),y:center(y)};
+      }
+      const target=enemy.target;
+      const px=target.x-enemy.x,py=target.y-enemy.y,length=Math.hypot(px,py);
+      if(length>1){dx=px;dy=py;move(state,enemy,px/length,py/length,Math.min(enemy.speed,length/dt),dt,state.enemies);}
+      const near=state.players.find(player=>player.hp>0&&dist(enemy,player)<143);
+      if(near){dx=near.x-enemy.x;dy=near.y-enemy.y;}
+    }
+    if(Math.hypot(dx,dy)>1)enemy.angle=Math.atan2(dy,dx);
+    enemy.cool-=dt;
+    if(enemy.cool<=0){
+      enemy.cool=nearBase?1.3:2.2+((Math.round(enemy.x)+state.enemiesCreated)%5)*.18;
+      bubble(state,enemy,-1);
+    }
+  }
+
+  function finish(state, won) {
+    state.done=true;
+    state.won=won;
+    state.phase='end';
+  }
+
+  function updateShots(state,dt) {
+    const next=[];
+    for(const shot of state.shots){
+      const speed=shot.owner<0?158:290;
+      shot.life-=dt;
+      shot.x+=shot.dx*speed*dt;shot.y+=shot.dy*speed*dt;
+      if(shot.life<=0||shot.x<4||shot.x>width-4||shot.y<4||shot.y>height-4)continue;
+      const hit=state.blocks.findIndex(block=>overlaps(block,shot.x,shot.y,6));
+      if(hit>=0){
+        if(state.blocks[hit].soft){
+          const [block]=state.blocks.splice(hit,1);
+          if(shot.owner>=0&&(state.enemiesCreated+block.x+block.y)%4===0){
+            state.drops.push({x:center(block.x),y:center(block.y),kind:powerups[state.nextDrop++%powerups.length],life:10});
+          }
+        }
+        continue;
+      }
+      if(shot.owner<0){
+        if(dist(shot,state.base)<22){
+          state.base.hp--;state.flash=.35;
+          if(state.base.hp<=0){finish(state,false);break;}
+          continue;
+        }
+        const target=state.players.find(player=>player.hp>0&&dist(shot,player)<radius+4);
+        if(target){
+          if(target.shield<=0){target.hp--;target.shield=.65;if(target.hp===0)target.respawn=2.8;}
+          continue;
+        }
+      }else{
+        const target=state.enemies.find(enemy=>enemy.hp>0&&dist(shot,enemy)<radius+4);
+        if(target){
+          target.hp--;
+          if(target.hp===0){
+            state.score++;
+            if(state.score%2===0)state.drops.push({x:target.x,y:target.y,kind:powerups[state.nextDrop++%powerups.length],life:10});
+          }
+          continue;
+        }
+      }
+      next.push(shot);
+    }
+    state.shots=next;
+    state.enemies=state.enemies.filter(enemy=>enemy.hp>0);
+  }
+
+  function updateDrops(state,dt) {
+    state.drops=state.drops.filter(drop=>{
+      drop.life-=dt;
+      if(drop.life<=0)return false;
+      const target=state.players.find(player=>player.hp>0&&dist(player,drop)<radius+12);
+      if(!target)return true;
+      if(drop.kind==='repair')state.base.hp=Math.min(state.base.maxHp,state.base.hp+1);
+      else target[drop.kind]=drop.kind==='shield'?5:7;
+      return false;
+    });
+  }
+
+  function tick(state,inputs,delta) {
+    if(state.done)return state;
+    const dt=Number.isFinite(delta)?clamp(delta,0,.032):0;
+    if(!dt)return state;
+    state.clock+=dt;state.flash=Math.max(0,state.flash-dt);
+    for(const [seat,player] of state.players.entries())updatePlayer(state,player,seat,inputs?.[seat],dt);
+    if(state.phase==='prepare'||state.phase==='clear'){
+      state.wait-=dt;
+      if(state.wait<=0){
+        if(state.phase==='clear'){
+          state.wave++;
+          state.remaining=waves[state.wave-1];
+        }
+        state.phase='play';state.spawnIn=.12;
+      }
+    }
+    if(state.phase==='play'){
+      state.spawnIn-=dt;
+      if(state.remaining>0&&state.enemies.length<3+state.wave&&state.spawnIn<=0){
+        spawnEnemy(state);
+        state.spawnIn=Math.max(.55,1.45-(state.wave-1)*.31-state.level*.065);
+      }
+      for(const enemy of state.enemies)updateEnemy(state,enemy,dt);
+    }
+    updateShots(state,dt);
+    updateDrops(state,dt);
+    if(!state.done&&state.phase==='play'&&!state.remaining&&!state.enemies.length){
+      state.shots=state.shots.filter(shot=>shot.owner>=0);
+      if(state.wave===state.waves)finish(state,true);
+      else {state.phase='clear';state.wait=2;}
+    }
+    return state;
+  }
+
+  function panel(ctx,x,y,w,h,r,color){
+    ctx.fillStyle=color;ctx.beginPath();ctx.roundRect(x,y,w,h,r);ctx.fill();
+  }
+
+  function disc(ctx,x,y,r,color){
+    ctx.fillStyle=color;ctx.beginPath();ctx.arc(x,y,r,0,Math.PI*2);ctx.fill();
+  }
+
+  function pilot(ctx,unit,color,mine,clock){
+    ctx.save();ctx.translate(unit.x,unit.y);
+    if(mine||unit.shield>0){
+      ctx.strokeStyle=unit.shield>0?'#b4e0ff':color;ctx.lineWidth=2;
+      ctx.setLineDash(unit.shield>0?[4,5]:[]);ctx.lineDashOffset=-clock*33;
+      ctx.beginPath();ctx.arc(0,0,20,0,Math.PI*2);ctx.stroke();ctx.setLineDash([]);
+    }
+    ctx.rotate(unit.angle);
+    panel(ctx,-15,-14,27,9,3,'#282037');panel(ctx,-15,5,27,9,3,'#282037');
+    panel(ctx,-13,-9,26,18,5,color);panel(ctx,2,-3,20,6,3,'#fff0d6');
+    disc(ctx,1,0,6,'#625574');disc(ctx,0,-1,3,color);
+    ctx.restore();
+  }
+
+  function draw(ctx,state,seat){
+    ctx.save();
+    const accent=accents[state.level];
+    const gradient=ctx.createLinearGradient(0,0,width,height);
+    gradient.addColorStop(0,'#34254b');gradient.addColorStop(1,'#201f35');
+    ctx.fillStyle=gradient;ctx.fillRect(0,0,width,height);
+    ctx.strokeStyle='#d3b8dc17';ctx.lineWidth=1;
+    ctx.beginPath();
+    for(let x=cell;x<width;x+=cell){ctx.moveTo(x,0);ctx.lineTo(x,height);}
+    for(let y=cell;y<height;y+=cell){ctx.moveTo(0,y);ctx.lineTo(width,y);}
+    ctx.stroke();
+    for(const column of spawn){
+      const x=center(column);panel(ctx,x-15,3,30,13,5,`${accent}70`);
+    }
+    for(const block of state.blocks){
+      const x=block.x*cell+3,y=block.y*cell+3,w=cell-6;
+      panel(ctx,x,y+3,w,w,6,'#160f2a80');
+      panel(ctx,x,y,w,w,5,block.soft?'#bb7c84':accent);
+      panel(ctx,x+4,y+3,w-8,6,3,block.soft?'#efb29b':'#eee5ff57');
+      if(block.soft){
+        for(const dy of [14,24])for(const dx of [10,23])panel(ctx,x+dx,y+dy,7,2,1,'#823d6866');
+      }
+    }
+    const b=state.base;
+    disc(ctx,b.x,b.y,29,state.flash?'#fa887466':'#a0ecd038');
+    panel(ctx,b.x-20,b.y-18,40,38,8,state.flash?'#ffc79d':'#8adbca');
+    ctx.fillStyle='#26354b';ctx.textAlign='center';ctx.textBaseline='middle';ctx.font='700 22px system-ui,sans-serif';
+    ctx.fillText('✦',b.x,b.y+1);
+    for(let i=0;i<b.maxHp;i++)panel(ctx,b.x-24+i*10,b.y+28,7,4,2,i<b.hp?'#a8f2ca':'#63506e');
+    for(const drop of state.drops){
+      const color=powerColors[drop.kind];
+      disc(ctx,drop.x,drop.y,14+Math.sin(state.clock*7)*2,`${color}66`);
+      disc(ctx,drop.x,drop.y,11,color);ctx.fillStyle='#36254b';ctx.font='750 15px system-ui,sans-serif';
+      ctx.fillText(powerIcons[drop.kind],drop.x,drop.y);
+    }
+    for(const shot of state.shots){
+      const color=shot.owner<0?'#e7b6f5':colors[shot.owner];
+      disc(ctx,shot.x-shot.dx*6,shot.y-shot.dy*6,3,`${color}66`);
+      disc(ctx,shot.x,shot.y,5,color);disc(ctx,shot.x-1.5,shot.y-1.5,1.6,'#fff2dc');
+    }
+    for(const enemy of state.enemies){
+      pilot(ctx,enemy,enemy.kind==='heavy'?'#a8a7f1':enemy.kind==='quick'?'#f8d387':'#e293b1',false,state.clock);
+      if(enemy.maxHp>1)panel(ctx,enemy.x-9,enemy.y-22,enemy.hp*9,3,1,'#f6b4b6');
+    }
+    for(const [index,player] of state.players.entries()){
+      if(player.hp>0)pilot(ctx,player,colors[index],index===seat,state.clock);
+      else{
+        disc(ctx,player.x,player.y,16,'#ffd4c74d');ctx.fillStyle=colors[index];ctx.font='700 14px system-ui,sans-serif';
+        ctx.fillText(`${Math.ceil(player.respawn)}`,player.x,player.y);
+      }
+    }
+    if(state.phase!=='play'){
+      panel(ctx,width/2-118,height/2-28,236,56,15,'#21192eea');
+      ctx.fillStyle='#fff0df';ctx.font='700 22px system-ui,sans-serif';
+      const message=state.done?(state.won?'守住基地！':'基地失守'):state.phase==='clear'?'下一波来袭':maps[state.level];
+      ctx.fillText(message,width/2,height/2);
+    }
+    ctx.restore();
+  }
+
+  return {
+    size,maps,create,checkpoint,resume,tick,draw,control:'stick',actionLabel:'发射泡沫球',
+    how:'一起守护地图下方的星星基地。按住泡沫球键连续发射，打散粉色软积木，拾取加速、加快发射、护盾和维修道具。撑过三波就赢。',
+    status:state=>`第 ${state.wave} / ${state.waves} 波 · 基地 ${state.base.hp} / ${state.base.maxHp} · 剩余 ${state.remaining+state.enemies.length}`,
+    summary:state=>`${maps[state.level]}${state.won?'守卫成功':'基地失守'}，共击退 ${state.score} 辆玩具坦克。`,
+  };
+})();
+
 const bubbleRivals=(()=>{
   const cols=11,rows=11,cell=38,edge=16,W=cols*cell+edge*2,H=rows*cell+edge*2;
   const colors=['#95edd1','#ff9eb4'];
@@ -4806,7 +5168,7 @@ const airHockey = (() => {
     how: '拖动球槌击球。先到 7 分且领先 2 分获胜，11 分封顶。' };
 })();
 
-const liveGames={flight:spaceWave,tanks:toyTanks,bubbles:bubbleRivals,hockey:airHockey};
+const liveGames={flight:spaceWave,tanks:toyTanks,tankDefense,bubbles:bubbleRivals,hockey:airHockey};
 const liveArcade=(()=>{
   const neutral=()=>({x:0,y:0,fire:false,active:false});
   const clamp=(a,min,max)=>Math.max(min,Math.min(max,a));
@@ -4934,6 +5296,7 @@ const liveArcade=(()=>{
     }
     run.game.draw(run.ctx,run.state,run.local?null:run.seat);
     output(run.state);
+    run.autosave?.(run.state);
     run.raf=requestAnimationFrame(frame);
   }
   document.addEventListener('pointerdown',pointerDown,{passive:false});
@@ -5001,24 +5364,35 @@ const games = {
   duel:{name:'积木对决',icon:'▤',accent:'#f3ac80',brief:'3D 外星双墙 · 拆墙与闪躲',rules:'两只外星玩偶各有一面会留下缺口的积木墙。每次换边后有五秒准备。防守者可移动到左、中、右，或每秒换一次姿势。进攻方有三发，点或拖动准心，再按「点射」。命中躯干或四肢后立即换边。双方初始 100 点耐久，头部、躯干、四肢分别扣 100、30、10 点。',x:53,y:14},
   flight:{name:'双机星战',icon:'✦',accent:'#9fd5fb',brief:'实时合作 · 双机闯关',rules:'拖动各自的飞船，飞船自动发射。两人一起躲开弹幕、冲过敌机编队，再击败首领。',x:19,y:13},
   tanks:{name:'玩具坦克大战',icon:'▣',accent:'#a8e8ce',brief:'实时对抗 · 拆墙抢道具',rules:'用方向盘开坦克，按住泡沫球键发射。软墙可拆，金星能短暂加速，先拿三分赢。',x:82,y:14},
+  tankDefense:{name:'双人守基地',icon:'▰',accent:'#e4c98d',brief:'双人合作 · 四张地图 · 三波敌军',rules:'两辆坦克一起保护基地，消灭电脑坦克。拆软墙开路，拿道具升级。每波结束自动保存本机关卡进度。',x:51,y:58},
   bubbles:{name:'泡泡擂台',icon:'◉',accent:'#ffafbe',brief:'实时对抗 · 连锁爆泡',rules:'放泡泡卡住路线，水花会沿十字方向冲开软块，也会连锁引爆其他泡泡。道具能扩大范围、增加携带量或加速。先赢三轮。',x:17,y:38},
   hockey:{name:'霓虹气垫球',icon:'◈',accent:'#a4ebed',brief:'实时对抗 · 反弹与抢角度',rules:'拖动自己的球拍，利用边墙反弹把球打进对方球门。七分且领先两分获胜，最高打到十一分。',x:82,y:38}
 };
 const engines={hide:miniGames.hide,...arcadeGames,...challengeGames,duel:duelGame};
-const buttons=['flight','tanks','bubbles','hockey','hide','duel','shoot','toy','memory','puzzle','signal'];
+const buttons=['flight','tanks','tankDefense','bubbles','hockey','hide','duel','shoot','toy','memory','puzzle','signal'];
 const stallLocations={hide:[49,38],duel:[53,14],shoot:[82,59],toy:[82,80],memory:[52,80],puzzle:[19,59],signal:[20,80]};
 for(const [key,[x,y]] of Object.entries(stallLocations)){games[key].x=x;games[key].y=y;}
 const saveKey='twin-stars-arcade-v1';
+function validTankLevel(level){return Number.isInteger(level)&&level>=0&&level<tankDefense.maps.length;}
+function tankProgress(data){
+  return tankDefense.maps.map((_,i)=>{
+    const entry=data?.[i];
+    const bestWave=Number.isInteger(entry?.bestWave)?Math.max(0,Math.min(3,entry.bestWave)):0;
+    const checkpoint=tankDefense.resume(entry?.checkpoint);
+    return {cleared:entry?.cleared===true,bestWave,checkpoint:checkpoint?.level===i?entry.checkpoint:null};
+  });
+}
 function loadSave(){
   try{
     const data=JSON.parse(localStorage.getItem(saveKey));
     return {
       roles:Array.isArray(data?.roles)?[0,1].map(i=>Number.isInteger(data.roles[i])&&roles[data.roles[i]]?data.roles[i]:null):[null,null],
       records:Array.isArray(data?.records)?data.records.filter(x=>x&&Object.hasOwn(games,x.game)&&typeof x.id==='string').slice(0,50):[],
-      wardrobe:wardrobe.normalize(data?.wardrobe)
+      wardrobe:wardrobe.normalize(data?.wardrobe),
+      tankDefense:tankProgress(data?.tankDefense)
     };
   }catch{
-    return {roles:[null,null],records:[],wardrobe:wardrobe.normalize(null)};
+    return {roles:[null,null],records:[],wardrobe:wardrobe.normalize(null),tankDefense:tankProgress(null)};
   }
 }
 const archive=loadSave();
@@ -5027,7 +5401,7 @@ const homeMap=[[44,48],[55,49]];
 function fresh(remember=false){
   const selected=remember?[...archive.roles]:[null,null];
   if(selected[0]===selected[1])selected[1]=null;
-  return {stage:'lobby',roles:selected,positions:homeMap,game:null,session:null,play:null};
+  return {stage:'lobby',roles:selected,positions:homeMap,game:null,session:null,play:null,tankLevel:null};
 }
 let view='home', mode='solo', seat=0, roleCursor=0, mapCursor=0;
 let state=fresh(), version=0, room=null, joined=false, roomBusy=false, pending=false, roomError='';
@@ -5035,6 +5409,7 @@ let roomTab='internet', roomDraft='', pollTimer=0, toastTimer=0, handoff=false, 
 const urlAtOpen=new URL(location.href);
 const inviteCode=normalizeCode(urlAtOpen.searchParams.get('room')||'');
 const inviteLan=urlAtOpen.searchParams.get('network')==='wifi';
+const inviteTank=urlAtOpen.searchParams.get('game')==='tankDefense';
 function normalizeCode(value){return value.replace(/\s/g,'').toUpperCase();}
 function expectedCode(code,network=roomTab){
   return network==='internet'?/^[A-HJ-NP-Z2-9]{8}$/.test(code):/^[A-Z0-9]{6}$/.test(code);
@@ -5078,7 +5453,7 @@ function tile(id,action='data-game'){
   return `<button class="tile" ${action}="${id}" style="--accent:${g.accent}"><span class="game-icon" aria-hidden="true">${g.icon}</span>${count?`<span class="count">×${count}</span>`:''}<strong>${g.name}</strong><small>${g.brief}</small></button>`;
 }
 function renderHome(){
-  return `<section class="hero"><div class="hero-content"><div class="kicker"><b aria-hidden="true">✦</b> 双人联机游乐园</div><h1>双星夜市</h1><p class="subtitle">选两个角色，一起逛夜市、闯摊位。</p><div class="actions">${btn('rooms-start','创建或加入房间 <span class="arrow" aria-hidden="true">↗</span>',true)}${btn('local-start','同屏游玩')}</div></div></section><section><div class="section-head"><h2>今晚的摊位</h2></div><div class="tiles">${buttons.map(id=>tile(id,'data-info')).join('')}</div></section>`;
+  return `<section class="hero"><div class="hero-content"><div class="kicker"><b aria-hidden="true">✦</b> 双人联机游乐园</div><h1>双星夜市</h1><p class="subtitle">选两个角色，一起逛夜市、闯摊位。</p><div class="actions">${btn('rooms-start','创建或加入房间 <span class="arrow" aria-hidden="true">↗</span>',true)}${btn('local-start','同屏游玩')}</div></div></section><section><div class="section-head"><h2>今晚的摊位</h2><button class="quiet" data-host-tank>创建守基地房间</button></div><div class="tiles">${buttons.map(id=>tile(id,'data-info')).join('')}</div></section>`;
 }
 function renderRooms(){
   const internet=roomTab!=='lan', peer=roomTab==='internet';
@@ -5088,10 +5463,27 @@ function roomTag(){
   if(!room)return '';
   return `<div class="room-tag"><span>${mode==='lan'?'同一 Wi-Fi':'互联网'} · 房间 <strong class="room-code">${safe(room.code)}</strong> · ${joined?'搭档已加入':'等待搭档加入'}</span><div class="invite-actions">${location.protocol!=='file:'?'<button class="btn primary thin" id="copy-invite">复制邀请链接</button>':''}<button class="quiet thin" id="copy-room">复制房间码</button></div></div>`;
 }
+function tankLevelCards(){
+  return `<fieldset class="tank-fieldset"><legend>选择地图</legend><div class="tank-levels">${tankDefense.maps.map((name,i)=>{
+    const record=archive.tankDefense[i];
+    const tag=record.cleared?'已通关':record.checkpoint?`已保存至第 ${record.checkpoint.wave} 波`:`地图 ${i+1}`;
+    return `<button class="btn tank-level" data-tank-level="${i}" aria-pressed="${state.tankLevel===i}" ${pending||mode==='internet'&&seat!==0&&state.stage==='lobby'?'disabled':''}><strong>${safe(name)}</strong><small>${tag}</small></button>`;
+  }).join('')}</div></fieldset>`;
+}
+function tankInviteButton(){
+  return mode==='internet'&&room?'<button class="quiet" data-mode-invite="tankDefense">复制守基地邀请链接</button>':'';
+}
+function renderTankLobby(){
+  const level=validTankLevel(state.tankLevel)?state.tankLevel:0;
+  const writable=mode==='solo'||seat===0;
+  const hasSave=writable&&archive.tankDefense[level].checkpoint;
+  return `<div class="narrow screen">${title('双人守基地','两辆坦克一起守住基地，打完三波电脑坦克。','<button class="quiet" id="tank-back">回地图</button>')}${roomTag()}<section class="panel">${tankLevelCards()}<div class="actions">${btn('tank-start',`开始 · ${safe(tankDefense.maps[level])}`,true,pending)}${hasSave?btn('tank-resume','继续本机存档',false,pending):''}${tankInviteButton()}</div></section></div>`;
+}
 function renderLobby(){
   const me=mode==='solo'?roleCursor:seat;
   const ready=state.roles.every(i=>i!==null)&&(mode==='solo'||joined);
-  return `<div class="narrow screen">${title('选角色','两个人各选一个角色。','<button class="quiet" id="leave">退出</button>')}${roomTag()}<section class="panel">${seats(me,'role')}<div class="avatars">${roles.map((r,i)=>`<button class="role" data-role="${i}" aria-pressed="${state.roles[me]===i}" ${state.roles[1-me]===i?'disabled':''}>${avatar(i)}<strong>${r.name}</strong><small>${state.roles[1-me]===i?'搭档已选':state.roles[me]===i?'已选':r.detail}</small></button>`).join('')}</div><div class="actions">${btn('open-arcade','进入夜市 <span class="arrow" aria-hidden="true">→</span>',true,!ready||pending)}</div></section></div>`;
+  const tank=validTankLevel(state.tankLevel)||inviteTank&&seat===1&&mode==='internet'&&room?.code===inviteCode;
+  return `<div class="narrow screen">${title(tank?'守基地房间':'选角色','两个人各选一个角色。','<button class="quiet" id="leave">退出</button>')}${roomTag()}<section class="panel">${seats(me,'role')}<div class="avatars">${roles.map((r,i)=>`<button class="role" data-role="${i}" aria-pressed="${state.roles[me]===i}" ${state.roles[1-me]===i?'disabled':''}>${avatar(i)}<strong>${r.name}</strong><small>${state.roles[1-me]===i?'搭档已选':state.roles[me]===i?'已选':r.detail}</small></button>`).join('')}</div>${tank?tankLevelCards():''}<div class="actions">${btn('open-arcade',tank?'进入守基地选关':'进入夜市 <span class="arrow" aria-hidden="true">→</span>',true,!ready||pending)}${tank?tankInviteButton():''}</div></section></div>`;
 }
 function renderHub(){
   const cur=mode==='solo'?mapCursor:seat;
@@ -5116,7 +5508,7 @@ const waitText=()=>`请等待${player(state.play.turn)}完成操作。`;
 function continued(label='继续'){return btn('continue-game',label,true,pending);}
 function shellGame(body,metric){
   const g=games[state.game],s=state.play;
-  return `<div class="game-layout screen">${title(g.name,'','<button class="quiet" id="to-hub">回地图</button>')}${liveGames[state.game]?'':`<div class="game-meta"><div class="turn-pill">${avatar(state.roles[s.turn])}${s.done?'本局结束':`${player(s.turn)}的回合`}</div><div class="metric">${metric}</div></div>`}${body}</div>`;
+  return `<div class="game-layout screen">${title(g.name,'',`<button class="quiet" id="to-hub">${state.game==='tankDefense'?'返回选关':'回地图'}</button>`)}${liveGames[state.game]?'':`<div class="game-meta"><div class="turn-pill">${avatar(state.roles[s.turn])}${s.done?'本局结束':`${player(s.turn)}的回合`}</div><div class="metric">${metric}</div></div>`}${body}</div>`;
 }
 function handoffPanel(){
   const s=state.play;
@@ -5126,7 +5518,7 @@ function handoffPanel(){
 function resultGame(){
   const s=state.play,id=state.game;
   const desc=summary(state);
-  return shellGame(`<section class="panel play result"><div class="big-star" aria-hidden="true">✦</div><h2>${id==='puzzle'?'三条光路全部接通！':id==='duel'?'积木对决结束！':s.won===false||id==='signal'&&s.energy===0?'挑战结束':'这局完成！'}</h2><p>${desc}</p><p class="local-save-state">${savedOk?'获得 3 星币 · 已保存到本机':'本局结果暂存在当前页面。'}</p><div class="actions">${btn('rematch','再玩一局',true,pending)}${btn('result-map','逛别的摊位')}</div></section>`,'');
+  return shellGame(`<section class="panel play result"><div class="big-star" aria-hidden="true">✦</div><h2>${id==='puzzle'?'三条光路全部接通！':id==='duel'?'积木对决结束！':s.won===false||id==='signal'&&s.energy===0?'挑战结束':'这局完成！'}</h2><p>${desc}</p><p class="local-save-state">${savedOk?'获得 3 星币 · 已保存到本机':'本局结果暂存在当前页面。'}</p><div class="actions">${id==='tankDefense'?btn('result-map','返回选关',true,pending):btn('rematch','再玩一局',true,pending)+btn('result-map','逛别的摊位')}</div></section>`,'');
 }
 function summary(st){
   const a=st.play;
@@ -5254,7 +5646,7 @@ function render(){
   const liveRoot=app.querySelector('[data-live-root]');
   const liveActive=view==='game'&&liveGames[state.game]&&!state.play.done;
   if(liveActive&&liveRoot?.dataset.session===state.session)return;
-  const screens={home:renderHome,rooms:renderRooms,lobby:renderLobby,hub:renderHub,game:renderGame};
+  const screens={home:renderHome,rooms:renderRooms,lobby:renderLobby,hub:renderHub,tankLobby:renderTankLobby,game:renderGame};
   const listOpen=app.querySelector('.hide-list')?.open;
   const duelBackup=app.querySelector('.duel-fallback')?.open;
   const arcadeBackup=app.querySelector('.arcade-backup')?.open;
@@ -5309,6 +5701,7 @@ function render(){
     gameRoot.dataset.session=state.session;
     liveArcade.sync(gameRoot,{key:state.session,game:liveGames[state.game],state:state.play,seat,local:mode==='solo',
       connected:()=>mode==='solo'||joined,send:message=>room?.send(message),
+      autosave:state.game==='tankDefense'?saveTankCheckpoint:null,
       finish(play){
         if(mode==='internet')version++;
         applyState({...state,play});
@@ -5329,9 +5722,15 @@ function reduce(current,action,actor){
     const roleList=[...current.roles];roleList[actor]=i;
     return {...current,roles:roleList};
   }
-  if(action.type==='hub'&&stage==='lobby'&&current.roles.every(i=>i!==null))return {...current,stage:'hub'};
+  if(action.type==='tank-level'&&(stage==='tankLobby'||stage==='lobby'&&actor===0&&validTankLevel(current.tankLevel))&&validTankLevel(action.level)){
+    return current.tankLevel===action.level?current:{...current,tankLevel:action.level};
+  }
+  if(action.type==='hub'&&stage==='lobby'&&current.roles.every(i=>i!==null)){
+    return {...current,stage:validTankLevel(current.tankLevel)?'tankLobby':'hub'};
+  }
   if(action.type==='lobby'&&stage==='hub')return {...current,stage:'lobby'};
-  if(action.type==='map'&&stage==='game')return {...current,stage:'hub',game:null,play:null};
+  if(action.type==='map'&&stage==='game')return {...current,stage:current.game==='tankDefense'?'tankLobby':'hub',game:null,play:null};
+  if(action.type==='map'&&stage==='tankLobby')return {...current,stage:'hub',tankLevel:null};
   if(stage==='hub'&&action.type==='walk'){
     if(!Number.isFinite(action.x)||!Number.isFinite(action.y))return current;
     const positions=[...current.positions];
@@ -5339,9 +5738,16 @@ function reduce(current,action,actor){
     return {...current,positions};
   }
   const rematch=stage==='game'&&current.play.done&&action.type==='rematch';
+  if(stage==='tankLobby'&&action.type==='tank-start'&&validTankLevel(current.tankLevel)){
+    const level=current.tankLevel;
+    const checkpoint=action.resume===true&&(mode==='solo'||actor===0)?tankDefense.resume(archive.tankDefense[level].checkpoint):null;
+    if(action.resume===true&&!checkpoint)return current;
+    return {...current,stage:'game',game:'tankDefense',session:gameID(),play:checkpoint||tankDefense.create({level})};
+  }
   if((stage==='hub'&&action.type==='enter'&&Object.hasOwn(games,action.game)&&nearStall(current.positions[actor],action.game))||rematch){
     const id=rematch?current.game:action.game;
     if(liveGames[id]&&mode!=='solo'&&mode!=='internet')return current;
+    if(id==='tankDefense')return {...current,stage:'tankLobby',game:null,play:null,tankLevel:validTankLevel(current.tankLevel)?current.tankLevel:0};
     return {...current,stage:'game',game:id,session:gameID(),play:liveGames[id]?liveGames[id].create():engines[id].init()};
   }
   if(stage==='game'&&engines[current.game]&&action.type==='game-action'&&action.input&&typeof action.input==='object'){
@@ -5351,6 +5757,19 @@ function reduce(current,action,actor){
   return current;
 }
 let savedOk=true;
+let lastTankCheckpoint='';
+function saveTankCheckpoint(play){
+  if(!validTankLevel(play.level)||play.done||!['prepare','clear'].includes(play.phase))return;
+  const key=state.session+':'+play.wave+':'+play.phase;
+  if(key===lastTankCheckpoint)return;
+  const checkpoint=tankDefense.checkpoint(play);
+  if(!checkpoint)return;
+  lastTankCheckpoint=key;
+  const previous=archive.tankDefense[play.level];
+  if(previous.checkpoint?.wave>checkpoint.wave)return;
+  archive.tankDefense[play.level]={...previous,bestWave:Math.max(previous.bestWave,checkpoint.wave-1),checkpoint};
+  saveLocal();
+}
 function applyState(next){
   if(!next)return;
   const previous=state;
@@ -5369,6 +5788,12 @@ function applyState(next){
     saveLocal();
   }
   if(next.stage==='game'&&next.play.done&&!archive.records.some(r=>r.id===next.session)){
+    if(next.game==='tankDefense'&&validTankLevel(next.play.level)){
+      const record=archive.tankDefense[next.play.level];
+      const waves=next.play.won?next.play.waves:Math.max(0,next.play.wave-1);
+      archive.tankDefense[next.play.level]={cleared:record.cleared||next.play.won===true,bestWave:Math.max(record.bestWave,waves),
+        checkpoint:next.play.won?null:record.checkpoint};
+    }
     archive.records.unshift({id:next.session,game:next.game,when:Date.now(),result:summary(next)});
     archive.records.splice(50);
     archive.wardrobe=wardrobe.earn(archive.wardrobe,next.game);
@@ -5457,7 +5882,7 @@ function peerEvent(event,connectionEpoch){
     pending=false;version=incoming.version;applyState(incoming.state);
   }
 }
-async function openRoom(create,code){
+async function openRoom(create,code,defense=false){
   if(roomBusy)return;
   if(!create){
     roomDraft=code;
@@ -5468,6 +5893,7 @@ async function openRoom(create,code){
   mode=roomTab;
   seat=create?0:1;
   joined=false;version=0;state=fresh();pending=false;
+  if(create&&defense)state.tankLevel=0;
   const preferred=archive.roles[seat];
   if(preferred!==null)state.roles[seat]=preferred;
   try{
@@ -5492,6 +5918,8 @@ async function openRoom(create,code){
       const current=new URL(location.href);
       current.searchParams.delete('room');
       current.searchParams.delete('network');
+      current.searchParams.delete('game');
+      current.searchParams.delete('level');
       try{history.replaceState(null,'',current.href);}catch{}
     }
   }catch(e){if(op===epoch){roomError=e?.message||'房间连接失败。';go('rooms');}}
@@ -5583,10 +6011,25 @@ function copyInvite(){
   link.search='';link.hash='';
   link.searchParams.set('room',room.code);
   if(mode==='lan')link.searchParams.set('network','wifi');
+  if(validTankLevel(state.tankLevel)){
+    link.searchParams.set('game','tankDefense');
+    link.searchParams.set('level',String(state.tankLevel));
+  }
   copyText(link.href,'邀请链接');
 }
 document.addEventListener('click',e=>{
   const b=e.target.closest('button');
+  if(b?.hasAttribute('data-host-tank')){
+    roomTab='internet';roomError='';roomDraft='';go('rooms');openRoom(true,undefined,true);return;
+  }
+  if(b?.dataset.modeInvite==='tankDefense'){copyInvite();return;}
+  if(b?.dataset.tankLevel!==undefined){
+    dispatch({type:'tank-level',level:Number(b.dataset.tankLevel)});return;
+  }
+  if(b?.id==='tank-start'||b?.id==='tank-resume'){
+    dispatch({type:'tank-start',resume:b.id==='tank-resume'});return;
+  }
+  if(b?.id==='tank-back'){dispatch({type:'map'});return;}
   if(b?.dataset.skin){
     const id=b.dataset.skin;
     const wallet=archive.wardrobe;
