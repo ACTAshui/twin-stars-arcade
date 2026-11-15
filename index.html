@@ -511,6 +511,32 @@ button.duel-cell:hover:not(:disabled){outline:2px solid #ffdd9c;outline-offset:-
 .tank-invite-row{margin:9px 0 15px}
 .tank-fieldset{padding:0;margin:0;border:0}
 .tank-fieldset legend{font-size:14px;font-weight:750;color:#e9dbf1}
+.campaign-screen{max-width:860px;margin:0 auto}
+.campaign-cover{display:flex;min-height:218px;justify-content:space-between;align-items:flex-end;gap:12px;padding:25px;border:1px solid #735f7e;border-radius:17px;background:linear-gradient(90deg,#21172f 0%,#21172f94 55%,#21172f27),var(--tank-campaign-art,radial-gradient(ellipse at 80% 60%,#785479,#282340));background-size:cover;background-position:center 53%;margin:0 0 13px;text-shadow:0 2px 16px #181222}
+.campaign-cover h1{margin:0;font-size:clamp(30px,6vw,52px);letter-spacing:-.04em;line-height:1.13}
+.campaign-cover p{margin:10px 0 0;color:#ffcf9b}
+.campaign-cover button{flex:none}
+.campaign-panel{padding:19px}
+.tank-lineup{display:grid;gap:14px;margin-bottom:14px}
+.tank-lineup .tank-fieldset:nth-child(1) legend{color:#ffc0c9}
+.tank-lineup .tank-fieldset:nth-child(2) legend{color:#a3e7cf}
+.tank-class-list{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:7px;margin-top:8px}
+.tank-class{min-width:0;display:grid;justify-items:center;gap:3px;padding:4px 2px 8px;background:#332743;border:1px solid #64516e;border-radius:10px;text-align:center;color:#fde9e7}
+.tank-class[aria-pressed=true]{background:#51405b;border-color:#ffd79a;opacity:1}
+.tank-class canvas{width:100%;max-width:80px;height:auto;aspect-ratio:80/57}
+.tank-class strong{font-size:12px}
+.tank-class small{font-size:10px;line-height:1.3;color:#d4c3db}
+.campaign-actions{display:grid;gap:12px;padding-top:14px;border-top:1px solid #665170}
+.campaign-continue{display:flex;justify-content:space-between;align-items:center;gap:8px;color:var(--gold);font-size:13px}
+.tank-battle-hud{max-width:630px;margin:0 auto 9px;padding:8px;border:1px solid #6e5679;border-radius:10px;background:#302442}
+.tank-stage-line,.tank-stat-line{display:flex;justify-content:space-between;align-items:center;gap:6px;flex-wrap:wrap}
+.tank-stage-line strong{font-size:15px;color:#ffe7d0}
+.tank-stage-steps{display:flex;gap:5px;list-style:none;padding:0;margin:0}
+.tank-stage-steps li{display:grid;place-items:center;width:24px;height:24px;border-radius:50%;border:1px solid #815d90;color:#d3b9dc;font-size:11px}
+.tank-stage-steps .current{background:#ffd098;color:#492c49;border-color:#ffd098}
+.tank-stat-line{font-size:11px;margin-top:7px;color:#fbc0cd}
+.tank-stat-line span:last-child{color:#a9efd9}
+@media(max-width:480px){.campaign-cover{min-height:175px;padding:14px}.campaign-panel{padding:12px}.tank-class-list{grid-template-columns:repeat(2,minmax(0,1fr))}}
 .live-controls{display:flex;justify-content:space-evenly;gap:10px;margin:10px 0}
 .live-pilot{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;align-items:center;color:#adf0db;min-width:0}
 .live-pilot.live-seat-1{color:#ffb1c5}
@@ -579,10 +605,10 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 <script src="./assets/three.min.js" defer></script>
 <script>
 window.arcadeStatic=true;
-window.arcadeArt={"hero":"./assets/hero.webp","map":"./assets/map.webp","avatars":["./assets/role-0.webp","./assets/role-1.webp","./assets/role-2.webp","./assets/role-3.webp"]};
+window.arcadeArt={"hero":"./assets/hero.webp","map":"./assets/map.webp","tankCampaign":"./assets/tank-campaign.webp","avatars":["./assets/role-0.webp","./assets/role-1.webp","./assets/role-2.webp","./assets/role-3.webp"]};
 const internetRooms = (() => {
-  const roomPrefix = 'starlight-arcade-v7-';
-  const channelLabel = 'starlight-arcade-v7';
+  const roomPrefix = 'starlight-arcade-v8-';
+  const channelLabel = 'starlight-arcade-v8';
   const codeAlphabet = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
   const roomTimeout = 15_000;
 
@@ -4347,6 +4373,248 @@ const toyTanks = (() => {
   };
 })();
 
+const tankArt = (() => {
+  const models = {
+    swift: {shell: [[-12,-6],[-7,-10],[7,-8],[15,-3],[15,3],[7,8],[-7,10],[-12,6]], track: 10, length: 26, cannon: 18, shape: 'swift'},
+    guard: {shell: [[-13,-8],[-9,-11],[8,-11],[13,-8],[13,8],[8,11],[-9,11],[-13,8]], track: 11, length: 29, cannon: 15.5, shape: 'guard'},
+    blaster: {shell: [[-13,-8],[-9,-10],[10,-8],[13,-4],[13,4],[10,8],[-9,10],[-13,8]], track: 10, length: 28, cannon: 20, shape: 'blaster'},
+    support: {shell: [[-13,-7],[-8,-10],[7,-10],[13,-6],[13,6],[7,10],[-8,10],[-13,7]], track: 10.5, length: 27.5, cannon: 17, shape: 'support'},
+    normal: {shell: [[-11,-8],[-4,-10],[8,-8],[13,-4],[13,4],[8,8],[-4,10],[-11,8]], track: 9.5, length: 25, cannon: 15.5, shape: 'normal'},
+    quick: {shell: [[-12,-5],[-6,-9],[8,-7],[15,-2],[15,2],[8,7],[-6,9],[-12,5]], track: 9, length: 24, cannon: 16, shape: 'swift'},
+    heavy: {shell: [[-13,-9],[-9,-11],[9,-11],[14,-7],[14,7],[9,11],[-9,11],[-13,9]], track: 11, length: 29, cannon: 16, shape: 'guard'},
+    boss: {shell: [[-15,-8],[-10,-11],[9,-11],[15,-7],[15,7],[9,11],[-10,11],[-15,8]], track: 11, length: 30, cannon: 18, shape: 'boss'},
+  };
+  const sizeByKind = { boss: 1.56, quick: .92, heavy: 1.05 };
+  const cache = new Map();
+  const canvasSize = 100;
+  const imageOrigin = canvasSize / 2;
+  const ink = '#102036';
+  const warm = '#fff0d6';
+
+  function rgb(value) {
+    if (typeof value === 'string' && /^#[\da-f]{3}$/i.test(value)) {
+      value = Array.from(value.slice(1), digit => digit.repeat(2)).join('');
+      value = Number.parseInt(value, 16);
+    } else if (typeof value === 'string' && /^#[\da-f]{6}$/i.test(value)) value = Number.parseInt(value.slice(1), 16);
+    if (!Number.isInteger(value) || value < 0 || value > 0xffffff) value = 0x91dff4;
+    return [value >> 16 & 255, value >> 8 & 255, value & 255];
+  }
+
+  function mix(color, light, amount) {
+    return `rgb(${color.map((channel, i) => Math.round(channel + (light[i] - channel) * amount)).join(',')})`;
+  }
+
+  function gradient(ctx, x1, y1, x2, y2, stops) {
+    const fill = ctx.createLinearGradient(x1, y1, x2, y2);
+    for (const [offset, color] of stops) fill.addColorStop(offset, color);
+    return fill;
+  }
+
+  function plate(ctx, points, fill, stroke, weight = 1.1) {
+    ctx.beginPath();
+    points.forEach(([x, y], i) => i ? ctx.lineTo(x, y) : ctx.moveTo(x, y));
+    ctx.closePath();
+    ctx.fillStyle = fill;
+    ctx.fill();
+    if (stroke) {
+      ctx.strokeStyle = stroke;
+      ctx.lineWidth = weight;
+      ctx.stroke();
+    }
+  }
+
+  function capsule(ctx, x, y, w, h, r, fill, stroke, weight = 1) {
+    ctx.beginPath();
+    ctx.roundRect(x, y, w, h, r);
+    ctx.fillStyle = fill;
+    ctx.fill();
+    if (stroke) {
+      ctx.strokeStyle = stroke;
+      ctx.lineWidth = weight;
+      ctx.stroke();
+    }
+  }
+
+  function ring(ctx, x, y, radius, fill, stroke, weight = 1.05) {
+    ctx.beginPath();
+    ctx.arc(x, y, radius, 0, Math.PI * 2);
+    if (fill) {
+      ctx.fillStyle = fill;
+      ctx.fill();
+    }
+    if (stroke) {
+      ctx.strokeStyle = stroke;
+      ctx.lineWidth = weight;
+      ctx.stroke();
+    }
+  }
+
+  function stripe(ctx, x1, y1, x2, y2, color, weight) {
+    ctx.beginPath(); ctx.moveTo(x1, y1); ctx.lineTo(x2, y2);
+    ctx.strokeStyle = color; ctx.lineWidth = weight; ctx.stroke();
+  }
+
+  function tracks(ctx, model, accent, bright) {
+    const left = -model.length / 2;
+    const tire = gradient(ctx, 0, -4, 0, 4, [[0, '#657389'], [.32, '#34465c'], [1, '#162439']]);
+    const tread = gradient(ctx, 0, -3, 0, 3, [[0, '#bcc1c3'], [.35, '#718396'], [.95, '#344e66']]);
+    for (const side of [-1, 1]) {
+      ctx.save(); ctx.translate(0, model.track * side);
+      capsule(ctx, left, -4.15, model.length, 8.3, 2.65, tire, '#0d1928', 1.3);
+      for (let x = left + 2.8; x < model.length / 2 - 1.7; x += 4.25) {
+        capsule(ctx, x - 1.11, -2.92, 2.23, 5.82, .5, tread);
+      }
+      capsule(ctx, left + 5.4, side * 3.1 - .48, model.length - 10.8, .96, .40, accent);
+      if (model.shape === 'boss' || model.shape === 'guard') {
+        capsule(ctx, left + .3, side * 2.35 - 1.3, 4.3, 2.6, .58, bright, ink, .64);
+        capsule(ctx, -left - 4.6, side * 2.35 - 1.3, 4.3, 2.6, .58, bright, ink, .64);
+      }
+      ctx.restore();
+    }
+  }
+
+  function barrel(ctx, x, y, length, width, prime, neon, tip = 3.65) {
+    const skin = gradient(ctx, 0, y - width / 2, 0, y + width / 2, [[0, '#fcf2e4'], [.28, prime], [.65, prime], [1, '#475161']]);
+    capsule(ctx, x, y - width / 2, length, width, 1.21, skin, ink, 1.35);
+    capsule(ctx, x + length - tip, y - width / 2 - .72, tip, width + 1.44, 1.15, '#27384e', '#131d30', .8);
+    capsule(ctx, x + length - tip + .66, y - width / 2 - .18, tip - 1.35, width + .34, .7, neon);
+    stripe(ctx, x + length - .36, y - width / 2 + .25, x + length - .36, y + width / 2 - .25, '#080f22', 1.2);
+  }
+
+  function turret(ctx, model, light, middle, deep) {
+    switch (model.shape) {
+      case 'swift': {
+        barrel(ctx, 4.5, 0, model.cannon - 4.5, 3.5, light, middle, 2.75);
+        for (const y of [-5.75, 5.75]) {
+          capsule(ctx, -10.3, y - 1.75, 8.2, 3.5, 1.45, deep, ink, .69);
+          capsule(ctx, -10.45, y - .89, 3.8, 1.78, .74, '#a8f8fa');
+        }
+        plate(ctx, [[-7,-4],[-3,-6],[6,-4],[8,0],[6,4],[-3,6],[-7,4]], light, ink);
+        plate(ctx, [[-4.8,-2.8],[3.7,-2.7],[5.9,0],[3.7,2.7],[-4.8,2.8]], '#243452', '#5b7191', .65);
+        capsule(ctx, 2.4, -.95, 3.6, 1.9, .6, '#e3fbfa');
+        break;
+      }
+      case 'guard': {
+        barrel(ctx, 3.3, 0, model.cannon - 3.3, 5.7, light, middle);
+        for (const y of [-6.7, 6.7]) {
+          plate(ctx, [[-7,y-2.6],[6,y-2.6],[9,y],[6,y+2.6],[-7,y+2.6]], deep, ink);
+          stripe(ctx, -5, y, 4.5, y, middle, 1.17);
+        }
+        plate(ctx, [[-7,-3],[-3,-6],[3,-6],[7,-3],[7,3],[3,6],[-3,6],[-7,3]], light, ink);
+        ring(ctx, -1, 0, 3.82, deep, middle, .9);
+        plate(ctx, [[-2.3,-1.8],[1.8,-1.8],[2.45,0],[0,2.5],[-2.7,0]], '#d2f9f2');
+        break;
+      }
+      case 'blaster': {
+        for (const y of [-2.35, 2.35]) barrel(ctx, 4.4, y, model.cannon - 4.4, 3.95, light, middle);
+        capsule(ctx, -8.7, -6.4, 16.9, 12.8, 2.7, deep, ink, 1.2);
+        capsule(ctx, -7.3, -5.1, 12.75, 10.2, 2.15, light);
+        for (const y of [-2.35, 2.35]) capsule(ctx, -5.2, y - .93, 8, 1.86, .8, '#513c64');
+        capsule(ctx, -4, -.69, 6.7, 1.38, .58, '#fff3c5');
+        break;
+      }
+      case 'support': {
+        barrel(ctx, 4.4, 0, model.cannon - 4.4, 4.2, light, middle);
+        for (const y of [-6.5, 6.5]) {
+          capsule(ctx, -9.8, y - 2.4, 8, 4.8, 1.62, deep, ink, .9);
+          capsule(ctx, -8.5, y - 1.27, 4.52, 2.54, .84, '#c5f8d9');
+        }
+        ring(ctx, .45, 0, 6.12, light, ink, 1.2);
+        ring(ctx, .45, 0, 3.75, deep, middle, .8);
+        stripe(ctx, -2.2, 0, 3.1, 0, '#d6ffe6', 1.36);
+        stripe(ctx, .45, -2.6, .45, 2.6, '#d6ffe6', 1.36);
+        break;
+      }
+      case 'boss': {
+        for (const y of [-6.6, 6.6]) {
+          barrel(ctx, 4, y, model.cannon - 4, 4.6, light, '#ffe08a', 4);
+          plate(ctx, [[-12,y-2],[-5,y-3.2],[1,y-1.75],[1,y+1.75],[-5,y+3.2],[-12,y+2]], middle, ink);
+          capsule(ctx, -10, y - .77, 6.4, 1.53, .59, '#a37170');
+        }
+        plate(ctx, [[-9,-4],[-5,-7],[3,-7],[9,-3],[9,3],[3,7],[-5,7],[-9,4]], deep, ink, 1.25);
+        plate(ctx, [[-7,-2],[-4,-5],[2,-5],[7,-2.5],[7,2.5],[2,5],[-4,5],[-7,2]], middle, '#ffb889', .89);
+        ring(ctx, -.2, 0, 3.1, '#482b52', '#ffb681', .92);
+        ring(ctx, -.2, 0, 1.61, '#ffed9a');
+        for (const y of [-4.2, 4.2]) capsule(ctx, 9.65, y - .58, 3.1, 1.16, .48, '#ffd696');
+        break;
+      }
+      default:
+        barrel(ctx, 3.8, 0, model.cannon - 3.8, 4.2, light, middle);
+        plate(ctx, [[-6,-3],[-2,-6],[4,-5],[7,-2],[7,2],[4,5],[-2,6],[-6,3]], light, ink);
+        capsule(ctx, -3.85, -2.14, 7.05, 4.28, 1.28, deep);
+        capsule(ctx, 1.15, -.63, 2.16, 1.26, .49, warm);
+    }
+  }
+
+  function details(ctx, model, paint) {
+    const light = mix(paint, [255, 248, 236], .68);
+    const bright = mix(paint, [255, 255, 255], .34);
+    const middle = mix(paint, [255, 255, 255], .07);
+    const deep = mix(paint, [15, 29, 49], .56);
+    const armor = gradient(ctx, -9, -10, 10, 10, [[0, light], [.33, bright], [.72, middle], [1, deep]]);
+    tracks(ctx, model, deep, bright);
+    plate(ctx, model.shell, armor, ink, 1.36);
+    stripe(ctx, -7.2, -7.7, 6.4, -7.76, light, 1.15);
+    stripe(ctx, -8.25, 7.35, 6.4, 7.65, deep, 1.16);
+    for (const y of [-4.15, 4.15]) {
+      capsule(ctx, -10.55, y - 1.06, 3.18, 2.12, .5, deep);
+      capsule(ctx, -10.2, y - .38, 2.2, .76, .32, '#fff0ccd4');
+    }
+    turret(ctx, model, light, middle, deep);
+  }
+
+  function getSprite(model, paint) {
+    const key = `${model.shape}/${model.length}/${paint.join(',')}`;
+    if (!cache.has(key) && typeof document !== 'undefined') {
+      const canvas = document.createElement('canvas');
+      canvas.width = canvas.height = canvasSize;
+      const ctx = canvas.getContext('2d');
+      if (!ctx) return null;
+      ctx.translate(imageOrigin, imageOrigin);
+      ctx.scale(2, 2);
+      details(ctx, model, paint);
+      if (cache.size >= 48) cache.delete(cache.keys().next().value);
+      cache.set(key, canvas);
+    }
+    return cache.get(key);
+  }
+
+  function draw(ctx, unit, options = {}) {
+    if (!unit || !Number.isFinite(unit.x) || !Number.isFinite(unit.y)) return;
+    const kind = options.kind || unit.kind || 'player';
+    const candidate = unit.classId || kind;
+    const model = models[candidate] || models[kind] || models.normal;
+    const paint = rgb(options.color);
+    const accent = mix(paint, [255, 248, 239], .32);
+    const now = Number.isFinite(options.time) ? options.time : 0;
+    const scale = sizeByKind[kind] || 1;
+    ctx.save();
+    ctx.translate(unit.x, unit.y);
+    ctx.scale(scale, scale);
+    ctx.beginPath(); ctx.ellipse(1, 3, 15.5, 12, 0, 0, Math.PI * 2);
+    ctx.fillStyle = '#05061978'; ctx.fill();
+    if (options.local) ring(ctx, 0, 0, 19, null, accent, 1.3);
+    if (unit.shield > 0) {
+      ctx.save(); ctx.setLineDash([3.8, 3.05]); ctx.lineDashOffset = -now * 24;
+      ring(ctx, 0, 0, 17.15 + Math.sin(now * 6) * .38, '#baf4ff24', '#c9f5ff', 1.55);
+      ctx.restore();
+    }
+    ctx.rotate(Number.isFinite(unit.angle) ? unit.angle : 0);
+    const sprite = getSprite(model, paint);
+    if (sprite) ctx.drawImage(sprite, -imageOrigin / 2, -imageOrigin / 2, imageOrigin, imageOrigin);
+    else details(ctx, model, paint);
+    if (unit.boost > 0 || unit.upgrades?.speed > 0) {
+      const intensity = .6 + .2 * Math.sin(now * 12);
+      ctx.globalAlpha = intensity;
+      capsule(ctx, -15.9, -4.6, 4.85, 1.52, .73, '#ffcfac');
+      capsule(ctx, -15.9, 3.1, 4.85, 1.52, .73, '#ffcfac');
+    }
+    ctx.restore();
+  }
+
+  return { draw };
+})();
+
 const tankDefense = (() => {
   const cell = 42;
   const columns = 15;
@@ -4364,9 +4632,25 @@ const tankDefense = (() => {
     { solid: [[4,3],[10,3],[3,5],[11,5],[5,5],[9,5],[2,7],[12,7],[5,8],[9,8],[4,10],[10,10]], foam: [[3,2],[11,2],[5,2],[9,2],[6,3],[8,3],[6,6],[8,6],[4,7],[10,7],[7,8],[6,10],[7,10],[8,10]] },
   ];
   const waves = [6, 9, 12];
-  const powerups = ['speed', 'reload', 'shield', 'repair'];
-  const powerColors = {speed:'#ffcf6c', reload:'#ffabd4', shield:'#9acaff', repair:'#9cebc3'};
-  const powerIcons = {speed:'↟', reload:'✦', shield:'⬡', repair:'+'};
+  const classes = [
+    {id:'swift',name:'星风轻骑',description:'移动更快，适合穿过缺口和收集道具。',icon:'↟'},
+    {id:'guard',name:'月盾重装',description:'耐久更高，受到攻击后护盾持续更久。',icon:'⬡'},
+    {id:'blaster',name:'流星炮手',description:'发射较慢，但每颗泡沫球有两点威力。',icon:'✦'},
+    {id:'support',name:'薄荷支援',description:'每次进入新地图时额外修复一点基地耐久。',icon:'✚'},
+  ];
+  const classStats = {
+    swift:{speed:174,reload:.45,hp:2,shield:.65,damage:1},
+    guard:{speed:137,reload:.46,hp:3,shield:1.10,damage:1},
+    blaster:{speed:149,reload:.66,hp:2,shield:.65,damage:2},
+    support:{speed:151,reload:.38,hp:2,shield:.70,damage:1},
+  };
+  const defaultClasses = ['swift','guard'];
+  const upgrades = ['speed', 'reload', 'armor'];
+  const maxUpgrade = 3;
+  const maximumScore = maps.length * waves.reduce((total,count)=>total+count,0) + 1;
+  const powerups = [...upgrades, 'repair'];
+  const powerColors = {speed:'#ffcf6c', reload:'#ffabd4', armor:'#9acaff', repair:'#9cebc3'};
+  const powerIcons = {speed:'↟', reload:'✦', armor:'⬡', repair:'+'};
   const clamp = (v,lo,hi) => Math.max(lo,Math.min(hi,v));
   const center = value => (value+.5)*cell;
   const key = (x,y) => y*columns+x;
@@ -4376,8 +4660,21 @@ const tankDefense = (() => {
   const baseY = center(11);
   const baseX = center(7);
 
-  function newPlayer(seat) {
-    return {x:center(seat?9:5),y:center(11),angle:-Math.PI/2,hp:2,cool:0,speed:0,reload:0,shield:1.4,respawn:0};
+  function classSelection(input) {
+    return defaultClasses.map((fallback,seat)=>{
+      const candidate=Array.isArray(input)?input[seat]:null;
+      return typeof candidate==='string'&&Object.hasOwn(classStats,candidate)?candidate:fallback;
+    });
+  }
+
+  function upgradeRanks(input) {
+    return Object.fromEntries(upgrades.map(type=>[type,Number.isInteger(input?.[type])?clamp(input[type],0,maxUpgrade):0]));
+  }
+
+  function newPlayer(seat, classId, ranks) {
+    const progress=upgradeRanks(ranks);
+    const maxHp=classStats[classId].hp+progress.armor;
+    return {x:center(seat?9:5),y:center(11),angle:-Math.PI/2,classId,upgrades:progress,hp:maxHp,maxHp,cool:0,shield:1.4,respawn:0};
   }
 
   function makeBlocks(level) {
@@ -4388,29 +4685,47 @@ const tankDefense = (() => {
   function create(options = {}) {
     const value = options?.level;
     const level = Number.isInteger(value) && value >= 0 && value < maps.length ? value : 0;
-    return {level, players:[newPlayer(0),newPlayer(1)], blocks:makeBlocks(level), enemies:[], shots:[], drops:[],
+    const selected=classSelection(options?.classes);
+    return {level,startLevel:level, classes:selected, players:selected.map((id,seat)=>newPlayer(seat,id)), blocks:makeBlocks(level), enemies:[], shots:[], drops:[],
       base:{x:baseX,y:baseY,hp:5,maxHp:5}, wave:1, waves:waves.length, phase:'prepare', wait:1.5, remaining:waves[0],
-      clock:0, spawnIn:0, enemiesCreated:0, nextDrop:0, score:0, flash:0, done:false, won:null};
+      clock:0, spawnIn:0, enemiesCreated:0, nextDrop:0, score:0, flash:0, boss:'pending', done:false, won:null};
+  }
+
+  function nextBaseHp(state) {
+    return Math.min(state.base.maxHp,state.base.hp+1+Number(state.classes.includes('support')));
   }
 
   function checkpoint(state) {
-    if(!state||state.done||!['prepare','clear'].includes(state.phase))return null;
-    return {version:1,level:state.level,wave:state.wave+(state.phase==='clear'?1:0),baseHp:state.base.hp,
-      score:state.score,foam:state.blocks.filter(block=>block.soft).map(block=>key(block.x,block.y))};
+    if(!state||state.done||!['prepare','clear','map-clear','boss-intro'].includes(state.phase))return null;
+    const nextMap=state.phase==='map-clear';
+    const level=state.level+Number(nextMap);
+    return {version:2,level,startLevel:state.startLevel,wave:nextMap?1:state.wave+Number(state.phase==='clear'),
+      baseHp:nextMap?nextBaseHp(state):state.base.hp,score:state.score,classes:classSelection(state.classes),
+      upgrades:state.players.map(player=>upgradeRanks(player.upgrades)),boss:state.phase==='boss-intro',
+      nextDrop:state.nextDrop,
+      foam:nextMap?layouts[level].foam.map(([x,y])=>key(x,y)):state.blocks.filter(block=>block.soft).map(block=>key(block.x,block.y))};
   }
 
   function resume(value) {
-    if(value?.version!==1||!Number.isInteger(value.level)||value.level<0||value.level>=maps.length||
+    if(![1,2].includes(value?.version)||!Number.isInteger(value.level)||value.level<0||value.level>=maps.length||
       !Number.isInteger(value.wave)||value.wave<1||value.wave>waves.length||!Number.isInteger(value.baseHp)||
-      value.baseHp<1||value.baseHp>5||!Number.isInteger(value.score)||value.score<0||value.score>27||
+      value.baseHp<1||value.baseHp>5||!Number.isInteger(value.score)||value.score<0||value.score>maximumScore||
       !Array.isArray(value.foam)||value.foam.length>layouts[value.level].foam.length)return null;
-    const state=create({level:value.level});
+    const state=create({level:value.level,classes:value.version===2?value.classes:undefined});
+    if(value.version===2){
+      if(Number.isInteger(value.startLevel)&&value.startLevel>=0&&value.startLevel<=state.level)state.startLevel=value.startLevel;
+      state.players=state.classes.map((id,seat)=>newPlayer(seat,id,value.upgrades?.[seat]));
+    }
     state.wave=value.wave;
     state.remaining=waves[value.wave-1];
+    if(value.version===2&&value.boss===true&&state.level===maps.length-1&&state.wave===waves.length){
+      state.phase='boss-intro';state.wait=2.4;state.remaining=0;state.boss='intro';
+    }
     state.base.hp=value.baseHp;
     state.score=value.score;
     state.enemiesCreated=value.score;
-    state.nextDrop=Math.floor(value.score/2);
+    state.nextDrop=value.version===2&&Number.isSafeInteger(value.nextDrop)&&value.nextDrop>=0
+      ?value.nextDrop:Math.floor(value.score/2);
     const foam=new Set(value.foam);
     state.blocks=state.blocks.filter(block=>!block.soft||foam.has(key(block.x,block.y)));
     return state;
@@ -4432,16 +4747,21 @@ const tankDefense = (() => {
     if(clear(unit.x,nextY))unit.y=nextY;
   }
 
-  function bubble(state,unit,owner) {
-    const dx=Math.cos(unit.angle),dy=Math.sin(unit.angle);
-    state.shots.push({x:unit.x+dx*11,y:unit.y+dy*11,dx,dy,owner,life:owner<0?1.65:1.15});
+  function bubble(state,unit,owner,offset=0) {
+    const angle=unit.angle+offset;
+    const dx=Math.cos(angle),dy=Math.sin(angle);
+    const boss=unit.kind==='boss';
+    const damage=owner>=0?classStats[unit.classId].damage:1;
+    state.shots.push({x:unit.x+dx*11,y:unit.y+dy*11,dx,dy,owner,damage,boss,life:owner<0?1.65:1.15});
   }
 
   function updatePlayer(state,player,seat,input,dt) {
-    for(const power of ['cool','speed','reload','shield'])player[power]=Math.max(0,player[power]-dt);
+    const stats=classStats[player.classId];
+    player.cool=Math.max(0,player.cool-dt);
+    player.shield=Math.max(0,player.shield-dt);
     if(player.hp<=0){
       player.respawn-=dt;
-      if(player.respawn<=0)Object.assign(player,newPlayer(seat));
+      if(player.respawn<=0)Object.assign(player,newPlayer(seat,player.classId,player.upgrades));
       return;
     }
     const x=input?.active&&Number.isFinite(input.x)?clamp(input.x,-1,1):0;
@@ -4449,11 +4769,11 @@ const tankDefense = (() => {
     const magnitude=Math.hypot(x,y);
     if(magnitude>.12){
       player.angle=Math.atan2(y,x);
-      const factor=Math.max(magnitude,1), speed=player.speed>0?210:152;
+      const factor=Math.max(magnitude,1), speed=stats.speed+player.upgrades.speed*12;
       move(state,player,x/factor,y/factor,speed,dt,state.players);
     }
     if(input?.fire&&player.cool<=0){
-      player.cool=player.reload>0?.23:.41;
+      player.cool=Math.max(.22,stats.reload-player.upgrades.reload*.055);
       bubble(state,player,seat);
     }
   }
@@ -4486,7 +4806,7 @@ const tankDefense = (() => {
       const heavy=state.wave>=2&&count%(state.wave===2?4:3)===0;
       const quick=state.wave>=2&&!heavy&&count%3===1;
       state.enemies.push({...point,hp:heavy?2:1,maxHp:heavy?2:1,angle:Math.PI/2,cool:1.4+(count%5)*.34,
-        speed:heavy?42+state.wave*7:quick?94:52+state.wave*8,target:null,kind:heavy?'heavy':quick?'quick':'normal'});
+        speed:(heavy?42+state.wave*7:quick?94:52+state.wave*8)+state.level*4,target:null,kind:heavy?'heavy':quick?'quick':'normal'});
       state.enemiesCreated++;
       state.remaining--;
       return;
@@ -4494,6 +4814,10 @@ const tankDefense = (() => {
   }
 
   function updateEnemy(state,enemy,dt) {
+    if(enemy.kind==='boss'){
+      updateBoss(state,enemy,dt);
+      return;
+    }
     const nearBase=dist(enemy,state.base)<cell*1.35;
     let dx=state.base.x-enemy.x,dy=state.base.y-enemy.y;
     if(!nearBase){
@@ -4515,6 +4839,43 @@ const tankDefense = (() => {
     }
   }
 
+  function startBoss(state) {
+    const maxHp=24;
+    state.boss='active';
+    state.phase='play';
+    state.enemies.push({kind:'boss',x:baseX,y:center(1),hp:maxHp,maxHp,angle:Math.PI/2,cool:2,speed:37,
+      target:null,warning:0,burst:0});
+  }
+
+  function bossSpread(boss) {
+    return boss.hp<=boss.maxHp/2?[-.38,-.19,0,.19,.38]:[-.25,0,.25];
+  }
+
+  function updateBoss(state,boss,dt) {
+    if(boss.warning>0){
+      boss.warning=Math.max(0,boss.warning-dt);
+      if(boss.warning===0){
+        for(const offset of bossSpread(boss))bubble(state,boss,-1,offset);
+        boss.cool=boss.hp<=boss.maxHp/2?1.65:2.35;
+        boss.burst++;
+      }
+      return;
+    }
+    if(dist(boss,state.base)>cell*1.35){
+      if(!boss.target||dist(boss,boss.target)<2){
+        const [x,y]=route(state,boss);
+        boss.target={x:center(x),y:center(y)};
+      }
+      const dx=boss.target.x-boss.x,dy=boss.target.y-boss.y,length=Math.hypot(dx,dy);
+      if(length>1)move(state,boss,dx/length,dy/length,Math.min(boss.speed,length/dt),dt);
+    }
+    const nearby=state.players.filter(player=>player.hp>0).sort((a,b)=>dist(a,boss)-dist(b,boss))[0];
+    const target=nearby&&boss.burst%2===1&&dist(boss,nearby)<210?nearby:state.base;
+    boss.angle=Math.atan2(target.y-boss.y,target.x-boss.x);
+    boss.cool-=dt;
+    if(boss.cool<=0)boss.warning=.86;
+  }
+
   function finish(state, won) {
     state.done=true;
     state.won=won;
@@ -4524,7 +4885,7 @@ const tankDefense = (() => {
   function updateShots(state,dt) {
     const next=[];
     for(const shot of state.shots){
-      const speed=shot.owner<0?158:290;
+      const speed=shot.owner<0?(shot.boss?177:158):290;
       shot.life-=dt;
       shot.x+=shot.dx*speed*dt;shot.y+=shot.dy*speed*dt;
       if(shot.life<=0||shot.x<4||shot.x>width-4||shot.y<4||shot.y>height-4)continue;
@@ -4546,15 +4907,20 @@ const tankDefense = (() => {
         }
         const target=state.players.find(player=>player.hp>0&&dist(shot,player)<radius+4);
         if(target){
-          if(target.shield<=0){target.hp--;target.shield=.65;if(target.hp===0)target.respawn=2.8;}
+          if(target.shield<=0){
+            target.hp--;
+            target.shield=classStats[target.classId].shield+target.upgrades.armor*.1;
+            if(target.hp===0)target.respawn=2.8;
+          }
           continue;
         }
       }else{
-        const target=state.enemies.find(enemy=>enemy.hp>0&&dist(shot,enemy)<radius+4);
+        const target=state.enemies.find(enemy=>enemy.hp>0&&dist(shot,enemy)<(enemy.kind==='boss'?27:radius+4));
         if(target){
-          target.hp--;
+          target.hp=Math.max(0,target.hp-(shot.damage||1));
           if(target.hp===0){
             state.score++;
+            if(target.kind==='boss')state.boss='defeated';
             if(state.score%2===0)state.drops.push({x:target.x,y:target.y,kind:powerups[state.nextDrop++%powerups.length],life:10});
           }
           continue;
@@ -4573,9 +4939,30 @@ const tankDefense = (() => {
       const target=state.players.find(player=>player.hp>0&&dist(player,drop)<radius+12);
       if(!target)return true;
       if(drop.kind==='repair')state.base.hp=Math.min(state.base.maxHp,state.base.hp+1);
-      else target[drop.kind]=drop.kind==='shield'?5:7;
+      else if(upgrades.includes(drop.kind)){
+        const prior=target.upgrades[drop.kind];
+        const improved=prior<maxUpgrade;
+        if(improved)target.upgrades[drop.kind]++;
+        if(improved&&drop.kind==='armor'){
+          target.maxHp=classStats[target.classId].hp+target.upgrades.armor;
+          target.hp=Math.min(target.maxHp,target.hp+1);
+        }
+        target.shield=Math.max(target.shield,improved?.55:1.15);
+      }
       return false;
     });
+  }
+
+  function changeMap(state) {
+    const next=create({level:state.level+1,classes:state.classes});
+    next.startLevel=state.startLevel;
+    next.players=state.players.map((player,seat)=>newPlayer(seat,player.classId,player.upgrades));
+    next.base.hp=nextBaseHp(state);
+    next.score=state.score;
+    next.enemiesCreated=state.enemiesCreated;
+    next.nextDrop=state.nextDrop;
+    next.clock=state.clock;
+    Object.assign(state,next);
   }
 
   function tick(state,inputs,delta) {
@@ -4583,15 +4970,23 @@ const tankDefense = (() => {
     const dt=Number.isFinite(delta)?clamp(delta,0,.032):0;
     if(!dt)return state;
     state.clock+=dt;state.flash=Math.max(0,state.flash-dt);
+    if(state.phase==='map-clear'){
+      state.wait-=dt;
+      if(state.wait<=0)changeMap(state);
+      return state;
+    }
     for(const [seat,player] of state.players.entries())updatePlayer(state,player,seat,inputs?.[seat],dt);
-    if(state.phase==='prepare'||state.phase==='clear'){
+    if(['prepare','clear','boss-intro'].includes(state.phase)){
       state.wait-=dt;
       if(state.wait<=0){
-        if(state.phase==='clear'){
-          state.wave++;
-          state.remaining=waves[state.wave-1];
+        if(state.phase==='boss-intro')startBoss(state);
+        else{
+          if(state.phase==='clear'){
+            state.wave++;
+            state.remaining=waves[state.wave-1];
+          }
+          state.phase='play';state.spawnIn=.12;
         }
-        state.phase='play';state.spawnIn=.12;
       }
     }
     if(state.phase==='play'){
@@ -4603,11 +4998,15 @@ const tankDefense = (() => {
       for(const enemy of state.enemies)updateEnemy(state,enemy,dt);
     }
     updateShots(state,dt);
+    if(state.done)return state;
     updateDrops(state,dt);
-    if(!state.done&&state.phase==='play'&&!state.remaining&&!state.enemies.length){
+    if(state.phase==='play'&&!state.remaining&&!state.enemies.length){
       state.shots=state.shots.filter(shot=>shot.owner>=0);
-      if(state.wave===state.waves)finish(state,true);
-      else {state.phase='clear';state.wait=2;}
+      if(state.wave<state.waves){state.phase='clear';state.wait=2;}
+      else if(state.level<maps.length-1){state.phase='map-clear';state.wait=2.4;}
+      else if(state.boss==='pending'){
+        state.phase='boss-intro';state.boss='intro';state.wait=2.4;state.shots=[];
+      }else if(state.boss==='defeated')finish(state,true);
     }
     return state;
   }
@@ -4621,7 +5020,12 @@ const tankDefense = (() => {
   }
 
   function pilot(ctx,unit,color,mine,clock){
+    if(typeof tankArt!=='undefined'){
+      tankArt.draw(ctx,unit,{color,kind:unit.kind||'player',time:clock,local:mine});
+      return;
+    }
     ctx.save();ctx.translate(unit.x,unit.y);
+    if(unit.kind==='boss')ctx.scale(1.65,1.65);
     if(mine||unit.shield>0){
       ctx.strokeStyle=unit.shield>0?'#b4e0ff':color;ctx.lineWidth=2;
       ctx.setLineDash(unit.shield>0?[4,5]:[]);ctx.lineDashOffset=-clock*33;
@@ -4670,13 +5074,27 @@ const tankDefense = (() => {
       ctx.fillText(powerIcons[drop.kind],drop.x,drop.y);
     }
     for(const shot of state.shots){
-      const color=shot.owner<0?'#e7b6f5':colors[shot.owner];
+      const color=shot.owner<0?(shot.boss?'#ffd58d':'#e7b6f5'):colors[shot.owner];
       disc(ctx,shot.x-shot.dx*6,shot.y-shot.dy*6,3,`${color}66`);
       disc(ctx,shot.x,shot.y,5,color);disc(ctx,shot.x-1.5,shot.y-1.5,1.6,'#fff2dc');
     }
     for(const enemy of state.enemies){
-      pilot(ctx,enemy,enemy.kind==='heavy'?'#a8a7f1':enemy.kind==='quick'?'#f8d387':'#e293b1',false,state.clock);
-      if(enemy.maxHp>1)panel(ctx,enemy.x-9,enemy.y-22,enemy.hp*9,3,1,'#f6b4b6');
+      if(enemy.kind==='boss'){
+        if(enemy.warning>0){
+          ctx.strokeStyle='#ff9e7c9e';ctx.lineWidth=2;ctx.setLineDash([7,5]);ctx.beginPath();
+          for(const spread of bossSpread(enemy)){
+            const angle=enemy.angle+spread;
+            ctx.moveTo(enemy.x,enemy.y);ctx.lineTo(enemy.x+Math.cos(angle)*168,enemy.y+Math.sin(angle)*168);
+          }
+          ctx.stroke();ctx.setLineDash([]);
+        }
+        pilot(ctx,enemy,'#ec9b87',false,state.clock);
+        panel(ctx,enemy.x-35,enemy.y-31,70,5,2,'#513649');
+        panel(ctx,enemy.x-35,enemy.y-31,70*enemy.hp/enemy.maxHp,5,2,'#ffab83');
+      }else{
+        pilot(ctx,enemy,enemy.kind==='heavy'?'#a8a7f1':enemy.kind==='quick'?'#f8d387':'#e293b1',false,state.clock);
+        if(enemy.maxHp>1)panel(ctx,enemy.x-9,enemy.y-22,enemy.hp*9,3,1,'#f6b4b6');
+      }
     }
     for(const [index,player] of state.players.entries()){
       if(player.hp>0)pilot(ctx,player,colors[index],index===seat,state.clock);
@@ -4688,17 +5106,22 @@ const tankDefense = (() => {
     if(state.phase!=='play'){
       panel(ctx,width/2-118,height/2-28,236,56,15,'#21192eea');
       ctx.fillStyle='#fff0df';ctx.font='700 22px system-ui,sans-serif';
-      const message=state.done?(state.won?'守住基地！':'基地失守'):state.phase==='clear'?'下一波来袭':maps[state.level];
+      const message=state.done?(state.won?'战役胜利！':'基地失守'):state.phase==='clear'?'下一波来袭':
+        state.phase==='map-clear'?`下一站 · ${maps[state.level+1]}`:state.phase==='boss-intro'?'巨型首领来袭':maps[state.level];
       ctx.fillText(message,width/2,height/2);
     }
     ctx.restore();
   }
 
   return {
-    size,maps,create,checkpoint,resume,tick,draw,control:'stick',actionLabel:'发射泡沫球',
-    how:'一起守护地图下方的星星基地。按住泡沫球键连续发射，打散粉色软积木，拾取加速、加快发射、护盾和维修道具。撑过三波就赢。',
-    status:state=>`第 ${state.wave} / ${state.waves} 波 · 基地 ${state.base.hp} / ${state.base.maxHp} · 剩余 ${state.remaining+state.enemies.length}`,
-    summary:state=>`${maps[state.level]}${state.won?'守卫成功':'基地失守'}，共击退 ${state.score} 辆玩具坦克。`,
+    size,maps,classes,maxUpgrade,create,checkpoint,resume,tick,draw,control:'stick',actionLabel:'发射泡沫球',
+    how:'一起守住星星基地。按住泡沫球键连续发射。移动、连发和装甲道具可永久升到 3 级。连续通关并击败最终首领。',
+    status:state=>{
+      const boss=state.enemies.find(enemy=>enemy.kind==='boss');
+      const objective=boss?`首领 ${boss.hp} / ${boss.maxHp}`:state.phase==='boss-intro'?'首领来袭':`第 ${state.wave} / ${state.waves} 波 · 剩余 ${state.remaining+state.enemies.length}`;
+      return `${maps[state.level]} · 基地 ${state.base.hp}/${state.base.maxHp} · ${objective}`;
+    },
+    summary:state=>state.won?`击败最终首领，战役胜利！共击退 ${state.score} 辆玩具坦克。`:`基地在${maps[state.level]}失守，共击退 ${state.score} 辆玩具坦克。`,
   };
 })();
 
@@ -5186,6 +5609,7 @@ const liveArcade=(()=>{
     const connected=live.connected();
     if(connection&&connection.hidden!==connected)connection.hidden=connected;
     if(connection&&!connected&&connection.textContent!=='等搭档连接')connection.textContent='等搭档连接';
+    if(live.game===tankDefense)paintTankHud(live.root,state);
   }
   function setPad(pointer,event){
     const local=live.inputs[pointer.seat];
@@ -5336,12 +5760,35 @@ const liveArcade=(()=>{
   return {sync,receive,state:()=>live?.state??null};
 })();
 
+function paintTankHud(root,s){
+  const title=root.querySelector('[data-tank-map-name]');
+  if(!title)return;
+  const name=tankDefense.maps[s.level];
+  if(title.textContent!==name)title.textContent=name;
+  for(const step of root.querySelectorAll('[data-campaign-map]')){
+    const map=Number(step.dataset.campaignMap);
+    step.classList.toggle('current',map===s.level);
+    if(map===s.level)step.setAttribute('aria-current','step');
+    else step.removeAttribute('aria-current');
+  }
+  for(const [i,pilot] of s.players.entries()){
+    const summary=root.querySelector(`[data-tank-stats="${i}"]`);
+    const tank=tankDefense.classes.find(item=>item.id===s.classes[i]);
+    const rank=pilot.upgrades;
+    const label=`${tank?.name||'坦克'} · 速 ${rank.speed} / 火 ${rank.reload} / 甲 ${rank.armor}`;
+    if(summary&&summary.textContent!==label)summary.textContent=label;
+  }
+}
+function tankBattleHud(){
+  return `<div class="tank-battle-hud"><div class="tank-stage-line"><strong data-tank-map-name></strong><ol class="tank-stage-steps" aria-label="战役地图">${tankDefense.maps.map((map,i)=>`<li data-campaign-map="${i}" title="${safe(map)}">${i===tankDefense.maps.length-1?'◆':i+1}</li>`).join('')}</ol></div><div class="tank-stat-line"><span data-tank-stats="0"></span><span data-tank-stats="1"></span></div></div>`;
+}
+
 function renderLiveGame(id,s){
   const g=liveGames[id];
   if(mode!=='solo'&&mode!=='internet')return `<section class="panel play"><p>实时游戏请使用互联网房间，或在同屏模式玩。</p></section>`;
   const [width,height]=g.size;
   const controls=(mode==='solo'?[0,1]:[seat]).map(i=>`<div class="live-pilot live-seat-${i}">${mode==='solo'?'<small>玩家 '+(i+1)+'</small>':''}${g.control==='stick'?`<button class="live-stick" data-live-control="stick" data-live-seat="${i}" aria-label="玩家 ${i+1} 移动"><i></i></button>`:''}${g.actionLabel?`<button class="live-action" data-live-control="fire" data-live-seat="${i}">${g.actionLabel}</button>`:''}</div>`).join('');
-  return `<section class="panel play live-panel" data-live-root data-live-kind="${id}"><div class="live-top"><strong data-live-status>${safe(g.status(s))}</strong><span data-live-connection hidden></span></div><canvas data-live-canvas width="${width}" height="${height}" aria-label="${games[id].name}游戏画面"></canvas>${g.control==='stick'||g.actionLabel?`<div class="live-controls">${controls}</div>`:''}<p class="live-help">${safe(g.how||games[id].rules)}</p></section>`;
+  return `<section class="panel play live-panel" data-live-root data-live-kind="${id}">${id==='tankDefense'?tankBattleHud():''}<div class="live-top"><strong data-live-status>${safe(g.status(s))}</strong><span data-live-connection hidden></span></div><canvas data-live-canvas width="${width}" height="${height}" aria-label="${games[id].name}游戏画面"></canvas>${g.control==='stick'||g.actionLabel?`<div class="live-controls">${controls}</div>`:''}<p class="live-help">${safe(g.how||games[id].rules)}</p></section>`;
 }
 
 const app = document.querySelector('#app');
@@ -5364,7 +5811,7 @@ const games = {
   duel:{name:'积木对决',icon:'▤',accent:'#f3ac80',brief:'3D 外星双墙 · 拆墙与闪躲',rules:'两只外星玩偶各有一面会留下缺口的积木墙。每次换边后有五秒准备。防守者可移动到左、中、右，或每秒换一次姿势。进攻方有三发，点或拖动准心，再按「点射」。命中躯干或四肢后立即换边。双方初始 100 点耐久，头部、躯干、四肢分别扣 100、30、10 点。',x:53,y:14},
   flight:{name:'双机星战',icon:'✦',accent:'#9fd5fb',brief:'实时合作 · 双机闯关',rules:'拖动各自的飞船，飞船自动发射。两人一起躲开弹幕、冲过敌机编队，再击败首领。',x:19,y:13},
   tanks:{name:'玩具坦克大战',icon:'▣',accent:'#a8e8ce',brief:'实时对抗 · 拆墙抢道具',rules:'用方向盘开坦克，按住泡沫球键发射。软墙可拆，金星能短暂加速，先拿三分赢。',x:82,y:14},
-  tankDefense:{name:'双人守基地',icon:'▰',accent:'#e4c98d',brief:'双人合作 · 四张地图 · 三波敌军',rules:'两辆坦克一起保护基地，消灭电脑坦克。拆软墙开路，拿道具升级。每波结束自动保存本机关卡进度。',x:51,y:58},
+  tankDefense:{name:'双人守基地',icon:'▰',accent:'#e4c98d',brief:'双人战役 · 四张地图 · 终章 Boss',rules:'两人各选一种坦克，保护基地，连续推进四张地图。拾取装备永久升级坦克。每波结束自动存档，最后一张地图还有 Boss。',x:51,y:58},
   bubbles:{name:'泡泡擂台',icon:'◉',accent:'#ffafbe',brief:'实时对抗 · 连锁爆泡',rules:'放泡泡卡住路线，水花会沿十字方向冲开软块，也会连锁引爆其他泡泡。道具能扩大范围、增加携带量或加速。先赢三轮。',x:17,y:38},
   hockey:{name:'霓虹气垫球',icon:'◈',accent:'#a4ebed',brief:'实时对抗 · 反弹与抢角度',rules:'拖动自己的球拍，利用边墙反弹把球打进对方球门。七分且领先两分获胜，最高打到十一分。',x:82,y:38}
 };
@@ -5382,17 +5829,21 @@ function tankProgress(data){
     return {cleared:entry?.cleared===true,bestWave,checkpoint:checkpoint?.level===i?entry.checkpoint:null};
   });
 }
+const defaultTankClasses=['swift','guard'];
+const migrateTankCampaign=levels=>[...levels].reverse().find(level=>level.checkpoint)?.checkpoint||null;
 function loadSave(){
   try{
     const data=JSON.parse(localStorage.getItem(saveKey));
+    const levels=tankProgress(data?.tankDefense);
     return {
       roles:Array.isArray(data?.roles)?[0,1].map(i=>Number.isInteger(data.roles[i])&&roles[data.roles[i]]?data.roles[i]:null):[null,null],
       records:Array.isArray(data?.records)?data.records.filter(x=>x&&Object.hasOwn(games,x.game)&&typeof x.id==='string').slice(0,50):[],
       wardrobe:wardrobe.normalize(data?.wardrobe),
-      tankDefense:tankProgress(data?.tankDefense)
+      tankDefense:levels,
+      tankCampaign:data&&Object.hasOwn(data,'tankCampaign')?(tankDefense.resume(data.tankCampaign)?data.tankCampaign:null):migrateTankCampaign(levels)
     };
   }catch{
-    return {roles:[null,null],records:[],wardrobe:wardrobe.normalize(null),tankDefense:tankProgress(null)};
+    return {roles:[null,null],records:[],wardrobe:wardrobe.normalize(null),tankDefense:tankProgress(null),tankCampaign:null};
   }
 }
 const archive=loadSave();
@@ -5401,7 +5852,7 @@ const homeMap=[[44,48],[55,49]];
 function fresh(remember=false){
   const selected=remember?[...archive.roles]:[null,null];
   if(selected[0]===selected[1])selected[1]=null;
-  return {stage:'lobby',roles:selected,positions:homeMap,game:null,session:null,play:null,tankLevel:null};
+  return {stage:'lobby',roles:selected,positions:homeMap,game:null,session:null,play:null,tankLevel:null,tankClasses:[...defaultTankClasses]};
 }
 let view='home', mode='solo', seat=0, roleCursor=0, mapCursor=0;
 let state=fresh(), version=0, room=null, joined=false, roomBusy=false, pending=false, roomError='';
@@ -5464,11 +5915,24 @@ function roomTag(){
   return `<div class="room-tag"><span>${mode==='lan'?'同一 Wi-Fi':'互联网'} · 房间 <strong class="room-code">${safe(room.code)}</strong> · ${joined?'搭档已加入':'等待搭档加入'}</span><div class="invite-actions">${location.protocol!=='file:'?'<button class="btn primary thin" id="copy-invite">复制邀请链接</button>':''}<button class="quiet thin" id="copy-room">复制房间码</button></div></div>`;
 }
 function tankLevelCards(){
-  return `<fieldset class="tank-fieldset"><legend>选择地图</legend><div class="tank-levels">${tankDefense.maps.map((name,i)=>{
+  return `<fieldset class="tank-fieldset"><legend>战役起点</legend><div class="tank-levels">${tankDefense.maps.map((name,i)=>{
     const record=archive.tankDefense[i];
-    const tag=record.cleared?'已通关':record.checkpoint?`已保存至第 ${record.checkpoint.wave} 波`:`地图 ${i+1}`;
+    const checkpoint=archive.tankCampaign?.level===i?archive.tankCampaign:null;
+    const tag=checkpoint?`已保存至第 ${checkpoint.wave} 波`:record.cleared?'已通关':i===tankDefense.maps.length-1?'终章 Boss':`第 ${i+1} 张地图`;
     return `<button class="btn tank-level" data-tank-level="${i}" aria-pressed="${state.tankLevel===i}" ${pending||mode==='internet'&&seat!==0&&state.stage==='lobby'?'disabled':''}><strong>${safe(name)}</strong><small>${tag}</small></button>`;
   }).join('')}</div></fieldset>`;
+}
+function tankClassCards(){
+  const classes=state.tankClasses||defaultTankClasses;
+  return `<div class="tank-lineup">${classes.map((chosen,i)=>`<fieldset class="tank-fieldset"><legend>${player(i)}${mode!=='solo'&&i===seat?' · 你':''}</legend><div class="tank-class-list">${tankDefense.classes.map(item=>`<button class="tank-class" data-tank-class="${item.id}" data-tank-seat="${i}" aria-pressed="${chosen===item.id}" ${pending||mode!=='solo'&&i!==seat?'disabled':''}><canvas width="80" height="57" data-tank-art="${item.id}" data-tank-art-seat="${i}" aria-hidden="true"></canvas><strong>${safe(item.name)}</strong><small>${safe(item.description)}</small></button>`).join('')}</div></fieldset>`).join('')}</div>`;
+}
+function paintTankCards(){
+  for(const canvas of app.querySelectorAll('[data-tank-art]')){
+    const ctx=canvas.getContext('2d');
+    if(!ctx)continue;
+    tankArt.draw(ctx,{x:40,y:29,angle:-Math.PI/4,hp:2,maxHp:2,classId:canvas.dataset.tankArt},
+      {color:canvas.dataset.tankArtSeat==='0'?'#fbb0b5':'#a4e6d0',kind:'player',time:0,local:false});
+  }
 }
 function tankInviteButton(){
   return mode==='internet'&&room?'<button class="quiet" data-mode-invite="tankDefense">复制守基地邀请链接</button>':'';
@@ -5476,8 +5940,9 @@ function tankInviteButton(){
 function renderTankLobby(){
   const level=validTankLevel(state.tankLevel)?state.tankLevel:0;
   const writable=mode==='solo'||seat===0;
-  const hasSave=writable&&archive.tankDefense[level].checkpoint;
-  return `<div class="narrow screen">${title('双人守基地','两辆坦克一起守住基地，打完三波电脑坦克。','<button class="quiet" id="tank-back">回地图</button>')}${roomTag()}<section class="panel">${tankLevelCards()}<div class="actions">${btn('tank-start',`开始 · ${safe(tankDefense.maps[level])}`,true,pending)}${hasSave?btn('tank-resume','继续本机存档',false,pending):''}${tankInviteButton()}</div></section></div>`;
+  const save=writable?archive.tankCampaign:null;
+  const waiting=mode==='internet'&&!joined;
+  return `<div class="campaign-screen screen"><div class="campaign-cover"><div><h1>双人守基地</h1><p>四张地图 · 终章 Boss</p></div><button class="quiet" id="tank-back">回地图</button></div>${roomTag()}<section class="panel campaign-panel">${tankLevelCards()}${tankClassCards()}<div class="campaign-actions">${save?`<div class="campaign-continue"><span>存档 · ${safe(tankDefense.maps[save.level])}第 ${save.wave} 波</span>${btn('tank-resume','继续战役',true,pending||waiting)}</div>`:''}<div class="actions">${writable?btn('tank-start',`${save?'新开战役':'开始战役'} · ${safe(tankDefense.maps[level])}`,!save,pending||waiting):'<p class="room-tip">选好坦克后，等房主开始。</p>'}${tankInviteButton()}</div></div></section></div>`;
 }
 function renderLobby(){
   const me=mode==='solo'?roleCursor:seat;
@@ -5696,6 +6161,7 @@ function render(){
   const arcadeFrame=app.querySelector('[data-arcade-scene]');
   if(arcadeFrame&&arcadeBackup)app.querySelector('.arcade-backup').open=true;
   syncArcade(arcadeFrame);
+  if(view==='tankLobby')paintTankCards();
   const gameRoot=app.querySelector('[data-live-root]');
   if(gameRoot){
     gameRoot.dataset.session=state.session;
@@ -5725,11 +6191,19 @@ function reduce(current,action,actor){
   if(action.type==='tank-level'&&(stage==='tankLobby'||stage==='lobby'&&actor===0&&validTankLevel(current.tankLevel))&&validTankLevel(action.level)){
     return current.tankLevel===action.level?current:{...current,tankLevel:action.level};
   }
+  if(action.type==='tank-class'&&stage==='tankLobby'&&(action.seat===0||action.seat===1)&&
+    (mode==='solo'||actor===action.seat)&&tankDefense.classes.some(item=>item.id===action.id)){
+    const classes=[...(current.tankClasses||defaultTankClasses)];
+    if(classes[action.seat]===action.id)return current;
+    classes[action.seat]=action.id;
+    return {...current,tankClasses:classes};
+  }
   if(action.type==='hub'&&stage==='lobby'&&current.roles.every(i=>i!==null)){
     return {...current,stage:validTankLevel(current.tankLevel)?'tankLobby':'hub'};
   }
   if(action.type==='lobby'&&stage==='hub')return {...current,stage:'lobby'};
-  if(action.type==='map'&&stage==='game')return {...current,stage:current.game==='tankDefense'?'tankLobby':'hub',game:null,play:null};
+  if(action.type==='map'&&stage==='game')return {...current,stage:current.game==='tankDefense'?'tankLobby':'hub',game:null,play:null,
+    tankLevel:current.game==='tankDefense'?current.play.level:current.tankLevel};
   if(action.type==='map'&&stage==='tankLobby')return {...current,stage:'hub',tankLevel:null};
   if(stage==='hub'&&action.type==='walk'){
     if(!Number.isFinite(action.x)||!Number.isFinite(action.y))return current;
@@ -5738,11 +6212,12 @@ function reduce(current,action,actor){
     return {...current,positions};
   }
   const rematch=stage==='game'&&current.play.done&&action.type==='rematch';
-  if(stage==='tankLobby'&&action.type==='tank-start'&&validTankLevel(current.tankLevel)){
+  if(stage==='tankLobby'&&action.type==='tank-start'&&validTankLevel(current.tankLevel)&&(mode==='solo'||actor===0)){
     const level=current.tankLevel;
-    const checkpoint=action.resume===true&&(mode==='solo'||actor===0)?tankDefense.resume(archive.tankDefense[level].checkpoint):null;
+    const checkpoint=action.resume===true?tankDefense.resume(archive.tankCampaign):null;
     if(action.resume===true&&!checkpoint)return current;
-    return {...current,stage:'game',game:'tankDefense',session:gameID(),play:checkpoint||tankDefense.create({level})};
+    const play=checkpoint||tankDefense.create({level,classes:current.tankClasses||defaultTankClasses});
+    return {...current,stage:'game',game:'tankDefense',session:gameID(),play,tankLevel:play.level,tankClasses:play.classes};
   }
   if((stage==='hub'&&action.type==='enter'&&Object.hasOwn(games,action.game)&&nearStall(current.positions[actor],action.game))||rematch){
     const id=rematch?current.game:action.game;
@@ -5759,15 +6234,28 @@ function reduce(current,action,actor){
 let savedOk=true;
 let lastTankCheckpoint='';
 function saveTankCheckpoint(play){
-  if(!validTankLevel(play.level)||play.done||!['prepare','clear'].includes(play.phase))return;
-  const key=state.session+':'+play.wave+':'+play.phase;
+  if(!validTankLevel(play.level)||play.done)return;
+  const ranks=play.players.map(unit=>unit.upgrades);
+  const rankKey=ranks.map(rank=>`${rank.speed}${rank.reload}${rank.armor}`).join(':');
+  const key=`${state.session}:${play.level}:${play.wave}:${play.phase}:${rankKey}`;
   if(key===lastTankCheckpoint)return;
   const checkpoint=tankDefense.checkpoint(play);
-  if(!checkpoint)return;
   lastTankCheckpoint=key;
-  const previous=archive.tankDefense[play.level];
-  if(previous.checkpoint?.wave>checkpoint.wave)return;
-  archive.tankDefense[play.level]={...previous,bestWave:Math.max(previous.bestWave,checkpoint.wave-1),checkpoint};
+  if(!checkpoint){
+    const saved=archive.tankCampaign;
+    if(saved?.level!==play.level||saved.wave!==play.wave||saved.version!==2||
+      saved.classes.some((id,i)=>id!==play.classes[i]))return;
+    if(!saved.upgrades.some((rank,i)=>Object.keys(rank).some(kind=>rank[kind]!==ranks[i][kind])))return;
+    const upgraded={...saved,upgrades:ranks.map(rank=>({...rank}))};
+    archive.tankCampaign=upgraded;
+    archive.tankDefense[play.level].checkpoint=upgraded;
+    saveLocal();
+    return;
+  }
+  const previous=archive.tankDefense[checkpoint.level];
+  if(checkpoint.level!==play.level)archive.tankDefense[play.level]={cleared:true,bestWave:play.waves,checkpoint:null};
+  archive.tankDefense[checkpoint.level]={...previous,bestWave:Math.max(previous.bestWave,checkpoint.wave-1),checkpoint};
+  archive.tankCampaign=checkpoint;
   saveLocal();
 }
 function applyState(next){
@@ -5793,6 +6281,7 @@ function applyState(next){
       const waves=next.play.won?next.play.waves:Math.max(0,next.play.wave-1);
       archive.tankDefense[next.play.level]={cleared:record.cleared||next.play.won===true,bestWave:Math.max(record.bestWave,waves),
         checkpoint:next.play.won?null:record.checkpoint};
+      if(next.play.won)archive.tankCampaign=null;
     }
     archive.records.unshift({id:next.session,game:next.game,when:Date.now(),result:summary(next)});
     archive.records.splice(50);
@@ -6026,6 +6515,9 @@ document.addEventListener('click',e=>{
   if(b?.dataset.tankLevel!==undefined){
     dispatch({type:'tank-level',level:Number(b.dataset.tankLevel)});return;
   }
+  if(b?.dataset.tankClass){
+    dispatch({type:'tank-class',id:b.dataset.tankClass,seat:Number(b.dataset.tankSeat)});return;
+  }
   if(b?.id==='tank-start'||b?.id==='tank-resume'){
     dispatch({type:'tank-start',resume:b.id==='tank-resume'});return;
   }
@@ -6131,6 +6623,7 @@ document.addEventListener('submit',e=>{
 });
 if(window.arcadeArt?.hero)document.documentElement.style.setProperty('--hero',`url(${window.arcadeArt.hero})`);
 if(window.arcadeArt?.map)document.documentElement.style.setProperty('--map',`url(${window.arcadeArt.map})`);
+if(window.arcadeArt?.tankCampaign)document.documentElement.style.setProperty('--tank-campaign-art',`url(${window.arcadeArt.tankCampaign})`);
 async function startPage(){
   if(inviteCode){view='rooms';roomDraft=inviteCode;roomBusy=true;}
   render();
